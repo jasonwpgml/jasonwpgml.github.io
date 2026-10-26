@@ -36,9 +36,10 @@ try { const t = localStorage.getItem('theme'); if (t) document.documentElement.d
 :root[data-theme="dark"]{color-scheme:dark}
 @supports not (color:light-dark(#000,#fff)){
   :root{--ink:#000;--ink-2:#5a5a5a;--paper:#fff;--hair:#d6d6d6;--frame:rgb(0 0 0/.12)}
+  .projects{--brown-1:#4a3427;--brown-2:#5a3f2e}
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:80px;background:var(--paper)}
+html{scroll-behavior:smooth;scroll-padding-top:var(--head,80px);background:var(--paper)}
 body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.7 var(--sans);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.25em}
 a:hover{text-decoration-thickness:2px}
@@ -55,12 +56,20 @@ time,.no,.toc .n{font-variant-numeric:tabular-nums}
   padding-block:calc(env(safe-area-inset-top,0px) + 14px) 14px;font-size:14px}
 .head-in{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
 .head .ed{font-family:var(--serif);font-weight:600;text-decoration:none;font-size:16px;justify-self:start}
-.head .now{font-family:var(--serif);color:var(--ink-2);white-space:nowrap}
-.ctl{justify-self:end;display:flex;gap:8px}
-.pill{display:flex;gap:2px;border:1px solid var(--ink);border-radius:999px;padding:3px}
-.pill button{all:unset;cursor:pointer;padding:3px 11px;border-radius:999px;font:inherit;line-height:1.4}
-.pill button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
-.pill button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.head .now{font-family:var(--serif);color:var(--ink-2);white-space:nowrap;font-kerning:none}
+/* running head label: while it changes, each letter keeps its own slot */
+.now i{display:inline-block;font-style:normal;text-align:center;white-space:pre}
+.now i.nz{font:400 .86em/1 var(--mono);color:var(--ink-2)}
+.ctl{justify-self:end;display:flex;gap:14px;padding:0 3px 3px 0}
+.keys{display:flex;gap:8px}
+/* square keys with a hard shade; pressing one sinks it into its shadow */
+.sq{all:unset;box-sizing:border-box;cursor:pointer;padding:4px 12px;border:1px solid var(--ink);border-radius:3px;
+  background:var(--paper);color:var(--ink);font:600 13px/1.45 var(--sans);box-shadow:3px 3px 0 var(--shade,var(--ink));
+  transition:transform .14s cubic-bezier(.2,.7,.2,1),box-shadow .14s cubic-bezier(.2,.7,.2,1),background-color .14s}
+.sq:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shade,var(--ink))}
+.sq:active,.sq[aria-pressed="true"]{transform:translate(3px,3px);box-shadow:0 0 0 var(--shade,var(--ink))}
+.sq[aria-pressed="true"]{background:var(--ink);color:var(--paper);cursor:default}
+.sq:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
 @supports (animation-timeline:scroll()){
   .head{animation:edge linear both;animation-timeline:scroll();animation-range:0 64px}
   @keyframes edge{from{border-bottom-color:transparent}}
@@ -121,8 +130,15 @@ time,.no,.toc .n{font-variant-numeric:tabular-nums}
 /* screenshots: a hairline edge, no device frames; the edge answers when the shot is a link */
 .shot{margin:0;min-width:0}
 .frame{display:block;border:1px solid var(--frame);border-radius:6px;overflow:hidden;background:#fff;transition:border-color .2s}
-.shot:has(a:hover) .frame{border-color:var(--ink)}
-.shot:has(a:hover) figcaption{color:var(--ink)}
+.shot:has(.frame:hover) .frame{border-color:var(--ink)}
+.shot:has(.frame:hover) figcaption{color:var(--ink)}
+/* screenshots open the project sheet; a small square label says so */
+button.frame{appearance:none;width:100%;padding:0;font:inherit;color:inherit;text-align:left;cursor:zoom-in;position:relative}
+button.frame::after{content:"자세히 보기";position:absolute;right:10px;bottom:10px;padding:3px 9px;border-radius:3px;
+  background:rgb(28 18 12/.82);color:#f3ebdf;font:600 12.5px/1.4 var(--sans);box-shadow:2px 2px 0 rgb(0 0 0/.35);
+  opacity:0;translate:0 4px;transition:opacity .2s,translate .2s}
+button.frame:is(:hover,:focus-visible)::after{opacity:1;translate:0 0}
+@media (hover:none){button.frame::after{opacity:1;translate:0 0}}
 .shot figcaption{font-size:14px;color:var(--ink-2);margin-top:12px;transition:color .2s}
 .wide{margin-top:clamp(36px,5vw,56px)}
 .phones{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:clamp(12px,2vw,24px);align-items:start}
@@ -183,12 +199,60 @@ time,.no,.toc .n{font-variant-numeric:tabular-nums}
 .contact .mail:hover{text-decoration:underline;text-decoration-thickness:2px}
 .colophon{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:clamp(64px,8vw,112px);padding-top:20px;border-top:1px solid var(--hair);font-size:13px;color:var(--ink-2)}
 
-/* agent edition */
-.agent{display:none;min-height:100svh;padding-block:56px 80px;font:400 14.5px/1.75 var(--mono)}
-.agent pre{margin:0 0 0 max(0px,(100% - var(--max)) / 2);white-space:pre-wrap;word-break:break-word;font:inherit;max-width:92ch}
+/* project stage: brown leaves stacked in order; each one slides up over the one before */
+.projects{--brown-1:light-dark(#4a3427,#2a1d15);--brown-2:light-dark(#5a3f2e,#35261b)}
+.projects .ch{position:sticky;top:var(--head,64px);min-height:calc(100svh - var(--head,64px));
+  padding-block:clamp(48px,6vw,88px) clamp(64px,8vw,112px);background:var(--brown-1);color:var(--ink);
+  --ink:#f3ebdf;--ink-2:#c7b59f;--hair:rgb(243 235 223/.2);--frame:rgb(243 235 223/.24);--rule:#c9a477}
+.projects .ch:nth-child(even){background:var(--brown-2)}
+.projects .ch+.ch{box-shadow:0 -28px 56px -24px rgb(0 0 0/.5)}
+.projects .ch::after{content:"";position:absolute;inset:0;background:#120a06;opacity:calc(var(--cover,0) * .5);pointer-events:none}
+.projects .ch-in{border-top-color:var(--rule)}
+.projects .ch-head .no{color:var(--rule)}
+.projects ::selection{background:#c9a477;color:#1d130d}
+
+/* project sheet: opens from the right over a dimmed page */
+.sheet{--pad:clamp(20px,4vw,48px);position:fixed;inset:0 0 0 auto;margin:0;padding:0;border:0;width:min(1040px,100vw);max-width:none;
+  height:100dvh;max-height:none;overflow:auto;overscroll-behavior:contain;background:var(--paper);color:var(--ink);box-shadow:-24px 0 64px rgb(0 0 0/.3)}
+.sheet::backdrop{background:rgb(24 14 8/.58);backdrop-filter:blur(2px)}
+.sheet-box{min-height:100%}
+.sheet-bar{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:16px;
+  padding:14px var(--pad) 17px;background:var(--paper);border-bottom:1px solid var(--hair)}
+.sheet-run{display:flex;gap:14px;align-items:baseline;font-family:var(--serif)}
+.sheet-run .no{color:var(--ink-2);font-size:15px}
+.sheet-h{font-weight:600;font-size:clamp(1.3rem,2.4vw,1.7rem)}
+.sheet-in{display:grid;gap:clamp(40px,5vw,64px);padding:clamp(28px,4vw,48px) var(--pad) 96px}
+.sheet-top .meta{margin-top:0}
+.sheet-top .say{margin-top:16px}
+.sheet-top .links{margin-top:20px}
+.sheet-shots{display:grid;gap:clamp(32px,4vw,48px)}
+.sheet-shots .grp{display:grid;gap:20px}
+.sheet-shots h3{font-size:1.35rem}
+.sheet-shots .row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;align-items:start}
+.sheet-shots .grp>div:empty{display:none}
+.sheet .more-in{padding:0}
+html:has(.sheet[open]){overflow:hidden}
+
+/* agent edition: the same facts as a terminal, green on black, with a slow rain in the margins */
+html[data-edition="agent"]{color-scheme:dark;--paper:#030a05;--ink:#c6f6d2;--ink-2:#5fae76;--hair:#16331f;--shade:#2f8a4a}
+.agent{display:none;position:relative;min-height:100svh;padding-block:56px 80px;font:400 14.5px/1.75 var(--mono)}
+.agent pre{position:relative;z-index:1;margin:0 0 0 max(0px,(100% - var(--max)) / 2);white-space:pre-wrap;word-break:break-word;font:inherit;max-width:92ch;
+  color:#9fe0b0;text-shadow:0 0 6px rgb(80 220 120/.18);font-kerning:none;font-variant-ligatures:none}
+.agent .k{color:#d8ffe2}
+.agent .c{color:#4f8d61}
+.agent .h{color:#7dff9f}
+.agent .nz{color:#2f8a4a}
+.agent .nz.w{display:inline-block;width:1ic;text-align:center}
+.agent .gh{color:transparent;text-shadow:none}
+.rain{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
 html[data-edition="agent"] .human{display:none}
-html[data-edition="agent"] .agent{display:block}
+html[data-edition="agent"] .agent,html[data-edition="agent"] .rain{display:block}
 html[data-edition="agent"] .head .now{visibility:hidden}
+
+@media print{
+  .projects .ch{position:static;min-height:0;box-shadow:none}
+  .projects .ch::after,.sheet,.rain,button.frame::after{display:none}
+}
 
 /* motion: one load sequence on the cover, a slow settle for wide screenshots; everything rests visible */
 @media (prefers-reduced-motion:no-preference){
@@ -206,6 +270,13 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     .wide .frame img{animation:zoom linear both;animation-timeline:view();animation-range:entry 0% cover 45%}
     @keyframes zoom{from{transform:scale(1.06)}}
   }
+  .sheet{transition:translate .5s cubic-bezier(.2,.75,0,1),overlay .5s allow-discrete,display .5s allow-discrete;translate:100% 0}
+  .sheet[open]{translate:0 0}
+  @starting-style{.sheet[open]{translate:100% 0}}
+  .sheet::backdrop{transition:opacity .4s,overlay .4s allow-discrete,display .4s allow-discrete;opacity:0}
+  .sheet[open]::backdrop{opacity:1}
+  @starting-style{.sheet[open]::backdrop{opacity:0}}
+
   @supports (interpolate-size:allow-keywords){
     :root{interpolate-size:allow-keywords}
     .more::details-content{height:0;overflow:clip;transition:height .45s cubic-bezier(.2,.7,.2,1),content-visibility .45s allow-discrete}
@@ -234,7 +305,8 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   .phones.row{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:64%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}
   .phones.row .shot{scroll-snap-align:start}
   .head .ed{font-size:15px}
-  .pill button{padding:3px 9px}
+  .sq{padding:4px 9px}
+  .ctl{gap:10px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
@@ -245,10 +317,10 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     <a class="ed" href="#top">Jason</a>
     <span class="now" id="running" aria-hidden="true">표지</span>
     <div class="ctl">
-      <div class="pill"><button type="button" id="theme" aria-pressed="false">다크</button></div>
-      <div class="pill" role="group" aria-label="읽는 방식">
-        <button type="button" id="m-human" aria-pressed="true">사람용</button>
-        <button type="button" id="m-agent" aria-pressed="false">에이전트용</button>
+      <button type="button" class="sq" id="theme" aria-pressed="false">다크</button>
+      <div class="keys" role="group" aria-label="읽는 방식">
+        <button type="button" class="sq" id="m-human" aria-pressed="true">사람용</button>
+        <button type="button" class="sq" id="m-agent" aria-pressed="false">에이전트용</button>
       </div>
     </div>
   </div>
@@ -297,6 +369,8 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   </div>
 </section>
 
+<div class="projects">
+
 <!-- 01 AgentHub -->
 <article class="ch wrap" id="agenthub" data-run="01 AgentHub">
   <div class="ch-in">
@@ -318,7 +392,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
         <p class="links"><span class="private">저장소 비공개</span></p>
       </div>
       <figure class="shot">
-        <span class="frame"><img src="img/agenthub-discovery.webp" width="1280" height="807" alt="Agent Hub의 설치 항목 가져오기 화면. 왼쪽에 대시보드, 도구, 스킬, MCP 서버 메뉴가 있고, 가운데에 reduce-ai-cliches 스킬을 검색한 결과와 Codex, Claude Code에 설치된 경로가 보인다." loading="lazy"></span>
+        <button type="button" class="frame"><img src="img/agenthub-discovery.webp" width="1280" height="807" alt="Agent Hub의 설치 항목 가져오기 화면. 왼쪽에 대시보드, 도구, 스킬, MCP 서버 메뉴가 있고, 가운데에 reduce-ai-cliches 스킬을 검색한 결과와 Codex, Claude Code에 설치된 경로가 보인다." loading="lazy"></button>
         <figcaption>설치된 스킬과 도구를 찾아 공유하는 관리 화면</figcaption>
       </figure>
     </div>
@@ -336,7 +410,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     <p class="say">대학 정보와 고교학점제 화면, 수강신청 도우미를 만들었습니다.</p>
     <div class="split flip">
       <figure class="shot">
-        <span class="frame"><img src="img/bearable-roadmap.webp" width="1800" height="801" alt="마이폴리오 고교학점제 로드맵 화면. 학년과 학기별 열에 선택 과목 카드가 나열되어 있다." loading="lazy"></span>
+        <button type="button" class="frame"><img src="img/bearable-roadmap.webp" width="1800" height="801" alt="마이폴리오 고교학점제 로드맵 화면. 학년과 학기별 열에 선택 과목 카드가 나열되어 있다." loading="lazy"></button>
         <figcaption>팀이 함께 만든 최종 로드맵 화면</figcaption>
       </figure>
       <div class="body">
@@ -378,7 +452,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     </header>
     <p class="say">PubMed 논문을 모으고 검색하는 서비스입니다.</p>
     <figure class="shot wide">
-      <a class="frame" href="https://team-pubmed.vercel.app"><img src="img/publium-answer.webp" width="2880" height="1800" alt="Publium 검색과 답변 화면. 왼쪽에 PubMed 검색 조건, 가운데에 논문 채팅방 목록, 오른쪽에 선택한 논문을 근거로 한 AI 답변이 있다." loading="lazy"></a>
+      <button type="button" class="frame"><img src="img/publium-answer.webp" width="2880" height="1800" alt="Publium 검색과 답변 화면. 왼쪽에 PubMed 검색 조건, 가운데에 논문 채팅방 목록, 오른쪽에 선택한 논문을 근거로 한 AI 답변이 있다." loading="lazy"></button>
       <figcaption>검색과 답변 화면, 현재 운영 버전</figcaption>
     </figure>
     <div class="cols2">
@@ -451,9 +525,9 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     <p class="say">버릴 물건을 찍으면 품목과 예상 수수료를 보여주고, 신고 페이지로 연결합니다.</p>
     <div class="split flip">
       <div class="phones row">
-        <figure class="shot"><a class="frame" href="https://frontend-delta-red-74.vercel.app/"><img src="img/beorimi-home.webp" width="600" height="1000" alt="버리미 첫 화면. 이거 어떻게 버려야 할까요라는 문구 아래 사진 찍기 버튼이 있다." loading="lazy"></a><figcaption>사진 촬영, 업로드</figcaption></figure>
-        <figure class="shot"><a class="frame" href="https://frontend-delta-red-74.vercel.app/"><img src="img/beorimi-result.webp" width="600" height="1000" alt="판별 결과 화면. 사진 속 의자와 서랍장 4개 품목에 번호가 붙은 상자가 그려져 있다." loading="lazy"></a><figcaption>여러 품목 인식 결과</figcaption></figure>
-        <figure class="shot"><a class="frame" href="https://frontend-delta-red-74.vercel.app/"><img src="img/beorimi-report.webp" width="600" height="1299" alt="배출 신고 준비 화면. 3개 품목 신고를 미리 준비해둘게요라는 제목 아래 품목별 예상 수수료와 배출 정보 메모 입력란, 공식 신고 페이지로 이동 버튼이 있다." loading="lazy"></a><figcaption>신고 준비</figcaption></figure>
+        <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-home.webp" width="600" height="1000" alt="버리미 첫 화면. 이거 어떻게 버려야 할까요라는 문구 아래 사진 찍기 버튼이 있다." loading="lazy"></button><figcaption>사진 촬영, 업로드</figcaption></figure>
+        <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-result.webp" width="600" height="1000" alt="판별 결과 화면. 사진 속 의자와 서랍장 4개 품목에 번호가 붙은 상자가 그려져 있다." loading="lazy"></button><figcaption>여러 품목 인식 결과</figcaption></figure>
+        <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-report.webp" width="600" height="1299" alt="배출 신고 준비 화면. 3개 품목 신고를 미리 준비해둘게요라는 제목 아래 품목별 예상 수수료와 배출 정보 메모 입력란, 공식 신고 페이지로 이동 버튼이 있다." loading="lazy"></button><figcaption>신고 준비</figcaption></figure>
       </div>
       <div class="body">
         <p>사진 분석을 워커에서 처리하고, 화면에서 진행 상태를 확인할 수 있게 만들었습니다.</p>
@@ -529,8 +603,8 @@ html[data-edition="agent"] .head .now{visibility:hidden}
         <h3 id="diary-h">나의 여름방학 일기</h3>
         <p class="facts"><span>2026.07</span><span>기획 주도, 작성부 구현</span></p>
         <div class="phones">
-          <figure class="shot"><span class="frame"><img src="img/diary-write.webp" width="600" height="1000" alt="일기 쓰기 화면. 제목, 날씨, 일기 내용을 손글씨처럼 입력한다." loading="lazy"></span><figcaption>작성 화면</figcaption></figure>
-          <figure class="shot"><span class="frame"><img src="img/diary-result.webp" width="600" height="1000" alt="변환 결과. 크레파스로 그린 폭포 그림과 원고지 칸에 쓴 일기, 선생님 도장이 있다." loading="lazy"></span><figcaption>변환 결과</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="img/diary-write.webp" width="600" height="1000" alt="일기 쓰기 화면. 제목, 날씨, 일기 내용을 손글씨처럼 입력한다." loading="lazy"></button><figcaption>작성 화면</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="img/diary-result.webp" width="600" height="1000" alt="변환 결과. 크레파스로 그린 폭포 그림과 원고지 칸에 쓴 일기, 선생님 도장이 있다." loading="lazy"></button><figcaption>변환 결과</figcaption></figure>
         </div>
         <div class="body">
           <p>사진과 짧은 글을 올리면 AI가 문장을 다듬고 크레파스 그림일기로 바꿔 주는 앱입니다.</p>
@@ -542,8 +616,8 @@ html[data-edition="agent"] .head .now{visibility:hidden}
         <h3 id="byeol-h">별일 (Byeolil)</h3>
         <p class="facts"><span>2026.08</span><span>팀장, 3D와 기록 흐름 구현</span></p>
         <div class="phones">
-          <figure class="shot"><span class="frame"><img src="img/byeolil-home.webp" width="600" height="1000" alt="별일 관측국 메인 화면. 어두운 우주 배경에 주황색 구슬이 떠 있고, 왁뿌볼 안에 든 운세를 꺼내보세요라고 적혀 있다." loading="lazy"></span><figcaption>메인 화면</figcaption></figure>
-          <figure class="shot"><span class="frame"><img src="img/byeolil-news.webp" width="600" height="1299" alt="별일 속보 화면. 찾던 책이 방금 돌아옴이라는 기록에 별점과 책 그림, 관측국의 진지한 해석이 붙어 있다." loading="lazy"></span><figcaption>별일 속보</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="img/byeolil-home.webp" width="600" height="1000" alt="별일 관측국 메인 화면. 어두운 우주 배경에 주황색 구슬이 떠 있고, 왁뿌볼 안에 든 운세를 꺼내보세요라고 적혀 있다." loading="lazy"></button><figcaption>메인 화면</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="img/byeolil-news.webp" width="600" height="1299" alt="별일 속보 화면. 찾던 책이 방금 돌아옴이라는 기록에 별점과 책 그림, 관측국의 진지한 해석이 붙어 있다." loading="lazy"></button><figcaption>별일 속보</figcaption></figure>
         </div>
         <div class="body">
           <p>하루의 사소한 일을 기록하고 운세와 칭호를 받는 앱입니다.</p>
@@ -621,6 +695,8 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   </div>
 </article>
 
+</div>
+
 <section class="contact wrap" data-run="연락처" aria-labelledby="contact-h">
   <div>
     <p class="k" id="contact-h">연락처</p>
@@ -636,6 +712,17 @@ html[data-edition="agent"] .head .now{visibility:hidden}
 
 </main>
 
+<dialog class="sheet" id="sheet" aria-labelledby="sheet-h">
+  <div class="sheet-box">
+    <div class="sheet-bar">
+      <p class="sheet-run"><span class="no" id="sheet-no"></span><span class="sheet-h" id="sheet-h"></span></p>
+      <form method="dialog"><button class="sq">닫기</button></form>
+    </div>
+    <div class="sheet-in" id="sheet-in"></div>
+  </div>
+</dialog>
+
+<canvas class="rain" id="rain" aria-hidden="true"></canvas>
 <section class="agent wrap" aria-label="에이전트용 판본">
   <pre id="agent-out"></pre>
 </section>
@@ -694,15 +781,234 @@ html[data-edition="agent"] .head .now{visibility:hidden}
 (() => {
   const root = document.documentElement;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const head = document.querySelector('.head');
+  const clamp = n => Math.min(1, Math.max(0, n));
+  const ease = n => n * n * (3 - 2 * n);
+  const agentMode = () => root.dataset.edition === 'agent';
 
-  // Running head shows the section under it.
+  // Matrix noise is ASCII only and picked by slot and step, so a paused frame never flickers.
+  const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&+<>=[]{}?/';
+  const noise = (c, r, t) => NOISE[(c * 73 + r * 37 + t * 19) % NOISE.length];
+  const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+
+  // Running head: the label turns into the next one in place, as far as the reader has scrolled.
   const running = document.getElementById('running');
-  const io = new IntersectionObserver(es => {
-    for (const e of es) if (e.isIntersecting) running.textContent = e.target.dataset.run;
-  }, { rootMargin: '-8% 0px -88% 0px' });
-  document.querySelectorAll('[data-run]').forEach(s => io.observe(s));
+  const sections = [...document.querySelectorAll('main [data-run]')];
+  const labels = sections.map(s => s.dataset.run);
+  const ctx = document.createElement('canvas').getContext('2d');
+  let pair = '', slots = [];
+  const build = (a, b) => {
+    const cs = getComputedStyle(running);
+    ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const A = [...a], B = [...b], n = Math.max(A.length, B.length);
+    running.textContent = '';
+    slots = Array.from({ length: n }, (_, i) => {
+      const from = A[i] || '', to = B[i] || '', el = running.appendChild(document.createElement('i'));
+      return { el, from, to, wf: from ? ctx.measureText(from).width : 0, wt: to ? ctx.measureText(to).width : 0, d: i / Math.max(1, n - 1) * .38 };
+    });
+  };
+  const paintLabel = x => {
+    const i = Math.min(labels.length - 1, Math.floor(x)), f = x - i;
+    if (f <= 0 || i === labels.length - 1) {
+      if (pair !== labels[i]) { pair = labels[i]; running.textContent = labels[i]; }
+      return;
+    }
+    if (pair !== i + '>') { pair = i + '>'; build(labels[i], labels[i + 1]); }
+    slots.forEach((s, k) => {
+      const q = clamp((f - s.d) / .62), t = Math.floor(q * 9);
+      let g = s.from, nz = false, o = 1;
+      if (s.from === s.to) g = s.from;
+      else if (s.from && s.to) { if (q >= .22) { g = q > .72 ? s.to : noise(k, 1, t); nz = q <= .72; } }
+      else if (s.from) { if (q >= .38) { g = noise(k, 1, t); nz = true; } o = 1 - ease(clamp((q - .7) / .3)); }
+      else { g = q > .72 ? s.to : noise(k, 1, t); nz = q <= .72; o = ease(clamp(q / .3)); }
+      s.el.textContent = g;
+      s.el.className = nz ? 'nz' : '';
+      s.el.style.width = s.wf + (s.wt - s.wf) * ease(q) + 'px';
+      s.el.style.opacity = o;
+    });
+  };
+  const arrive = el => clamp((innerHeight * .62 - el.getBoundingClientRect().top) / (innerHeight * .32));
 
-  // Agent edition: the same facts as structured text, decoded in place.
+  // Project stage. A leaf taller than the screen sticks by its bottom, so it is read to the end before the next covers it.
+  const stage = document.querySelector('.projects');
+  const leaves = [...stage.children];
+  let headH = 64, anchors = [];
+  const paint = () => {
+    leaves.forEach((el, k) => {
+      const next = leaves[k + 1];
+      const p = next ? clamp((innerHeight - next.getBoundingClientRect().top) / (innerHeight - headH)) : 0;
+      if (el._cover !== p) { el._cover = p; el.style.setProperty('--cover', p.toFixed(3)); }
+    });
+    paintLabel(sections.slice(1).reduce((x, s) => x + arrive(s), 0));
+  };
+  const layout = () => {
+    headH = head.offsetHeight;
+    root.style.setProperty('--head', headH + 'px');
+    let y = stage.getBoundingClientRect().top + scrollY;
+    anchors = leaves.map(el => {
+      el.style.top = Math.min(headH, innerHeight - el.offsetHeight) + 'px';
+      const a = y - headH;
+      y += el.offsetHeight;
+      return a;
+    });
+    paint();
+  };
+  let ticking = false;
+  addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; paint(); });
+  }, { passive: true });
+  const ro = new ResizeObserver(layout);
+  leaves.forEach(el => ro.observe(el));
+  addEventListener('resize', layout);
+  layout();
+
+  // Wheel: a project that has just covered the screen holds once; more wheel input moves on.
+  // Between those stops the browser scrolls natively. Keys, links and touch are never held.
+  const wheel = { last: -Infinity, value: 0, repeats: 0, continuousUntil: 0 };
+  const readWheel = (e, now) => {
+    const mode = e.deltaMode, raw = e.deltaY * (mode === 1 ? 18 : mode === 2 ? innerHeight : 1);
+    const amount = Math.abs(raw), gap = now - wheel.last;
+    const similar = amount > 0 && Math.sign(raw) === Math.sign(wheel.value) && Math.abs(amount - Math.abs(wheel.value)) <= 1;
+    wheel.repeats = gap >= 70 && gap <= 1800 && similar ? wheel.repeats + 1 : 0;
+    if (gap < 36) { wheel.continuousUntil = now + 140; wheel.repeats = 0; }
+    wheel.last = now; wheel.value = raw;
+    const coarse = mode !== 0 || (amount >= 24 && Number.isInteger(raw)) || wheel.repeats >= 2;
+    const pulse = amount > 0 && now >= wheel.continuousUntil && gap >= 36 && coarse;
+    return { raw, kind: pulse ? 'pulse' : 'continuous', delta: pulse ? Math.sign(raw) * Math.min(180, Math.max(54, amount)) : raw };
+  };
+  const hold = now => ({ created: now, until: now + 520, last: now, direction: 0, debt: 0, waitRelease: true });
+  // Returns 0 while the stop holds, or the small distance to set off with once enough extra input has come in.
+  const consume = (s, delta, now, kind) => {
+    if (kind === 'pulse') {
+      if (now - s.created < 90) return 0;
+      return Math.sign(delta) * Math.min(180, Math.abs(delta));
+    }
+    const direction = Math.sign(delta), gap = now - s.last;
+    s.last = now;
+    if (now < s.until) { s.debt = 0; return 0; }
+    if (s.waitRelease) {
+      if (gap < 160 && now < s.until + 380) { s.debt = 0; return 0; }
+      s.waitRelease = false; s.debt = 0; s.direction = 0;
+    }
+    if (direction !== s.direction || gap > 900) s.debt = 0;
+    s.direction = direction;
+    s.debt += Math.min(Math.abs(delta), 160);
+    const distance = Math.min(90, Math.max(0, s.debt - Math.max(240, Math.min(340, innerHeight * .44))));
+    return distance ? direction * distance : 0;
+  };
+  const checkpoint = (y, delta) => {
+    const dir = Math.sign(delta);
+    // Strictly ahead: small trackpad steps can land a pixel short of a stop and must still be caught.
+    const next = anchors.filter(a => (a - y) * dir > 0).sort((a, b) => (a - b) * dir)[0];
+    return next !== undefined && Math.abs(delta) >= Math.abs(next - y) ? next : null;
+  };
+
+  let glide = null, rest = null, snapT, lastDir = 1;
+  const stop = () => { if (glide) cancelAnimationFrame(glide.raf); glide = null; };
+  const glideTo = (to, dur, done) => {
+    stop();
+    const from = scrollY, t0 = performance.now(), g = glide = { to };
+    const step = now => {
+      if (glide !== g) return;
+      const p = clamp((now - t0) / dur); // the first frame can be stamped before t0; clamp holds it at the start
+      scrollTo({ top: from + (to - from) * (1 - (1 - p) ** 3), behavior: 'instant' });
+      if (p < 1) g.raf = requestAnimationFrame(step); else { glide = null; done?.(); }
+    };
+    g.raf = requestAnimationFrame(step);
+  };
+  // Near the end of a cover, a pause settles it the way the reader was going. The middle is left alone.
+  const snap = () => {
+    if (rest || glide) return;
+    for (const [k, el] of leaves.entries()) {
+      const t = el.getBoundingClientRect().top;
+      if (t <= headH + 1 || t >= innerHeight) continue;
+      const p = (innerHeight - t) / (innerHeight - headH);
+      if (lastDir > 0 && p >= .78) glideTo(anchors[k], 380, () => { rest = { y: anchors[k], dir: 1, s: hold(performance.now()) }; });
+      else if (lastDir < 0 && p <= .18) glideTo(anchors[k] - (innerHeight - headH), 380);
+      return;
+    }
+  };
+  addEventListener('wheel', e => {
+    if (reduce || e.ctrlKey || agentMode() || sheet.open || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    const now = performance.now(), inp = readWheel(e, now);
+    if (!inp.raw) return;
+    clearTimeout(snapT);
+    lastDir = Math.sign(inp.raw);
+    if (rest && !glide && Math.abs(scrollY - rest.y) > 4) rest = null;
+    if (rest) {
+      if (lastDir !== rest.dir) { rest = null; stop(); }
+      else {
+        e.preventDefault();
+        const go = consume(rest.s, inp.delta, now, inp.kind);
+        if (go) { const from = rest.y; rest = null; glideTo(from + go, 110); }
+        return;
+      }
+    }
+    const y = glide ? glide.to : scrollY, cp = checkpoint(y, inp.raw);
+    if (cp !== null) {
+      e.preventDefault();
+      glideTo(cp, 140);
+      rest = { y: cp, dir: lastDir, s: hold(now) };
+      return;
+    }
+    if (glide) {
+      // Wheel notches add to the glide; a continuous stream (trackpad) takes over natively instead of restarting it every event.
+      if (inp.kind === 'pulse') { e.preventDefault(); glideTo(y + inp.delta, 110); return; }
+      stop();
+    }
+    snapT = setTimeout(snap, 170);
+  }, { passive: false });
+  for (const type of ['pointerdown', 'keydown', 'touchstart'])
+    addEventListener(type, () => { stop(); clearTimeout(snapT); rest = null; }, { passive: true });
+
+  // Project sheet: the screenshots of a project, larger, with its fold-out detail.
+  const sheet = document.getElementById('sheet'), sheetIn = document.getElementById('sheet-in');
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
+  const outsideMore = (leaf, sel) => [...leaf.querySelectorAll(sel)].find(n => !n.closest('.more, .app'));
+  const openSheet = (leaf, btn) => {
+    document.getElementById('sheet-no').textContent = leaf.querySelector('.ch-head .no').textContent;
+    document.getElementById('sheet-h').textContent = leaf.querySelector('.ch-head h2').textContent;
+    const more = leaf.querySelector('.more-in');
+    const top = el('div', 'sheet-top');
+    for (const n of [leaf.querySelector('.ch-head .meta'), leaf.querySelector('.say'), more && outsideMore(leaf, '.links'), more && outsideMore(leaf, '.stack')])
+      if (n) top.append(n.cloneNode(true));
+    const shots = el('div', 'sheet-shots');
+    let target;
+    const apps = [...leaf.querySelectorAll('.app')];
+    for (const g of apps.length ? apps : [leaf]) {
+      const grp = el('section', 'grp'), wide = el('div'), tall = el('div', 'row');
+      if (g !== leaf) grp.append(el('h3', '', g.querySelector('h3').textContent));
+      for (const fig of g.querySelectorAll('.shot')) {
+        const img = fig.querySelector('img').cloneNode();
+        img.loading = 'eager';
+        const f = el('figure', 'shot'), frame = el('span', 'frame');
+        frame.append(img);
+        f.append(frame, fig.querySelector('figcaption').cloneNode(true));
+        (+img.getAttribute('height') > +img.getAttribute('width') ? tall : wide).append(f);
+        if (fig.contains(btn)) target = f;
+      }
+      grp.append(wide, tall);
+      if (g !== leaf) for (const n of g.querySelectorAll('.links')) grp.append(n.cloneNode(true));
+      shots.append(grp);
+    }
+    // Chapters without a fold-out bring their own text along instead.
+    const tail = more ? more.cloneNode(true) : leaf.querySelector('.body')?.cloneNode(true);
+    sheetIn.replaceChildren(...[top, shots, tail].filter(n => n && n.childElementCount));
+    sheet.showModal();
+    sheet.scrollTop = 0;
+    if (target && target !== shots.querySelector('.shot')) target.scrollIntoView({ block: 'center' });
+  };
+  for (const btn of document.querySelectorAll('.projects button.frame')) {
+    const leaf = btn.closest('.ch');
+    btn.setAttribute('aria-haspopup', 'dialog');
+    btn.setAttribute('aria-label', leaf.querySelector('.ch-head h2').textContent + ' 자세히 보기');
+    btn.addEventListener('click', () => openSheet(leaf, btn));
+  }
+  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
+
+  // Agent edition: the same facts as structured text, decoded in place line by line.
   const data = JSON.parse(document.getElementById('profile-data').textContent);
   const out = document.getElementById('agent-out');
   const render = (v, pad = '') => {
@@ -716,22 +1022,107 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   const text = 'AGENT://JASON  edition=2026  transport=html  verify=required\n'
     + '# 사람용 판본과 같은 사실을 구조화한 것. 원본 JSON은 이 페이지의 #profile-data에 있음.\n'
     + render(data) + '\n\nACK :: transmission_complete';
-  const glyphs = '01ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎ{}[]:/<>=_';
-  let raf;
-  const decode = () => {
-    cancelAnimationFrame(raf);
-    if (reduce) { out.textContent = text; return; }
-    const t0 = performance.now(), dur = 900;
-    const frame = now => {
-      const p = Math.min(1, (now - t0) / dur), cut = Math.floor(text.length * p);
-      let s = text.slice(0, cut);
-      for (let j = cut; j < Math.min(text.length, cut + 240); j++)
-        s += text[j] === '\n' || text[j] === ' ' ? text[j] : glyphs[(Math.random() * glyphs.length) | 0];
-      out.textContent = s;
-      if (p < 1) raf = requestAnimationFrame(frame);
-    };
-    raf = requestAnimationFrame(frame);
+  const esc = c => c === '<' ? '&lt;' : c === '&' ? '&amp;' : c;
+  const wideRe = /[ᄀ-ᇿ㄰-㆏가-힣一-鿿＀-￯]/;
+  const rows = text.split('\n').map(r => {
+    const chars = [...r];
+    let tone = () => '';
+    if (r.startsWith('AGENT://') || r.startsWith('ACK')) tone = () => 'h';
+    else if (r.startsWith('#')) tone = () => 'c';
+    else {
+      const m = r.match(/^(\s*(?:- )?)([^:\s][^:]*):(?=\s|$)/);
+      if (m) tone = j => j >= m[1].length && j <= m[1].length + m[2].length ? 'k' : '';
+    }
+    return { chars, tones: chars.map((_, j) => tone(j)), jitter: hash(r) % 1000 / 1000 * .06 };
+  });
+  // Rows start in reading order across one screenful; lines further down share the last start.
+  const paintAgent = p => {
+    const vis = Math.max(8, Math.ceil(innerHeight / 25));
+    let html = '';
+    rows.forEach(({ chars, tones, jitter }, i) => {
+      const s = Math.min(i, vis) / vis * .5 + jitter;
+      let run = '', cls = null;
+      const flush = () => { if (run) html += cls ? `<span class="${cls}">${run}</span>` : run; run = ''; };
+      chars.forEach((c, j) => {
+        const q = p >= 1 ? 1 : clamp((p - s - j / Math.max(1, chars.length) * .18) / .24);
+        let k, g = esc(c);
+        if (c === ' ' || q > .72) k = tones[j];
+        else if (q <= 0) k = 'gh';
+        else { k = wideRe.test(c) ? 'nz w' : 'nz'; g = noise(j, i, Math.floor(q * 8)); }
+        if (k !== cls || k === 'nz w') { flush(); cls = k; }
+        run += g;
+      });
+      flush();
+      if (i < rows.length - 1) html += '\n';
+    });
+    out.innerHTML = html;
   };
+  let decodeRaf;
+  const play = (from, to, dur, done) => {
+    cancelAnimationFrame(decodeRaf);
+    const t0 = performance.now();
+    const step = now => {
+      const k = clamp((now - t0) / dur);
+      paintAgent(from + (to - from) * k);
+      if (k < 1) decodeRaf = requestAnimationFrame(step); else done?.();
+    };
+    decodeRaf = requestAnimationFrame(step);
+  };
+
+  // Background rain: a few short streams in the margins, drawn at most 24 times a second, only while the agent edition shows.
+  const rain = document.getElementById('rain'), rc = rain.getContext('2d');
+  let drops = [], cell = 9, rainRaf, lastDraw = 0, textBox = [0, 0];
+  const sizeRain = () => {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    rain.width = innerWidth * dpr; rain.height = innerHeight * dpr;
+    rc.setTransform(dpr, 0, 0, dpr, 0, 0);
+    rc.font = '14px ' + getComputedStyle(out).fontFamily;
+    rc.textBaseline = 'top';
+    cell = rc.measureText('M').width + 2;
+    const r = out.getBoundingClientRect();
+    textBox = [r.left - 20, r.left + Math.min(r.width, out.scrollWidth) + 20];
+    drops = [];
+  };
+  const spawn = (scatter = false) => {
+    const cols = Math.floor(innerWidth / cell), margin = [];
+    for (let c = 0; c < cols; c++) { const x = c * cell; if (x < textBox[0] || x > textBox[1]) margin.push(c); }
+    const pool = margin.length >= 8 ? margin : [...Array(cols).keys()];
+    const col = pool[(Math.random() * pool.length) | 0];
+    // The first set is spread over the screen so the streams don't all start at the top together.
+    return { col, y: scatter ? Math.random() * innerHeight / 18 : -Math.random() * 20, speed: 7 + Math.random() * 9, len: 8 + ((Math.random() * 14) | 0), dim: col * cell > textBox[0] && col * cell < textBox[1] };
+  };
+  const drawRain = now => {
+    rainRaf = requestAnimationFrame(drawRain);
+    if (now - lastDraw < 41) return;
+    const dt = Math.min(.1, (now - lastDraw) / 1000);
+    lastDraw = now;
+    const want = innerWidth > 1100 ? 6 : innerWidth > 700 ? 4 : 3;
+    const first = !drops.length;
+    while (drops.length < want) drops.push(spawn(first));
+    rc.clearRect(0, 0, innerWidth, innerHeight);
+    const rowH = 18, tick = Math.floor(now / 240);
+    drops.forEach((d, n) => {
+      d.y += d.speed * dt;
+      const headRow = Math.floor(d.y), base = d.dim ? .16 : .6;
+      for (let t = 0; t < d.len; t++) {
+        const row = headRow - t;
+        if (row < 0) continue;
+        const a = base * (1 - t / d.len) ** 1.6;
+        rc.fillStyle = t === 0 ? `rgba(214,255,224,${Math.min(1, a * 1.5)})` : `rgba(63,191,102,${a})`;
+        rc.fillText(noise(d.col, row, row % 3 ? tick : 0), d.col * cell, row * rowH);
+      }
+      if ((headRow - d.len) * rowH > innerHeight) drops[n] = spawn();
+    });
+  };
+  const runRain = on => {
+    cancelAnimationFrame(rainRaf);
+    if (!on || reduce || document.hidden) { rc.clearRect(0, 0, rain.width, rain.height); return; }
+    sizeRain();
+    lastDraw = performance.now();
+    rainRaf = requestAnimationFrame(drawRain);
+  };
+  document.addEventListener('visibilitychange', () => runRain(agentMode()));
+  addEventListener('resize', () => { if (agentMode()) runRain(true); });
 
   // Both switches open the new state as a circle growing from the button pressed.
   const reveal = (btn, update) => {
@@ -758,16 +1149,25 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   syncTheme();
 
   const bHuman = document.getElementById('m-human'), bAgent = document.getElementById('m-agent');
+  let leaving = false;
   const set = (mode, animate) => {
     root.dataset.edition = mode;
     bHuman.setAttribute('aria-pressed', mode === 'human');
     bAgent.setAttribute('aria-pressed', mode === 'agent');
-    if (mode === 'agent') { animate ? decode() : (out.textContent = text); scrollTo({ top: 0 }); }
+    if (mode === 'agent') {
+      if (animate && !reduce) { paintAgent(0); play(0, 1, 1200); } else out.textContent = text;
+      scrollTo({ top: 0, behavior: 'instant' });
+    } else cancelAnimationFrame(decodeRaf);
+    runRain(mode === 'agent');
     try { localStorage.setItem('edition', mode); } catch {}
   };
   const go = (mode, btn) => {
-    if (root.dataset.edition === mode || (!root.dataset.edition && mode === 'human')) return;
-    reveal(btn, () => set(mode, true));
+    if (leaving || root.dataset.edition === mode || (!root.dataset.edition && mode === 'human')) return;
+    if (mode === 'human' && !reduce) {
+      // Leaving: the terminal text breaks back into noise, then the paper edition opens.
+      leaving = true;
+      play(1, 0, 420, () => { leaving = false; reveal(btn, () => set('human')); });
+    } else reveal(btn, () => set(mode, true));
   };
   bHuman.addEventListener('click', () => go('human', bHuman));
   bAgent.addEventListener('click', () => go('agent', bAgent));
