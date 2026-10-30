@@ -11,7 +11,7 @@
 try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
 </script>
 <style>
-/* Layout: a quiet printed edition on screen. One paper colour, chapters separated by space; details fold away. */
+/* Layout: one screen per scene. Each scene is lit by soft colour fields in its project's hue; text sits on frosted glass. */
 @font-face{font-family:"Maru Buri";font-weight:400;font-display:swap;src:url("fonts/MaruBuri-Regular.woff2") format("woff2")}
 @font-face{font-family:"Maru Buri";font-weight:600;font-display:swap;src:url("fonts/MaruBuri-SemiBold.woff2") format("woff2")}
 @font-face{font-family:"Maru Buri";font-weight:700;font-display:swap;src:url("fonts/MaruBuri-Bold.woff2") format("woff2")}
@@ -20,221 +20,252 @@ try { const t = localStorage.getItem('theme'); if (t) document.documentElement.d
 
 :root{
   color-scheme:light dark;
-  --ink:light-dark(#000,#fff);              /* pure black or white, never tinted */
-  --ink-2:light-dark(#5a5a5a,#a3a3a3);      /* dates, captions */
-  --paper:light-dark(#fff,#000);
-  --hair:light-dark(#d6d6d6,#333);          /* the one quiet divider */
-  --frame:light-dark(rgb(0 0 0/.12),rgb(255 255 255/.18));
+  --ink:light-dark(#16151d,#f5f4fa);
+  --ink-2:light-dark(#5c5b68,#aaa9b8);
+  --paper:light-dark(#f4f3f8,#0c0b12);
+  --hair:light-dark(rgb(22 21 29/.12),rgb(245 244 250/.14));
+  --glass:light-dark(rgb(255 255 255/.55),rgb(255 255 255/.07));
+  --glass-2:light-dark(rgb(255 255 255/.3),rgb(255 255 255/.025));
+  --edge:light-dark(rgb(255 255 255/.85),rgb(255 255 255/.15));
+  --shadow:light-dark(rgb(40 30 80/.14),rgb(0 0 0/.45));
+  --acc:var(--ink);
+  --blur:blur(24px) saturate(170%);
   --serif:"Maru Buri","Noto Serif KR","Nanum Myeongjo",serif;
   --sans:"Wanted Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace;
-  --gutter:clamp(16px,5vw,72px);
+  --gutter:clamp(16px,4.5vw,64px);
   --max:1240px;
   --measure:34em;
 }
 :root[data-theme="light"]{color-scheme:light}
 :root[data-theme="dark"]{color-scheme:dark}
 @supports not (color:light-dark(#000,#fff)){
-  :root{--ink:#000;--ink-2:#5a5a5a;--paper:#fff;--hair:#d6d6d6;--frame:rgb(0 0 0/.12)}
-  .projects{--brown-1:#4a3427;--brown-2:#5a3f2e}
+  :root{--ink:#16151d;--ink-2:#5c5b68;--paper:#f4f3f8;--hair:rgb(22 21 29/.12);--glass:rgb(255 255 255/.55);--glass-2:rgb(255 255 255/.3);--edge:rgb(255 255 255/.85);--shadow:rgb(40 30 80/.14)}
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;scroll-padding-top:var(--head,80px);background:var(--paper)}
-body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.7 var(--sans);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth;scroll-padding-top:var(--head,64px);background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16.5px/1.65 var(--sans);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.25em}
 a:hover{text-decoration-thickness:2px}
-:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
 img{display:block;max-width:100%;height:auto}
-h1,h2,h3,h4{font-family:var(--serif);font-weight:600;margin:0;text-wrap:balance;line-height:1.25}
+h1,h2,h3,h4,h5{font-family:var(--serif);font-weight:600;margin:0;text-wrap:balance;line-height:1.25}
 p{margin:0;text-wrap:pretty}
-time,.no,.toc .n{font-variant-numeric:tabular-nums}
+time,.no{font-variant-numeric:tabular-nums}
 .wrap{padding-inline:var(--gutter)}
 .wrap>*{max-width:var(--max);margin-inline:auto}
 
-/* running head: sticky, gains a hairline once the page moves */
-.head{position:sticky;top:0;z-index:10;background:var(--paper);border-bottom:1px solid var(--hair);
-  padding-block:calc(env(safe-area-inset-top,0px) + 14px) 14px;font-size:14px}
+/* glass: a frosted pane with a bright top edge; the scene's colour shows through it */
+.glass{background:linear-gradient(150deg,var(--glass),var(--glass-2));border:1px solid var(--edge);border-radius:22px;
+  box-shadow:inset 0 1px 0 var(--edge),0 24px 48px -30px var(--shadow);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+
+/* scene tone: every colour of a scene comes from its hue pair, in both themes */
+.tone{--h:270;--h2:200;
+  --ink:light-dark(oklch(24% .035 var(--h)),oklch(97% .014 var(--h)));
+  --ink-2:light-dark(oklch(43% .05 var(--h)),oklch(81% .04 var(--h)));
+  --acc:light-dark(oklch(47% .16 var(--h)),oklch(84% .12 var(--h)));
+  --hair:light-dark(oklch(30% .05 var(--h)/.14),oklch(97% .02 var(--h)/.16));
+  --bg:light-dark(oklch(95% .028 var(--h)),oklch(19% .045 var(--h)));
+  --orb1:light-dark(oklch(80% .13 var(--h)/.85),oklch(48% .15 var(--h)/.8));
+  --orb2:light-dark(oklch(86% .1 var(--h2)/.75),oklch(42% .13 var(--h2)/.75));
+  --shadow:light-dark(oklch(40% .09 var(--h)/.18),rgb(0 0 0/.45));
+  position:relative;isolation:isolate;overflow:clip;background:var(--bg);color:var(--ink)}
+.tone::before{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;
+  background:radial-gradient(34% 44% at 14% 20%,var(--orb1),transparent 70%),radial-gradient(36% 46% at 88% 26%,var(--orb2),transparent 70%),
+    radial-gradient(40% 40% at 62% 96%,var(--orb1),transparent 70%),radial-gradient(26% 30% at 40% 52%,var(--orb2),transparent 72%)}
+.tone ::selection{background:var(--acc);color:var(--bg)}
+@supports not (color:light-dark(#000,#fff)){
+  .tone{--ink:oklch(24% .035 var(--h));--ink-2:oklch(43% .05 var(--h));--acc:oklch(47% .16 var(--h));--bg:oklch(95% .028 var(--h));--orb1:oklch(80% .13 var(--h)/.85);--orb2:oklch(86% .1 var(--h2)/.75)}
+}
+
+/* Beorimi: neon green on black in both themes */
+#beorimi{color-scheme:dark;--bg:oklch(12.5% .018 150);--ink:oklch(97% .02 140);--ink-2:oklch(80% .06 140);--acc:oklch(89% .24 138);
+  --orb1:oklch(78% .25 140/.42);--orb2:oklch(58% .2 155/.4);--hair:oklch(89% .24 138/.2)}
+#beorimi .frame img{background:#000}
+#beorimi .next{border-color:oklch(89% .24 138/.6)}
+#beorimi .next:hover{background:oklch(89% .24 138/.18)}
+
+/* running head: a glass bar the scenes pass under */
+.head{position:sticky;top:0;z-index:10;background:light-dark(rgb(255 255 255/.5),rgb(14 13 20/.42));-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border-bottom:1px solid var(--hair);padding-block:calc(env(safe-area-inset-top,0px) + 12px) 12px;font-size:14px}
 .head-in{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
 .head .ed{font-family:var(--serif);font-weight:600;text-decoration:none;font-size:16px;justify-self:start}
 .head .now{font-family:var(--serif);color:var(--ink-2);white-space:nowrap;font-kerning:none}
 /* running head label: while it changes, each letter keeps its own slot */
 .now i{display:inline-block;font-style:normal;text-align:center;white-space:pre}
 .now i.nz{font:400 .86em/1 var(--mono);color:var(--ink-2)}
-.ctl{justify-self:end;display:flex;gap:14px;padding:0 3px 3px 0}
-.keys{display:flex;gap:8px}
-/* square keys with a hard shade; pressing one sinks it into its shadow */
-.sq{all:unset;box-sizing:border-box;cursor:pointer;padding:4px 12px;border:1px solid var(--ink);border-radius:3px;
-  background:var(--paper);color:var(--ink);font:600 13px/1.45 var(--sans);box-shadow:3px 3px 0 var(--shade,var(--ink));
-  transition:transform .14s cubic-bezier(.2,.7,.2,1),box-shadow .14s cubic-bezier(.2,.7,.2,1),background-color .14s}
-.sq:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--shade,var(--ink))}
-.sq:active,.sq[aria-pressed="true"]{transform:translate(3px,3px);box-shadow:0 0 0 var(--shade,var(--ink))}
-.sq[aria-pressed="true"]{background:var(--ink);color:var(--paper);cursor:default}
+.ctl{justify-self:end;display:flex;gap:12px}
+.keys{display:flex;gap:6px}
+/* glass pills; the pressed one fills with ink */
+.sq{all:unset;box-sizing:border-box;cursor:pointer;padding:5px 13px;border:1px solid var(--edge);border-radius:999px;
+  background:var(--glass);color:var(--ink);font:600 13px/1.45 var(--sans);box-shadow:inset 0 1px 0 var(--edge);
+  transition:background-color .2s,color .2s,transform .14s cubic-bezier(.2,.7,.2,1)}
+.sq:hover{background:light-dark(rgb(255 255 255/.8),rgb(255 255 255/.14))}
+.sq:active{transform:scale(.96)}
+.sq[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);cursor:default}
 .sq:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
-@supports (animation-timeline:scroll()){
-  .head{animation:edge linear both;animation-timeline:scroll();animation-range:0 64px}
-  @keyframes edge{from{border-bottom-color:transparent}}
-}
 
-/* cover */
-.cover{padding-block:clamp(80px,12vw,168px) clamp(64px,8vw,112px)}
-.name{font:700 clamp(4.5rem,13vw,11rem)/.9 var(--serif);letter-spacing:-.035em;margin-left:-.05em}
+/* cover: name, who, and the way in, all on the first screen */
+.cover{--h:285;--h2:160;min-height:calc(100svh - var(--head,56px));display:grid;align-items:center;padding:clamp(28px,5svh,64px) var(--gutter)}
+.cover::before{background:
+  radial-gradient(30% 40% at 10% 16%,light-dark(oklch(82% .12 160/.8),oklch(46% .13 160/.7)),transparent 70%),
+  radial-gradient(28% 38% at 36% 88%,light-dark(oklch(84% .11 40/.75),oklch(48% .13 40/.6)),transparent 70%),
+  radial-gradient(32% 42% at 70% 18%,light-dark(oklch(80% .12 285/.8),oklch(44% .15 285/.75)),transparent 70%),
+  radial-gradient(30% 40% at 94% 80%,light-dark(oklch(84% .1 255/.75),oklch(42% .13 255/.7)),transparent 70%)}
+.cover-in{width:min(var(--max),100%);margin-inline:auto;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(28px,5vw,88px);align-items:center}
+.name{font:700 clamp(4rem,min(12vw,19svh),10.5rem)/.9 var(--serif);letter-spacing:-.035em;margin-left:-.05em}
 .name .mask{display:inline-flex;overflow:hidden;padding:.06em .04em .22em;margin:-.06em -.04em -.22em}
 .name .cap{position:relative}
 .name .int{position:absolute;inset:0 auto auto 0;opacity:0;transform:translateX(-.3em)}
 .name .j,.name .l{display:inline-block}
-.role{font:400 clamp(1.35rem,2.4vw,2rem)/1.4 var(--serif);margin-top:28px}
-.cover-foot{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:48px 96px;margin-top:64px;align-items:start}
-.lede{font:400 clamp(1.15rem,1.7vw,1.4rem)/1.6 var(--serif);max-width:22em}
-.intro p{max-width:28em}
-.intro p+p{margin-top:16px}
-.intro .lede+p{margin-top:28px}
-.reach{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:40px;font-size:15px}
-.note{font-size:14px;color:var(--ink-2);margin-top:20px}
-.toc-label,.k{font-size:14px;color:var(--ink-2);margin-bottom:12px}
+.role{font:400 clamp(1.2rem,min(2.2vw,3.6svh),1.85rem)/1.4 var(--serif);margin-top:clamp(12px,2.4svh,24px);color:var(--acc)}
+.intro{margin-top:clamp(20px,4svh,44px)}
+.intro p{max-width:30em}
+.intro p+p{margin-top:12px}
+.lede{font:400 clamp(1.1rem,min(1.6vw,2.8svh),1.35rem)/1.55 var(--serif)}
+.intro .lede+p{margin-top:clamp(12px,2svh,20px)}
+.reach{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:clamp(16px,3svh,28px);font-size:15px}
+.note{font-size:14px;color:var(--ink-2);margin-top:clamp(10px,2svh,18px)}
+.cover-side{display:grid;gap:clamp(12px,2svh,20px)}
+.cover-side>.glass{padding:clamp(14px,2.4svh,24px) clamp(18px,2vw,28px)}
+.k{font-size:14px;color:var(--ink-2);margin-bottom:8px}
 .toc{list-style:none;margin:0;padding:0;display:grid}
-.toc a{text-decoration:none;display:grid;grid-template-columns:2.6em 1fr auto;align-items:baseline;padding-block:11px;border-top:1px solid var(--hair);font:400 1.15rem/1.4 var(--serif)}
-.toc li:last-child a{border-bottom:1px solid var(--hair)}
-.toc .n,.toc .y{color:var(--ink-2);font-size:14px}
+.toc a{text-decoration:none;display:grid;grid-template-columns:2.4em 1fr auto;align-items:baseline;padding-block:clamp(6px,1.25svh,11px);font:400 1.1rem/1.4 var(--serif)}
+.toc li+li a{border-top:1px solid var(--hair)}
+.toc .n,.toc .y{color:var(--ink-2);font-size:13.5px;font-variant-numeric:tabular-nums}
 .toc .t{transition:transform .25s cubic-bezier(.2,.7,.2,1)}
 .toc a:hover .t{transform:translateX(6px)}
+.news h2{font:400 14px/1.6 var(--sans);color:var(--ink-2)}
+.news ol{list-style:none;margin:0;padding:0;display:grid;gap:clamp(6px,1.2svh,12px)}
+.news li{display:grid;grid-template-columns:6.6em minmax(0,1fr);gap:14px;font-size:15px}
+.news time{font-family:var(--serif);color:var(--acc)}
 
-/* recent news */
-.news{padding-block:0}
-.news-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:24px 48px}
-.news h2{font-size:1.35rem}
-.news ol{list-style:none;margin:0;padding:0;display:grid;gap:18px}
-.news li{display:grid;grid-template-columns:8.5em minmax(0,1fr);gap:24px}
-.news time{font-family:var(--serif);color:var(--ink-2)}
-
-/* chapters */
-.ch{padding-top:clamp(72px,9vw,128px)}
-.ch-in{border-top:1px solid var(--ink);padding-top:28px}
-.ch-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 32px;align-items:baseline}
-.ch-head .no{font-family:var(--serif);color:var(--ink-2);font-size:15px;grid-column:1/-1}
-.ch-head h2{font-size:clamp(2.2rem,4.6vw,3.6rem);letter-spacing:-.015em}
-.meta{display:flex;flex-wrap:wrap;gap:2px 0;color:var(--ink-2);font-size:15px;margin-top:6px;grid-column:1/-1}
+/* project scenes: stacked in order, each slides up over the one before and fills exactly one screen */
+.ch{display:grid;grid-template-rows:auto minmax(0,1fr);gap:clamp(12px,2.2svh,24px);padding-block:clamp(18px,3.4svh,40px) clamp(16px,3svh,36px)}
+.projects .ch{position:sticky;top:var(--head,56px);height:calc(100svh - var(--head,56px));border-radius:28px 28px 0 0}
+.projects .ch+.ch{box-shadow:0 -28px 56px -24px rgb(0 0 0/.4)}
+.projects .ch::after{content:"";position:absolute;inset:0;background:#000;opacity:calc(var(--cover,0) * .38);pointer-events:none}
+.ch-head{width:min(var(--max),calc(100% - 2 * var(--gutter)));margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 32px;align-items:end}
+.ch-head .no{font-family:var(--serif);color:var(--acc);font-size:15px;display:block;margin-bottom:2px}
+.ch-head h2{font-size:clamp(1.8rem,min(3.6vw,6svh),3.1rem);letter-spacing:-.015em}
+.meta{display:flex;flex-wrap:wrap;gap:2px 0;color:var(--ink-2);font-size:14.5px;margin-top:4px}
 .meta span:not(:last-child)::after,.app .facts span:not(:last-child)::after{content:"/";padding-inline:.6em;color:var(--hair)}
-.say{font:400 clamp(1.3rem,2.2vw,1.75rem)/1.5 var(--serif);max-width:26em;margin-top:clamp(36px,5vw,56px)}
-.body{max-width:var(--measure)}
-.body p+p{margin-top:1em}
-.split{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,5vw,72px);margin-top:clamp(36px,5vw,56px);align-items:start}
-.split.flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
-.cols2{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 40px;margin-top:40px}
-.cols2 .aside{color:var(--ink-2)}
-.sub-h{font-size:1.2rem;margin-bottom:8px}
-.with{margin-top:28px}
-.links{display:flex;flex-wrap:wrap;gap:6px 24px;margin-top:28px;font-size:15px}
-.stack{font-size:14px;color:var(--ink-2);margin-top:10px}
-.private{color:var(--ink-2)}
 
-/* screenshots: a hairline edge, no device frames; the edge answers when the shot is a link */
-.shot{margin:0;min-width:0}
-.frame{display:block;border:1px solid var(--frame);border-radius:6px;overflow:hidden;background:#fff;transition:border-color .2s}
-.shot:has(.frame:hover) .frame{border-color:var(--ink)}
-.shot:has(.frame:hover) figcaption{color:var(--ink)}
-/* screenshots open the project sheet; a small square label says so */
-button.frame{appearance:none;width:100%;padding:0;font:inherit;color:inherit;text-align:left;cursor:zoom-in;position:relative}
-button.frame::after{content:"자세히 보기";position:absolute;right:10px;bottom:10px;padding:3px 9px;border-radius:3px;
-  background:rgb(28 18 12/.82);color:#f3ebdf;font:600 12.5px/1.4 var(--sans);box-shadow:2px 2px 0 rgb(0 0 0/.35);
+/* tabs: the panes of a project, a glass pill follows the swipe */
+.tabs{position:relative;display:flex;gap:2px;padding:4px;border-radius:999px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{all:unset;position:relative;z-index:1;cursor:pointer;padding:6px 14px;border-radius:999px;font:600 13.5px/1.35 var(--sans);color:var(--ink-2);white-space:nowrap;transition:color .2s}
+.tabs button:hover,.tabs button[aria-selected="true"]{color:var(--ink)}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.tabs .pill{position:absolute;top:4px;bottom:4px;left:0;border-radius:999px;background:light-dark(rgb(255 255 255/.9),rgb(255 255 255/.17));
+  box-shadow:inset 0 1px 0 var(--edge),0 4px 14px -6px var(--shadow);pointer-events:none}
+
+/* track: panes side by side; swipe, drag, the tabs or the keys move between them */
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;min-height:0}
+.track::-webkit-scrollbar{display:none}
+@media (hover:hover) and (pointer:fine){.track{cursor:grab}}
+.track.dragging{scroll-snap-type:none;cursor:grabbing;user-select:none}
+.track.dragging *{pointer-events:none}
+.pane{flex:0 0 100%;min-width:0;min-height:0;scroll-snap-align:start;scroll-snap-stop:always;display:grid;align-content:center;overflow-y:auto;scrollbar-width:none;padding:2px var(--gutter) 6px}
+.pane::-webkit-scrollbar{display:none}
+.pane>*{width:min(var(--max),100%);margin-inline:auto}
+.pane-h{font:600 clamp(1.2rem,min(2vw,3.4svh),1.6rem)/1.3 var(--serif);margin-bottom:clamp(10px,2svh,20px)}
+.pane-h+.lead{margin-top:calc(-1 * clamp(4px,1svh,10px))}
+.lead{max-width:44em;margin-bottom:clamp(12px,2.2svh,22px)}
+
+/* summary pane: glass text card beside the screenshots */
+.duo{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(20px,3.6vw,56px);align-items:center}
+.duo.flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.duo.flip>.card{order:2}
+.card{padding:clamp(18px,3svh,32px) clamp(20px,2.4vw,34px)}
+.card p+p,.card p+.with{margin-top:.8em}
+.say{font:400 clamp(1.12rem,min(1.8vw,3svh),1.5rem)/1.5 var(--serif);margin-bottom:clamp(10px,2svh,18px)}
+.sub-h{font-size:1.1rem;margin-bottom:4px}
+.with{margin-top:clamp(12px,2.2svh,20px)}
+.links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px;margin-top:clamp(12px,2.2svh,20px);font-size:15px}
+.stack{font-size:13.5px;color:var(--ink-2);margin-top:8px}
+.private{color:var(--ink-2)}
+.next{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:clamp(14px,2.6svh,24px);padding:7px 14px 7px 16px;border-radius:999px;
+  border:1px solid var(--edge);background:light-dark(rgb(255 255 255/.7),rgb(255 255 255/.12));font:600 14px/1.3 var(--sans);color:var(--ink);box-shadow:inset 0 1px 0 var(--edge);
+  transition:background-color .2s,gap .25s cubic-bezier(.2,.7,.2,1)}
+.next svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.next:hover{gap:10px;background:light-dark(rgb(255 255 255/.92),rgb(255 255 255/.2))}
+.next:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;margin-top:clamp(12px,2.4svh,24px)}
+.foot .next,.foot .stack{margin-top:0}
+
+/* screenshots: a glass bezel; the image shrinks to the room the screen has left */
+.shot{margin:0;min-width:0;display:grid;justify-items:center}
+.frame{display:block;max-width:100%;padding:6px;border:1px solid var(--edge);border-radius:18px;background:var(--glass);box-shadow:inset 0 1px 0 var(--edge),0 30px 60px -34px var(--shadow);
+  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.frame img{border-radius:12px;background:#fff}
+button.frame{appearance:none;font:inherit;color:inherit;text-align:left;cursor:pointer;position:relative}
+button.frame:hover{transform:translateY(-3px)}
+button.frame::after{content:"자세히 보기";position:absolute;right:14px;bottom:14px;padding:4px 11px;border-radius:999px;border:1px solid var(--edge);
+  background:light-dark(rgb(255 255 255/.75),rgb(20 18 30/.6));color:var(--ink);font:600 12.5px/1.4 var(--sans);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
   opacity:0;translate:0 4px;transition:opacity .2s,translate .2s}
 button.frame:is(:hover,:focus-visible)::after{opacity:1;translate:0 0}
 @media (hover:none){button.frame::after{opacity:1;translate:0 0}}
-.shot figcaption{font-size:14px;color:var(--ink-2);margin-top:12px;transition:color .2s}
-.wide{margin-top:clamp(36px,5vw,56px)}
-.phones{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:clamp(12px,2vw,24px);align-items:start}
-.phones img{aspect-ratio:3/5;object-fit:cover;object-position:top}
+.shot figcaption{font-size:13.5px;color:var(--ink-2);margin-top:10px;text-align:center}
+.wide .frame img{max-height:calc(var(--room,70svh) - 54px);width:auto;max-width:100%}
+.phones{display:flex;justify-content:center;gap:clamp(10px,1.6vw,20px);align-items:start}
+.phones .shot{flex:1 1 0;max-width:calc((var(--room,70svh) - 60px) * .6)}
+.phones img{aspect-ratio:3/5;object-fit:cover;object-position:top;width:100%}
 
-/* fold-out detail: native details, height animated where the browser allows */
-.more{margin-top:clamp(48px,6vw,72px);border-top:1px solid var(--hair)}
-.more summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding-block:18px;font:400 1.1rem/1.4 var(--serif)}
-.more summary::-webkit-details-marker{display:none}
-.more summary::after{content:"+";font:400 1.5rem/1 var(--sans);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
-.more[open] summary::after{transform:rotate(45deg)}
-.more summary:hover span{text-decoration:underline;text-underline-offset:.25em}
-.more-in{display:grid;gap:clamp(48px,6vw,72px);padding-block:16px 8px}
-.h4{font-size:1.35rem;margin-bottom:20px}
+/* detail panes: glass tiles */
+.tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:clamp(10px,1.4vw,18px)}
+.tile{border-radius:18px;padding:clamp(14px,2.2svh,22px) clamp(16px,1.6vw,22px)}
+.tile dt,.tile h5,.tile b{display:block;font:600 1.05rem/1.4 var(--serif);margin-bottom:6px}
+.tile dd{margin:0}
+.tile dd,.tile p,.tile span{font-size:15px;line-height:1.6}
+.tile .lbl{display:block;font-size:12.5px;color:var(--acc);margin-top:10px;letter-spacing:.02em}
+.tile h5+.lbl{margin-top:0}
+.seq{counter-reset:s}
+.seq li{counter-increment:s}
+.seq li::before{content:counter(s,decimal-leading-zero);display:block;font:400 13px/1 var(--serif);color:var(--acc);margin-bottom:10px;font-variant-numeric:tabular-nums}
+.trouble-q{font:400 clamp(1.15rem,min(2vw,3.4svh),1.6rem)/1.45 var(--serif);max-width:28em;margin-bottom:clamp(12px,2.4svh,22px)}
+.scope{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 32px;padding:clamp(16px,2.6svh,26px) clamp(18px,2vw,26px)}
+.scope h4{font-size:1.1rem;margin-bottom:8px}
+.scope ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:15px}
+.split2{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:clamp(12px,1.6vw,20px);align-items:stretch}
+.flow{list-style:none;margin:clamp(14px,2.6svh,24px) 0 0;padding:clamp(14px,2.4svh,22px) clamp(16px,2vw,26px);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;counter-reset:f}
+.flow li{counter-increment:f;font-size:14.5px;line-height:1.5;padding-top:12px;border-top:2px solid var(--acc)}
+.flow li::before{content:counter(f,decimal-leading-zero);display:block;font-family:var(--serif);color:var(--acc);margin-bottom:4px}
 
-.did{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 48px;margin:0}
-.did dt{font-family:var(--serif);font-weight:600;font-size:1.1rem;line-height:1.4}
-.did dd{margin:6px 0 0}
-
-.decide article{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr);gap:16px 40px;padding-block:24px;border-top:1px solid var(--hair)}
-.decide h5,.cols3 h5{grid-column:1/-1;font:600 1.15rem/1.4 var(--serif);margin:0}
-.lbl{font-size:13px;color:var(--ink-2);display:block;margin-bottom:2px}
-
-.seq{list-style:none;margin:0;padding:0;counter-reset:s}
-.seq li{counter-increment:s;display:grid;grid-template-columns:3.5em minmax(0,9em) minmax(0,1fr);gap:20px;padding-block:18px;border-top:1px solid var(--hair);align-items:baseline}
-.seq li::before{content:counter(s,decimal-leading-zero);font-family:var(--serif);color:var(--ink-2);font-variant-numeric:tabular-nums}
-.seq b{font-family:var(--serif);font-weight:600}
-.trouble-q{font:400 clamp(1.4rem,2.6vw,2rem)/1.4 var(--serif);max-width:22em;margin-bottom:24px}
-
-.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
-.cols3 p{font-size:15.5px}
-.cols3 .lbl{margin-top:12px}
-
-.flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));counter-reset:f}
-.flow li{counter-increment:f;padding:16px 16px 0 0;border-top:2px solid var(--ink);font-size:15px;line-height:1.5;position:relative}
-.flow li::before{content:counter(f,decimal-leading-zero);display:block;font-family:var(--serif);color:var(--ink-2);margin-bottom:6px}
-
-.scope{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 48px}
-.scope ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
-
-.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(48px,6vw,96px);margin-top:clamp(36px,5vw,56px)}
-.app h3{font-size:clamp(1.5rem,2.4vw,2rem)}
-.app .facts{display:flex;flex-wrap:wrap;color:var(--ink-2);font-size:14px;margin-top:6px}
-.app .phones{--n:2;margin-block:28px}
-.app .body p+p{margin-top:12px}
+/* apps in toss: one glass card per app, each tinted with its own app */
+.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,2vw,28px);align-items:stretch}
+.app{--ah:45;padding:clamp(16px,2.6svh,26px) clamp(18px,2vw,28px);display:grid;align-content:start;
+  background:linear-gradient(150deg,light-dark(oklch(93% .06 var(--ah)/.75),oklch(46% .11 var(--ah)/.32)),var(--glass-2))}
+.app h3{font-size:clamp(1.25rem,min(2vw,3.4svh),1.6rem)}
+.app .facts{display:flex;flex-wrap:wrap;color:var(--ink-2);font-size:13.5px;margin-top:2px}
+.app .phones{margin-block:clamp(10px,2svh,18px)}
+.app .phones .shot{max-width:calc((var(--room,70svh) - 345px) * .6)}
+.app .body{font-size:15px}
+.app .body p+p{margin-top:6px}
+.app .links{margin-top:10px}
+.app .tiles{--cols:1;margin-top:10px;gap:clamp(10px,2svh,16px)}
+.app dl.tiles dt{font:600 1rem/1.4 var(--serif)}
+.app dl.tiles dd{margin:2px 0 0;font-size:14.5px}
 
 /* recent work */
-.own{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:56px 72px;margin-top:clamp(36px,5vw,56px)}
-.own h3{font-size:clamp(1.4rem,2.2vw,1.8rem);font-weight:400;margin-bottom:12px}
-.own .links{margin-top:16px}
-.also{margin-top:clamp(56px,7vw,88px)}
-.also ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 72px}
-.also b{font-family:var(--serif);font-weight:600;margin-right:.5em}
+.own{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.6vw,22px);align-items:stretch}
+.own section{padding:clamp(18px,3svh,30px) clamp(18px,2vw,28px)}
+.own h3{font-size:clamp(1.3rem,min(2.1vw,3.6svh),1.7rem);font-weight:600;margin-bottom:10px}
+.own p{font-size:15.5px}
+.own .links{margin-top:14px}
+.also b{display:block}
 
 /* contact */
-.contact{padding-block:clamp(72px,9vw,128px) 40px}
-.contact .mail{display:inline-block;font:400 clamp(2rem,6.2vw,5.5rem)/1.05 var(--serif);letter-spacing:-.02em;text-decoration:none;word-break:break-all;margin-top:8px}
+.contact{--h:285;--h2:200;min-height:calc(100svh - var(--head,56px));display:grid;grid-template-rows:minmax(0,1fr) auto;padding:clamp(24px,5svh,56px) var(--gutter) 24px}
+.contact-in{align-self:center;width:min(var(--max),100%);margin-inline:auto;padding:clamp(24px,5svh,56px) clamp(22px,4vw,56px)}
+.contact .mail{display:inline-block;font:400 clamp(2rem,min(6.2vw,10svh),5.5rem)/1.05 var(--serif);letter-spacing:-.02em;text-decoration:none;word-break:break-all;margin-top:8px}
 .contact .mail:hover{text-decoration:underline;text-decoration-thickness:2px}
-.colophon{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:clamp(64px,8vw,112px);padding-top:20px;border-top:1px solid var(--hair);font-size:13px;color:var(--ink-2)}
-
-/* project stage: brown leaves stacked in order; each one slides up over the one before */
-.projects{--brown-1:light-dark(#4a3427,#2a1d15);--brown-2:light-dark(#5a3f2e,#35261b)}
-.projects .ch{position:sticky;top:var(--head,64px);min-height:calc(100svh - var(--head,64px));
-  padding-block:clamp(48px,6vw,88px) clamp(64px,8vw,112px);background:var(--brown-1);color:var(--ink);
-  --ink:#f3ebdf;--ink-2:#c7b59f;--hair:rgb(243 235 223/.2);--frame:rgb(243 235 223/.24);--rule:#c9a477}
-.projects .ch:nth-child(even){background:var(--brown-2)}
-.projects .ch+.ch{box-shadow:0 -28px 56px -24px rgb(0 0 0/.5)}
-.projects .ch::after{content:"";position:absolute;inset:0;background:#120a06;opacity:calc(var(--cover,0) * .5);pointer-events:none}
-.projects .ch-in{border-top-color:var(--rule)}
-.projects .ch-head .no{color:var(--rule)}
-.projects ::selection{background:#c9a477;color:#1d130d}
-
-/* project sheet: opens from the right over a dimmed page */
-.sheet{--pad:clamp(20px,4vw,48px);position:fixed;inset:0 0 0 auto;margin:0;padding:0;border:0;width:min(1040px,100vw);max-width:none;
-  height:100dvh;max-height:none;overflow:auto;overscroll-behavior:contain;background:var(--paper);color:var(--ink);box-shadow:-24px 0 64px rgb(0 0 0/.3)}
-.sheet::backdrop{background:rgb(24 14 8/.58);backdrop-filter:blur(2px)}
-.sheet-box{min-height:100%}
-.sheet-bar{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:16px;
-  padding:14px var(--pad) 17px;background:var(--paper);border-bottom:1px solid var(--hair)}
-.sheet-run{display:flex;gap:14px;align-items:baseline;font-family:var(--serif)}
-.sheet-run .no{color:var(--ink-2);font-size:15px}
-.sheet-h{font-weight:600;font-size:clamp(1.3rem,2.4vw,1.7rem)}
-.sheet-in{display:grid;gap:clamp(40px,5vw,64px);padding:clamp(28px,4vw,48px) var(--pad) 96px}
-.sheet-top .meta{margin-top:0}
-.sheet-top .say{margin-top:16px}
-.sheet-top .links{margin-top:20px}
-.sheet-shots{display:grid;gap:clamp(32px,4vw,48px)}
-.sheet-shots .grp{display:grid;gap:20px}
-.sheet-shots h3{font-size:1.35rem}
-.sheet-shots .row{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;align-items:start}
-.sheet-shots .grp>div:empty{display:none}
-.sheet .more-in{padding:0}
-html:has(.sheet[open]){overflow:hidden}
+.colophon{width:min(var(--max),100%);margin-inline:auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:16px;border-top:1px solid var(--hair);font-size:13px;color:var(--ink-2)}
 
 /* agent edition: the same facts as a terminal, green on black, with a slow rain in the margins */
-html[data-edition="agent"]{color-scheme:dark;--paper:#030a05;--ink:#c6f6d2;--ink-2:#5fae76;--hair:#16331f;--shade:#2f8a4a}
+html[data-edition="agent"]{color-scheme:dark;--paper:#030a05;--ink:#c6f6d2;--ink-2:#5fae76;--hair:#16331f;--glass:transparent;--edge:#2f8a4a}
+html[data-edition="agent"] .head{background:rgb(3 10 5/.8)}
+html[data-edition="agent"] .sq{border-radius:3px;box-shadow:none}
 .agent{display:none;position:relative;min-height:100svh;padding-block:56px 80px;font:400 14.5px/1.75 var(--mono)}
 .agent pre{position:relative;z-index:1;margin:0 0 0 max(0px,(100% - var(--max)) / 2);white-space:pre-wrap;word-break:break-word;font:inherit;max-width:92ch;
   color:#9fe0b0;text-shadow:0 0 6px rgb(80 220 120/.18);font-kerning:none;font-variant-ligatures:none}
@@ -250,63 +281,71 @@ html[data-edition="agent"] .agent,html[data-edition="agent"] .rain{display:block
 html[data-edition="agent"] .head .now{visibility:hidden}
 
 @media print{
-  .projects .ch{position:static;min-height:0;box-shadow:none}
-  .projects .ch::after,.sheet,.rain,button.frame::after{display:none}
+  .projects .ch{position:static;height:auto;box-shadow:none;border-radius:0}
+  .projects .ch::after,.rain,.tabs,.next,button.frame::after{display:none}
+  .track{display:block;overflow:visible}
+  .pane{display:block;overflow:visible;padding-block:12px}
 }
 
-/* motion: one load sequence on the cover, a slow settle for wide screenshots; everything rests visible */
+/* motion: one load sequence on the cover, colour fields that drift slowly; everything rests visible */
 @media (prefers-reduced-motion:no-preference){
   .name .l,.name .cap{animation:rise .9s cubic-bezier(.2,.75,0,1) both;animation-delay:calc(var(--i,0) * 70ms + 150ms)}
   .name .int{animation:int-out 1.9s cubic-bezier(.6,0,.2,1) both}
   .name .j{animation:j-in 1.9s cubic-bezier(.6,0,.2,1) both}
-  .role,.cover-foot>*{animation:settle .9s cubic-bezier(.2,.75,0,1) both;animation-delay:1.15s}
-  .cover-foot>nav{animation-delay:1.3s}
+  .role,.intro,.cover-side>*{animation:settle .9s cubic-bezier(.2,.75,0,1) both;animation-delay:1.15s}
+  .cover-side>*+*{animation-delay:1.3s}
   @keyframes rise{from{transform:translateY(105%)}}
   @keyframes int-out{0%,55%{opacity:1;transform:translateX(-.3em)}100%{opacity:0;transform:translateX(-.34em) rotate(-24deg)}}
   @keyframes j-in{0%,55%{opacity:0;transform:rotate(18deg);margin-right:.14em}100%{opacity:1;transform:none;margin-right:0}}
   @keyframes settle{from{opacity:0;transform:translateY(14px)}}
-
-  @supports (animation-timeline:view()){
-    .wide .frame img{animation:zoom linear both;animation-timeline:view();animation-range:entry 0% cover 45%}
-    @keyframes zoom{from{transform:scale(1.06)}}
-  }
-  .sheet{transition:translate .5s cubic-bezier(.2,.75,0,1),overlay .5s allow-discrete,display .5s allow-discrete;translate:100% 0}
-  .sheet[open]{translate:0 0}
-  @starting-style{.sheet[open]{translate:100% 0}}
-  .sheet::backdrop{transition:opacity .4s,overlay .4s allow-discrete,display .4s allow-discrete;opacity:0}
-  .sheet[open]::backdrop{opacity:1}
-  @starting-style{.sheet[open]::backdrop{opacity:0}}
-
-  @supports (interpolate-size:allow-keywords){
-    :root{interpolate-size:allow-keywords}
-    .more::details-content{height:0;overflow:clip;transition:height .45s cubic-bezier(.2,.7,.2,1),content-visibility .45s allow-discrete}
-    .more[open]::details-content{height:auto}
-  }
+  .tone::before{animation:drift 24s ease-in-out infinite alternate}
+  .tone:nth-child(even)::before{animation-duration:30s;animation-direction:alternate-reverse}
+  @keyframes drift{to{transform:translate3d(4%,-3%,0) rotate(4deg) scale(1.06)}}
 }
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 
+/* short screens: tighter type and spacing so each scene still fits */
+@media (min-width:861px) and (max-height:820px){
+  body{font-size:15px;line-height:1.6}
+  .tile dd,.tile p,.tile span,.app .body,.own p,.news li{font-size:14px}
+  .tile dt,.tile h5,.tile b{font-size:1rem;margin-bottom:4px}
+  .tile .lbl{margin-top:6px}
+  .seq li::before{margin-bottom:6px}
+  .flow li{font-size:13.5px}
+  .links{font-size:14px}
+  .card{padding-block:16px}
+  .card p+p,.card p+.with{margin-top:.6em}
+  .say{font-size:clamp(1.05rem,min(1.7vw,2.9svh),1.4rem);margin-bottom:10px}
+  .next{margin-top:12px;padding-block:6px}
+}
+
 @media (max-width:860px){
   body{font-size:16px}
-  .cover-foot,.news-in,.split,.split.flip,.apps,.own,.scope,.did{grid-template-columns:minmax(0,1fr)}
-  .cols2,.cols3{grid-template-columns:minmax(0,1fr)}
-  .decide article{grid-template-columns:minmax(0,1fr)}
-  .seq li{grid-template-columns:2.6em minmax(0,1fr);gap:4px 16px}
-  .seq li span{grid-column:2}
+  .cover{min-height:0;padding-block:40px 48px}
+  .cover-in,.duo,.duo.flip,.apps,.own,.split2,.scope{grid-template-columns:minmax(0,1fr)}
+  .duo.flip>.card{order:0}
+  .tiles{--cols:1 !important}
   .flow{grid-template-columns:minmax(0,1fr)}
-  .flow li{display:grid;grid-template-columns:2.6em minmax(0,1fr);gap:16px;padding:12px 0;border-top-width:1px}
-  .flow li::before{margin:0}
-  .news li{grid-template-columns:minmax(0,1fr);gap:2px}
-  .also ul{grid-template-columns:minmax(0,1fr)}
+  .projects .ch{position:relative;top:auto;height:auto;border-radius:24px 24px 0 0}
+  .projects .ch::after{display:none}
+  .ch-head{grid-template-columns:minmax(0,1fr)}
+  .tabs{justify-self:start}
+  .track{align-items:flex-start;transition:height .35s cubic-bezier(.2,.7,.2,1)}
+  .pane{overflow:visible;align-content:start}
+  .wide .frame img{max-height:none;width:100%}
+  .phones .shot,.app .phones .shot{max-width:none}
+  .news li{grid-template-columns:minmax(0,1fr);gap:0}
   .head-in{grid-template-columns:1fr auto}
   .head .now{display:none}
+  .contact{min-height:0}
 }
 @media (max-width:560px){
   /* three phones side by side get too small; let them scroll inside their own row */
-  .phones.row{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:64%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px}
+  .phones.row{display:grid;grid-auto-flow:column;grid-auto-columns:64%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;justify-content:start}
   .phones.row .shot{scroll-snap-align:start}
   .head .ed{font-size:15px}
-  .sq{padding:4px 9px}
-  .ctl{gap:10px}
+  .sq{padding:4px 10px}
+  .ctl{gap:8px}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
@@ -328,399 +367,443 @@ html[data-edition="agent"] .head .now{visibility:hidden}
 
 <main class="human" id="top">
 
-<section class="cover wrap" data-run="표지">
-  <div>
-    <h1 class="name" aria-label="Jason"><span class="mask" aria-hidden="true"><span class="cap"><span class="int">∫</span><span class="j">J</span></span><span class="l" style="--i:1">a</span><span class="l" style="--i:2">s</span><span class="l" style="--i:3">o</span><span class="l" style="--i:4">n</span></span></h1>
-    <p class="role">개인 Agent 도구와 웹 서비스</p>
-  </div>
-  <div class="cover-foot">
-    <div class="intro">
-      <p class="lede">필요해서 만든 것들을 쓰면서 고치고 있습니다.</p>
-      <p>수학을 9년간 가르쳤고, 지금은 AI 교육 회사에서 강의자료를 만들고 강의합니다.</p>
-      <p>여러 기기와 에이전트에서 함께 쓰는 도구를 만들고, 팀 프로젝트에서는 백엔드와 Agent, 화면 구현을 맡았습니다.</p>
-      <div class="reach">
-        <a href="mailto:jae1450@naver.com">jae1450@naver.com</a>
-        <a href="https://github.com/jasonwpgml">github.com/jasonwpgml</a>
+<section class="cover tone" data-run="표지">
+  <div class="cover-in">
+    <div>
+      <h1 class="name" aria-label="Jason"><span class="mask" aria-hidden="true"><span class="cap"><span class="int">∫</span><span class="j">J</span></span><span class="l" style="--i:1">a</span><span class="l" style="--i:2">s</span><span class="l" style="--i:3">o</span><span class="l" style="--i:4">n</span></span></h1>
+      <p class="role">개인 Agent 도구와 웹 서비스</p>
+      <div class="intro">
+        <p class="lede">지식의 최첨단을 탐색하는 탐험가, Jason입니다.</p>
+        <p>수학을 전공하고, 9년간 강의해왔습니다. 현재는 AI 기술에 집중하고 있습니다.</p>
+        <p>여러 기기와 에이전트에서 함께 쓰는 도구를 만들고, 팀 프로젝트에서는 백엔드와 Agent, 화면 구현을 맡았습니다.</p>
+        <div class="reach">
+          <a href="mailto:jae1450@naver.com">jae1450@naver.com</a>
+          <a href="https://github.com/jasonwpgml">github.com/jasonwpgml</a>
+        </div>
+        <p class="note">개발에는 AI 코딩 도구를 사용합니다. 프로젝트마다 제가 맡은 작업과 팀원이 맡은 작업을 구분해 적었습니다.</p>
       </div>
-      <p class="note">개발에는 AI 코딩 도구를 사용합니다. 프로젝트마다 제가 맡은 작업과 팀원이 맡은 작업을 구분해 적었습니다.</p>
     </div>
-    <nav aria-label="차례">
-      <p class="toc-label">프로젝트</p>
-      <ol class="toc">
-        <li><a href="#agenthub"><span class="n">01</span><span class="t">AgentHub</span><span class="y">사용 중</span></a></li>
-        <li><a href="#poc"><span class="n">02</span><span class="t">베어러블 PoC</span><span class="y">2026.08</span></a></li>
-        <li><a href="#publium"><span class="n">03</span><span class="t">Publium</span><span class="y">2026.07</span></a></li>
-        <li><a href="#beorimi"><span class="n">04</span><span class="t">버리미</span><span class="y">2026.08</span></a></li>
-        <li><a href="#toss"><span class="n">05</span><span class="t">앱인토스 미니앱 2종</span><span class="y">2026.07</span></a></li>
-        <li><a href="#recent"><span class="n">06</span><span class="t">최근 작업과 코드</span><span class="y">지금</span></a></li>
-      </ol>
-    </nav>
-  </div>
-</section>
-
-<section class="news wrap" data-run="근황" aria-labelledby="news-h">
-  <div class="news-in">
-    <h2 id="news-h">근황</h2>
-    <ol>
-      <li><time datetime="2026-10-06">2026.10.06</time><p>AICE 자격증 관련 회사에서 일하기 시작했습니다. 머신러닝, 딥러닝 자격증 강의에도 출강합니다.</p></li>
-      <li><time datetime="2026-09">2026.09</time><p>팀장을 맡은 베어러블 PoC를 마쳤습니다.</p></li>
-      <li><time>2026.07 – 08</time><p>앱인토스 미니앱 2개를 정식 출시했습니다.</p></li>
-    </ol>
+    <div class="cover-side">
+      <nav class="glass" aria-label="차례">
+        <p class="k">프로젝트</p>
+        <ol class="toc">
+          <li><a href="#agenthub"><span class="n">01</span><span class="t">AgentHub</span><span class="y">사용 중</span></a></li>
+          <li><a href="#poc"><span class="n">02</span><span class="t">베어러블 PoC</span><span class="y">2026.08</span></a></li>
+          <li><a href="#publium"><span class="n">03</span><span class="t">Publium</span><span class="y">2026.07</span></a></li>
+          <li><a href="#beorimi"><span class="n">04</span><span class="t">버리미</span><span class="y">2026.08</span></a></li>
+          <li><a href="#toss"><span class="n">05</span><span class="t">앱인토스 미니앱 2종</span><span class="y">2026.07</span></a></li>
+          <li><a href="#recent"><span class="n">06</span><span class="t">최근 작업과 코드</span><span class="y">지금</span></a></li>
+        </ol>
+      </nav>
+      <section class="glass news" aria-labelledby="news-h">
+        <h2 id="news-h" class="k">근황</h2>
+        <ol>
+          <li><time datetime="2026-10-06">2026.10.06</time><p>AICE 자격증 관련 회사에서 일하기 시작했습니다. 머신러닝, 딥러닝 자격증 강의에도 출강합니다.</p></li>
+          <li><time datetime="2026-09">2026.09</time><p>팀장을 맡은 베어러블 PoC를 마쳤습니다.</p></li>
+          <li><time>2026.07 – 08</time><p>앱인토스 미니앱 2개를 정식 출시했습니다.</p></li>
+        </ol>
+      </section>
+    </div>
   </div>
 </section>
 
 <div class="projects">
 
 <!-- 01 AgentHub -->
-<article class="ch wrap" id="agenthub" data-run="01 AgentHub">
-  <div class="ch-in">
-    <header class="ch-head">
+<article class="ch tone" id="agenthub" data-run="01 AgentHub" style="--h:160;--h2:200">
+  <header class="ch-head">
+    <div>
       <span class="no">01</span>
       <h2>AgentHub</h2>
       <p class="meta"><span>개인 프로젝트</span><span>현재 사용 중</span></p>
-    </header>
-    <div class="split">
-      <div class="body">
-        <p>여러 기기와 에이전트를 쓰다 보니 스킬과 작업 내용을 공유하기 불편했습니다.</p>
-        <p>지금은 스킬을 어디서 만들든 모든 기기에서 같이 씁니다. 회사에서 하던 작업도 집에서 찾아보고, 그걸 참고해서 다른 작업을 이어갑니다.</p>
-        <p>Tailscale과 SSH 연결은 원래 있었고, 자료를 체계적으로 동기화하고 빨리 찾을 수 있게 정리한 게 큰 변화입니다.</p>
-        <div class="with">
-          <h3 class="sub-h">함께 쓰는 자동화</h3>
-          <p>그록 봇으로 아침마다 일정, 메일, 주요 뉴스를 보고받습니다. 확인하지 않은 건 다음 보고로 넘깁니다. X나 메일을 일일이 볼 일이 없어져서 편합니다.</p>
-        </div>
-        <p class="stack">계획: 아침 보고 내용을 AND에 자동으로 넣기, 반복 작업을 더 코드화하기.</p>
-        <p class="links"><span class="private">저장소 비공개</span></p>
-      </div>
-      <figure class="shot">
-        <button type="button" class="frame"><img src="img/agenthub-discovery.webp" width="1280" height="807" alt="Agent Hub의 설치 항목 가져오기 화면. 왼쪽에 대시보드, 도구, 스킬, MCP 서버 메뉴가 있고, 가운데에 reduce-ai-cliches 스킬을 검색한 결과와 Codex, Claude Code에 설치된 경로가 보인다." loading="lazy"></button>
-        <figcaption>설치된 스킬과 도구를 찾아 공유하는 관리 화면</figcaption>
-      </figure>
     </div>
+    <div class="tabs glass" role="tablist" aria-label="AgentHub 내용"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="요약">
+      <div class="duo">
+        <div class="card glass">
+          <p>직접 만든 Agent와 도구를 사용하여 AI 자동화를 실생활에 접목하여 사용 중입니다.</p>
+          <p>여러 기기와 에이전트를 쓰다 보니 스킬과 작업 내용을 공유하기 불편했습니다.</p>
+          <p>지금은 스킬을 어디서 만들든 모든 기기에서 같이 씁니다. 회사에서 하던 작업도 집에서 찾아보고, 그걸 참고해서 다른 작업을 이어갑니다.</p>
+          <p>Tailscale과 SSH 연결은 원래 있었고, 자료를 체계적으로 동기화하고 빨리 찾을 수 있게 정리한 게 큰 변화입니다.</p>
+          <p class="links"><span class="private">저장소 비공개</span></p>
+          <button type="button" class="next">자세히 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <figure class="shot wide">
+          <button type="button" class="frame"><img src="img/agenthub-discovery.webp" width="1280" height="807" alt="Agent Hub의 설치 항목 가져오기 화면. 왼쪽에 대시보드, 도구, 스킬, MCP 서버 메뉴가 있고, 가운데에 reduce-ai-cliches 스킬을 검색한 결과와 Codex, Claude Code에 설치된 경로가 보인다." loading="lazy"></button>
+          <figcaption>설치된 스킬과 도구를 찾아 공유하는 관리 화면</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="pane" data-tab="자동화">
+      <div class="card glass" style="max-width:44em">
+        <h3 class="pane-h">함께 쓰는 자동화</h3>
+        <p>그록 봇으로 아침마다 일정, 메일, 주요 뉴스를 보고받습니다. 확인하지 않은 건 다음 보고로 넘깁니다. X나 메일을 일일이 볼 일이 없어져서 편합니다.</p>
+        <p class="stack" style="margin-top:16px">계획: 아침 보고 내용을 AND에 자동으로 넣기, 반복 작업을 더 코드화하기.</p>
+      </div>
+    </section>
   </div>
 </article>
 
 <!-- 02 Bearable PoC -->
-<article class="ch wrap" id="poc" data-run="02 베어러블 PoC">
-  <div class="ch-in">
-    <header class="ch-head">
+<article class="ch tone" id="poc" data-run="02 베어러블 PoC" style="--h:258;--h2:220">
+  <header class="ch-head">
+    <div>
       <span class="no">02</span>
       <h2>베어러블 PoC</h2>
       <p class="meta"><span>2026.08 – 09</span><span>기업 연계 5인 팀</span><span>팀장, Agent와 화면 구현, 배포</span></p>
-    </header>
-    <p class="say">대학 정보와 고교학점제 화면, 수강신청 도우미를 만들었습니다.</p>
-    <div class="split flip">
-      <figure class="shot">
-        <button type="button" class="frame"><img src="img/bearable-roadmap.webp" width="1800" height="801" alt="마이폴리오 고교학점제 로드맵 화면. 학년과 학기별 열에 선택 과목 카드가 나열되어 있다." loading="lazy"></button>
-        <figcaption>팀이 함께 만든 최종 로드맵 화면</figcaption>
-      </figure>
-      <div class="body">
-        <p>기업 담당자와 주간 미팅을 하며 작업 범위를 조율했습니다. 저는 초기 수강계획 Agent와 실험 화면, 학교 안내장의 근거를 연결하는 작업을 맡았습니다.</p>
-        <p>모델 입력을 줄이는 실험도 했습니다. 근거 참조가 틀어지거나 과목 목록이 달라진 방식은 빼고, 저장된 판독 결과를 코드로 정리하는 방식을 남겼습니다.</p>
-        <div class="with">
-          <h3 class="sub-h">함께 만든 부분</h3>
-          <p>최종 Jev 점수와 과목 배치 고도화에는 팀원 구현이 포함됩니다.</p>
-        </div>
-        <p class="links"><span class="private">기업 연계 프로젝트라 저장소는 비공개입니다.</span></p>
-      </div>
     </div>
-    <details class="more">
-      <summary><span>자세히: 맡은 범위와 팀 운영</span></summary>
-      <div class="more-in">
-        <div class="scope">
-          <div><h4 class="h4">대학 정보</h4><ul><li>학교 기본 정보</li><li>학과별 정보</li><li>입시 전형 정보</li></ul></div>
-          <div><h4 class="h4">고교학점제</h4><ul><li>주간 시간표</li><li>개설 과목</li><li>진로 과목 추천</li></ul></div>
+    <div class="tabs glass" role="tablist" aria-label="베어러블 PoC 내용"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="요약">
+      <div class="duo flip">
+        <div class="card glass">
+          <p class="say">스타트업 베어러블과 진행한 PoC로, 대학 정보와 고교학점제 화면, 수강신청 도우미를 만들었습니다.</p>
+          <p>기업 담당자와 주간 미팅을 하며 작업 범위를 조율했습니다. 저는 초기 수강계획 Agent와 실험 화면, 학교 안내장의 근거를 연결하는 작업을 맡았습니다.</p>
+          <p>모델 입력을 줄이는 실험도 했습니다. 근거 참조가 틀어지거나 과목 목록이 달라진 방식은 빼고, 저장된 판독 결과를 코드로 정리하는 방식을 남겼습니다.</p>
+          <div class="with">
+            <h3 class="sub-h">함께 만든 부분</h3>
+            <p>최종 Jev 점수와 과목 배치 고도화에는 팀원 구현이 포함됩니다.</p>
+          </div>
+          <p class="links"><span class="private">기업 연계 프로젝트라 저장소는 비공개입니다.</span></p>
+          <button type="button" class="next">자세히 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
         </div>
-        <dl class="did">
-          <div><dt>화면 구현과 배포</dt><dd>React와 Vite로 두 화면을 구현하고 Vercel에 배포했습니다.</dd></div>
-          <div><dt>요구사항 조율</dt><dd>기업 담당 개발자와 매주 요구사항을 조율하며 스프린트를 진행했습니다.</dd></div>
-          <div><dt>팀 운영과 협업 기준</dt><dd>개발 2인, 기획 3인의 역할을 나누고 GitHub 저장소와 브랜치 운영 규칙을 정했습니다.</dd></div>
-          <div><dt>고2 학생 인터뷰</dt><dd>과외 중인 고2 학생을 인터뷰해 화면과 다음 기능의 방향을 잡았습니다.</dd></div>
-        </dl>
-        <p class="stack">강남구 혁신인재육성 아카데미에서 진행한 기업 연계 프로젝트입니다.</p>
+        <figure class="shot wide">
+          <button type="button" class="frame"><img src="img/bearable-roadmap.webp" width="1800" height="801" alt="마이폴리오 고교학점제 로드맵 화면. 학년과 학기별 열에 선택 과목 카드가 나열되어 있다." loading="lazy"></button>
+          <figcaption>팀이 함께 만든 최종 로드맵 화면</figcaption>
+        </figure>
       </div>
-    </details>
+    </section>
+    <section class="pane" data-tab="맡은 범위">
+      <div>
+        <h3 class="pane-h">맡은 범위와 팀 운영</h3>
+        <div class="split2">
+          <div class="scope glass">
+            <div><h4>대학 정보</h4><ul><li>학교 기본 정보</li><li>학과별 정보</li><li>입시 전형 정보</li></ul></div>
+            <div><h4>고교학점제</h4><ul><li>주간 시간표</li><li>개설 과목</li><li>진로 과목 추천</li></ul></div>
+          </div>
+          <dl class="tiles" style="--cols:2">
+            <div class="tile glass"><dt>화면 구현과 배포</dt><dd>React와 Vite로 두 화면을 구현하고 Vercel에 배포했습니다.</dd></div>
+            <div class="tile glass"><dt>요구사항 조율</dt><dd>기업 담당 개발자와 매주 요구사항을 조율하며 스프린트를 진행했습니다.</dd></div>
+            <div class="tile glass"><dt>팀 운영과 협업 기준</dt><dd>개발 2인, 기획 3인의 역할을 나누고 GitHub 저장소와 브랜치 운영 규칙을 정했습니다.</dd></div>
+            <div class="tile glass"><dt>고2 학생 인터뷰</dt><dd>과외 중인 고2 학생을 인터뷰해 화면과 다음 기능의 방향을 잡았습니다.</dd></div>
+          </dl>
+        </div>
+        <p class="stack" style="margin-top:14px">강남구 혁신인재육성 아카데미에서 진행한 기업 연계 프로젝트입니다.</p>
+      </div>
+    </section>
   </div>
 </article>
 
 <!-- 03 Publium -->
-<article class="ch wrap" id="publium" data-run="03 Publium">
-  <div class="ch-in">
-    <header class="ch-head">
+<article class="ch tone" id="publium" data-run="03 Publium" style="--h:288;--h2:245">
+  <header class="ch-head">
+    <div>
       <span class="no">03</span>
       <h2>Publium</h2>
       <p class="meta"><span>2026.07</span><span>2인 팀, 8일 개발</span><span>백엔드, 검색 Agent, 배포</span></p>
-    </header>
-    <p class="say">PubMed 논문을 모으고 검색하는 서비스입니다.</p>
-    <figure class="shot wide">
-      <button type="button" class="frame"><img src="img/publium-answer.webp" width="2880" height="1800" alt="Publium 검색과 답변 화면. 왼쪽에 PubMed 검색 조건, 가운데에 논문 채팅방 목록, 오른쪽에 선택한 논문을 근거로 한 AI 답변이 있다." loading="lazy"></button>
-      <figcaption>검색과 답변 화면, 현재 운영 버전</figcaption>
-    </figure>
-    <div class="cols2">
-      <p>FastAPI 백엔드와 PubMed 수집, 논문 검색 도구를 연결한 Agent를 맡았습니다. 답변에 사용한 PMID를 표시하도록 했습니다.</p>
-      <p>논문을 수집하는 동안 다른 요청까지 기다리는 문제가 있었습니다. 동기 호출을 별도 스레드로 옮기고, 수집 중에도 상태 확인 요청이 응답하는지 확인했습니다.</p>
-      <p class="aside">이후 pgvector와 그래프 RAG를 이용한 리뉴얼은 팀원이 맡았습니다.</p>
     </div>
-    <div class="links">
-      <a href="https://team-pubmed.vercel.app">서비스</a>
-      <a href="https://github.com/hansol-dev/team-pubmed">GitHub 코드</a>
-    </div>
-    <p class="stack">Python, FastAPI, LangChain, Supabase Postgres, Render</p>
-    <details class="more">
-      <summary><span>자세히: 구현, 기술 선택, 트러블슈팅</span></summary>
-      <div class="more-in">
-        <div>
-          <h4 class="h4">직접 구현한 것</h4>
-          <dl class="did">
-            <div><dt>FastAPI 백엔드와 데이터 계층</dt><dd>PubMed E-utilities 수집, 논문 목록과 채팅 기록 저장, 삭제 API. Supabase Postgres 연결과 구글 로그인.</dd></div>
-            <div><dt>툴콜링 에이전트</dt><dd>LangChain create_agent에 수집 논문 검색 툴을 연결. 근거가 필요한 질문에는 검색을 먼저 하도록 프롬프트로 지시하고, 사용한 PMID를 표시.</dd></div>
-            <div><dt>서버 측 가드</dt><dd>진단, 처방, 복용량 같은 의료 조언 요청은 LLM에 보내기 전에 정규식으로 차단하고 고정 안내문을 반환.</dd></div>
-            <div><dt>스트리밍과 응답성</dt><dd>토큰 단위 스트리밍 응답. 동기 DB와 PubMed 호출은 스레드로 분리해 이벤트 루프가 멈추지 않게 함.</dd></div>
-            <div><dt>배포</dt><dd>Render에서 Supabase Postgres 기반 무료 배포. 이후 리뉴얼(pgvector, 그래프 RAG)은 팀원 담당.</dd></div>
-          </dl>
+    <div class="tabs glass" role="tablist" aria-label="Publium 내용"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="요약">
+      <div class="duo flip">
+        <div class="card glass">
+          <p class="say">모아 둔 PubMed 논문에서 질문에 맞는 내용을 검색해 답하고, 근거 논문의 PMID를 함께 보여 주는 서비스입니다.</p>
+          <p>FastAPI 백엔드와 PubMed 수집, 논문 검색 도구를 연결한 Agent를 맡았습니다. 답변에 사용한 PMID를 표시하도록 했습니다.</p>
+          <p>논문을 수집하는 동안 다른 요청까지 기다리는 문제가 있었습니다. 동기 호출을 별도 스레드로 옮기고, 수집 중에도 상태 확인 요청이 응답하는지 확인했습니다.</p>
+          <p class="private">이후 pgvector와 그래프 RAG를 이용한 리뉴얼은 팀원이 맡았습니다.</p>
+          <div class="links">
+            <a href="https://team-pubmed.vercel.app">서비스</a>
+            <a href="https://github.com/hansol-dev/team-pubmed">GitHub 코드</a>
+          </div>
+          <p class="stack">Python, FastAPI, LangChain, Supabase Postgres, Render</p>
+          <button type="button" class="next">자세히 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
         </div>
-        <div class="decide">
-          <h4 class="h4">기술 선택</h4>
-          <article>
+        <figure class="shot wide">
+          <button type="button" class="frame"><img src="img/publium-answer.webp" width="2880" height="1800" alt="Publium 검색과 답변 화면. 왼쪽에 PubMed 검색 조건, 가운데에 논문 채팅방 목록, 오른쪽에 선택한 논문을 근거로 한 AI 답변이 있다." loading="lazy"></button>
+          <figcaption>검색과 답변 화면, 현재 운영 버전</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="pane" data-tab="구현">
+      <div>
+        <h3 class="pane-h">직접 구현한 것</h3>
+        <dl class="tiles" style="--cols:3">
+          <div class="tile glass"><dt>FastAPI 백엔드와 데이터 계층</dt><dd>PubMed E-utilities 수집, 논문 목록과 채팅 기록 저장, 삭제 API. Supabase Postgres 연결과 구글 로그인.</dd></div>
+          <div class="tile glass"><dt>툴콜링 에이전트</dt><dd>LangChain create_agent에 수집 논문용 검색 툴을 붙였습니다. 근거가 필요한 질문은 검색부터 하도록 프롬프트로 지시하며, 사용한 PMID를 표시합니다.</dd></div>
+          <div class="tile glass"><dt>서버 측 가드</dt><dd>진단, 처방, 복용량 같은 의료 조언은 정규식으로 요청을 차단해 LLM에 보내지 않고, 고정 안내문으로 답합니다.</dd></div>
+          <div class="tile glass"><dt>스트리밍과 응답성</dt><dd>토큰 단위로 스트리밍하며, 동기 DB와 PubMed 호출은 스레드로 분리해 이벤트 루프가 멈추지 않게 했습니다.</dd></div>
+          <div class="tile glass"><dt>배포</dt><dd>Supabase Postgres 기반으로 Render에 무료 배포했고, 이후 리뉴얼(pgvector, 그래프 RAG)은 팀원이 담당합니다.</dd></div>
+        </dl>
+      </div>
+    </section>
+    <section class="pane" data-tab="기술 선택">
+      <div>
+        <h3 class="pane-h">기술 선택</h3>
+        <div class="tiles" style="--cols:3">
+          <article class="tile glass">
             <h5>답변 구조</h5>
-            <p><span class="lbl">선택</span>LangChain 툴콜링 에이전트. 모델이 검색 여부와 검색어를 정함</p>
-            <p><span class="lbl">대안</span>검색 결과를 프롬프트에 붙이는 고정 파이프라인</p>
-            <p><span class="lbl">이유</span>후속 질문이면 대화 기록의 PMID나 키워드로 다시 검색해야 했습니다. 검색어를 코드로 정하지 않아도 되는 대신, 찾지 못하면 없다고 답하도록 프롬프트로 순서를 잡았습니다.</p>
+            <span class="lbl">선택</span><p>LangChain 툴콜링 에이전트. 모델이 검색 여부와 검색어를 정함</p>
+            <span class="lbl">대안</span><p>검색 결과를 프롬프트에 붙이는 고정 파이프라인</p>
+            <span class="lbl">이유</span><p>후속 질문이면 대화 기록의 PMID나 키워드로 다시 검색해야 했습니다. 검색어를 코드로 정하지 않아도 되는 대신, 찾지 못하면 없다고 답하도록 프롬프트로 순서를 잡았습니다.</p>
           </article>
-          <article>
+          <article class="tile glass">
             <h5>블로킹 I/O</h5>
-            <p><span class="lbl">선택</span>asyncio.to_thread로 동기 호출만 스레드로 분리</p>
-            <p><span class="lbl">대안</span>DB 드라이버와 HTTP 클라이언트를 전부 비동기로 교체</p>
-            <p><span class="lbl">이유</span>기존 동기 코드가 이미 동작하고 있었고 기간이 짧았습니다. 문제는 async 핸들러 안의 동기 호출이었으므로 호출 지점만 넘기는 쪽이 변경 범위가 가장 작았습니다.</p>
+            <span class="lbl">선택</span><p>asyncio.to_thread로 동기 호출만 스레드로 분리</p>
+            <span class="lbl">대안</span><p>DB 드라이버와 HTTP 클라이언트를 전부 비동기로 교체</p>
+            <span class="lbl">이유</span><p>기존 동기 코드가 이미 동작하고 있었고 기간이 짧았습니다. 문제는 async 핸들러 안의 동기 호출이었으므로 호출 지점만 넘기는 쪽이 변경 범위가 가장 작았습니다.</p>
           </article>
-          <article>
+          <article class="tile glass">
             <h5>의료 조언 차단</h5>
-            <p><span class="lbl">선택</span>서버 정규식 가드와 고정 응답</p>
-            <p><span class="lbl">대안</span>시스템 프롬프트로만 금지</p>
-            <p><span class="lbl">이유</span>프롬프트 지시는 우회될 수 있고, 차단할 때 반환하는 문구는 항상 같아야 했습니다. LLM 호출 전에 서버에서 끊으면 비용도 들지 않습니다.</p>
+            <span class="lbl">선택</span><p>서버 정규식 가드와 고정 응답</p>
+            <span class="lbl">대안</span><p>시스템 프롬프트로만 금지</p>
+            <span class="lbl">이유</span><p>프롬프트 지시는 우회될 수 있고, 차단할 때 반환하는 문구는 항상 같아야 했습니다. LLM 호출 전에 서버에서 끊으면 비용도 들지 않습니다.</p>
           </article>
-        </div>
-        <div>
-          <h4 class="h4">트러블슈팅</h4>
-          <p class="trouble-q">논문 수집 요청이 길어지면 서버 전체가 응답하지 않았습니다.</p>
-          <ol class="seq">
-            <li><b>증상</b><span>PubMed 수집 요청이 진행되는 동안 다른 요청과 상태 확인까지 전부 대기.</span></li>
-            <li><b>원인</b><span>async def 핸들러 안에서 동기 PubMed, DB 호출을 그대로 실행해 이벤트 루프 전체가 막힘.</span></li>
-            <li><b>조치</b><span>동기 호출을 asyncio.to_thread로 스레드풀에 넘기고, 동시 수집은 세마포어로 2개까지 제한. 수집 중에도 /health가 응답하는지 확인하는 테스트 추가.</span></li>
-            <li><b>다시 한다면</b><span>처음부터 async 드라이버를 쓰거나, 동기 라이브러리를 쓰는 핸들러는 def로 선언해 FastAPI가 스레드풀에서 돌리게 함.</span></li>
-          </ol>
         </div>
       </div>
-    </details>
+    </section>
+    <section class="pane" data-tab="트러블슈팅">
+      <div>
+        <h3 class="pane-h">트러블슈팅</h3>
+        <p class="trouble-q">논문 수집 요청이 길어지면 서버 전체가 응답하지 않았습니다.</p>
+        <ol class="tiles seq" style="--cols:4">
+          <li class="tile glass"><b>증상</b><span>PubMed 수집 요청 중에는 다른 요청도 상태 확인도 모두 기다려야 했습니다.</span></li>
+          <li class="tile glass"><b>원인</b><span>동기 PubMed, DB 호출이 async def 핸들러 안에서 그대로 실행되면서 이벤트 루프 전체를 막았습니다.</span></li>
+          <li class="tile glass"><b>조치</b><span>동기 호출을 asyncio.to_thread로 스레드풀에 넘기고, 동시 수집은 세마포어로 2개까지 제한했습니다. 수집 중 /health 응답을 확인하는 테스트도 추가했습니다.</span></li>
+          <li class="tile glass"><b>다시 한다면</b><span>처음부터 async 드라이버를 쓰거나, 동기 라이브러리를 쓰는 핸들러는 def로 선언해 FastAPI가 스레드풀에서 실행하게 하겠습니다.</span></li>
+        </ol>
+      </div>
+    </section>
   </div>
 </article>
 
 <!-- 04 Beorimi -->
-<article class="ch wrap" id="beorimi" data-run="04 버리미">
-  <div class="ch-in">
-    <header class="ch-head">
+<article class="ch tone" id="beorimi" data-run="04 버리미" style="--h:122;--h2:85">
+  <header class="ch-head">
+    <div>
       <span class="no">04</span>
       <h2>버리미 (Beorimi)</h2>
       <p class="meta"><span>2026.08</span><span>3인 팀, 28시간 MVP</span><span>팀장, 백엔드와 분석 워커</span></p>
-    </header>
-    <p class="say">버릴 물건을 찍으면 품목과 예상 수수료를 보여주고, 신고 페이지로 연결합니다.</p>
-    <div class="split flip">
-      <div class="phones row">
-        <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-home.webp" width="600" height="1000" alt="버리미 첫 화면. 이거 어떻게 버려야 할까요라는 문구 아래 사진 찍기 버튼이 있다." loading="lazy"></button><figcaption>사진 촬영, 업로드</figcaption></figure>
-        <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-result.webp" width="600" height="1000" alt="판별 결과 화면. 사진 속 의자와 서랍장 4개 품목에 번호가 붙은 상자가 그려져 있다." loading="lazy"></button><figcaption>여러 품목 인식 결과</figcaption></figure>
-        <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-report.webp" width="600" height="1299" alt="배출 신고 준비 화면. 3개 품목 신고를 미리 준비해둘게요라는 제목 아래 품목별 예상 수수료와 배출 정보 메모 입력란, 공식 신고 페이지로 이동 버튼이 있다." loading="lazy"></button><figcaption>신고 준비</figcaption></figure>
-      </div>
-      <div class="body">
-        <p>사진 분석을 워커에서 처리하고, 화면에서 진행 상태를 확인할 수 있게 만들었습니다.</p>
-        <p>모델이 찾은 품목과 규격은 강남구 공식 카탈로그에 맞춰 수수료를 계산합니다. 잘못 인식한 항목은 사용자가 고칠 수 있습니다.</p>
-        <div class="links">
-          <a href="https://frontend-delta-red-74.vercel.app/">서비스</a>
-          <a href="https://github.com/TrinityBalance/beorimi">GitHub 코드</a>
-        </div>
-        <p class="stack">Next.js, Supabase, OpenAI</p>
-      </div>
     </div>
-    <details class="more">
-      <summary><span>자세히: 처리 흐름과 기술 선택</span></summary>
-      <div class="more-in">
-        <div>
-          <h4 class="h4">사진 한 장에서 예상 수수료까지</h4>
-          <p class="body" style="margin-bottom:24px">사진 속 여러 폐기물을 품목별로 분리한 뒤 행정 기준과 연결했습니다. VLM의 추정값을 그대로 노출하지 않고 고정 스키마로 받은 뒤, 강남구 공식 수수료 카탈로그와 다시 매칭했습니다.</p>
-          <ol class="seq">
-            <li><b>사진 촬영</b><span>여러 품목이 한 프레임에 있어도 그대로 촬영.</span></li>
-            <li><b>다중 품목 인식</b><span>의자, 서랍장 등을 각각 분리 인식하고 규격을 추정.</span></li>
-            <li><b>사용자 확인</b><span>잘못 인식된 품목은 사용자가 직접 고칠 수 있게 설계.</span></li>
-            <li><b>수수료 산출</b><span>강남구 수수료 기준표와 매칭해 품목별, 합계 금액 안내.</span></li>
-          </ol>
-        </div>
-        <div>
-          <h4 class="h4">기술 선택</h4>
-          <div class="cols3">
-            <div>
-              <h5>인프라</h5>
-              <span class="lbl">선택</span><p>Supabase 하나로 Auth, Storage, Postgres, 큐, 워커까지</p>
-              <span class="lbl">대안</span><p>AWS Cognito, S3, DynamoDB, SQS, Lambda 조합 (첫날 설계)</p>
-              <span class="lbl">이유</span><p>28시간 안에 구현과 배포를 마치기 위해, 사용 경험이 있는 Supabase로 전환했습니다. SQS가 맡을 큐는 Postgres 행과 pg_net으로 구현해 인프라 설정 범위를 줄였습니다.</p>
-            </div>
-            <div>
-              <h5>분석 처리</h5>
-              <span class="lbl">선택</span><p>202 반환 후 Postgres 큐와 워커, 브라우저는 폴링</p>
-              <span class="lbl">대안</span><p>요청 핸들러에서 VLM 응답까지 동기로 대기</p>
-              <span class="lbl">이유</span><p>동기로 붙였을 때 로딩만 걸리고, 요청이 서버에 닿았는지 VLM이 실패했는지 화면에서 알 수 없었습니다. 작업을 행으로 남기면 어느 단계에서 멈췄는지 상태와 오류 메시지가 남습니다.</p>
-            </div>
-            <div>
-              <h5>VLM 출력</h5>
-              <span class="lbl">선택</span><p>Structured Outputs strict JSON Schema, guardrail 필드 포함</p>
-              <span class="lbl">대안</span><p>자유 텍스트 응답을 서버에서 파싱</p>
-              <span class="lbl">이유</span><p>수수료 매칭에 필요한 입력을 strict JSON Schema로 고정했습니다. 모델이 반환한 guardrail 필드에 프롬프트 인젝션 신호가 있으면 결과를 저장하지 않고 실패 처리합니다.</p>
-            </div>
+    <div class="tabs glass" role="tablist" aria-label="버리미 내용"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="요약">
+      <div class="duo flip">
+        <div class="card glass">
+          <p class="say">버릴 물건을 찍으면 품목과 예상 수수료를 보여주고, 신고 페이지로 연결합니다.</p>
+          <p>사진 분석을 워커에서 처리하고, 화면에서 진행 상태를 확인할 수 있게 만들었습니다.</p>
+          <p>모델이 찾은 품목과 규격은 강남구 공식 카탈로그에 맞춰 수수료를 계산합니다. 잘못 인식한 항목은 사용자가 고칠 수 있습니다.</p>
+          <div class="links">
+            <a href="https://frontend-delta-red-74.vercel.app/">서비스</a>
+            <a href="https://github.com/TrinityBalance/beorimi">GitHub 코드</a>
           </div>
+          <p class="stack">Next.js, Supabase, OpenAI</p>
+          <button type="button" class="next">자세히 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
         </div>
-        <div>
-          <h4 class="h4">비동기 분석 흐름</h4>
-          <ol class="flow">
-            <li>사진 업로드</li>
-            <li>작업 등록, 202 반환</li>
-            <li>워커의 VLM 분석</li>
-            <li>출력 검증, 수수료 매칭</li>
-            <li>상태와 결과 조회</li>
-          </ol>
+        <div class="phones row">
+          <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-home.webp" width="600" height="1000" alt="버리미 첫 화면. 이거 어떻게 버려야 할까요라는 문구 아래 사진 찍기 버튼이 있다." loading="lazy"></button><figcaption>사진 촬영, 업로드</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-result.webp" width="600" height="1000" alt="판별 결과 화면. 사진 속 의자와 서랍장 4개 품목에 번호가 붙은 상자가 그려져 있다." loading="lazy"></button><figcaption>여러 품목 인식 결과</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="img/beorimi-report.webp" width="600" height="1299" alt="배출 신고 준비 화면. 3개 품목 신고를 미리 준비해둘게요라는 제목 아래 품목별 예상 수수료와 배출 정보 메모 입력란, 공식 신고 페이지로 이동 버튼이 있다." loading="lazy"></button><figcaption>신고 준비</figcaption></figure>
         </div>
       </div>
-    </details>
+    </section>
+    <section class="pane" data-tab="처리 흐름">
+      <div>
+        <h3 class="pane-h">사진 한 장에서 예상 수수료까지</h3>
+        <p class="lead">사진 속 여러 폐기물을 품목별로 나눠 행정 기준과 연결했습니다. VLM의 추정값을 그대로 보여 주지 않도록 고정 스키마로 받은 값을 강남구 공식 수수료 카탈로그와 다시 매칭했습니다.</p>
+        <ol class="tiles seq" style="--cols:4">
+          <li class="tile glass"><b>사진 촬영</b><span>여러 품목을 한 프레임에 담아 그대로 촬영합니다.</span></li>
+          <li class="tile glass"><b>다중 품목 인식</b><span>의자, 서랍장 등을 구분해 각각의 규격을 추정합니다.</span></li>
+          <li class="tile glass"><b>사용자 확인</b><span>잘못 인식된 품목은 사용자가 직접 고치도록 설계했습니다.</span></li>
+          <li class="tile glass"><b>수수료 산출</b><span>강남구 수수료 기준표에 맞춰 품목별 금액과 합계를 안내합니다.</span></li>
+        </ol>
+        <h3 class="pane-h" style="margin-top:clamp(16px,3svh,30px)">비동기 분석 흐름</h3>
+        <ol class="flow glass" style="margin-top:0">
+          <li>사진 업로드</li>
+          <li>작업 등록, 202 반환</li>
+          <li>워커의 VLM 분석</li>
+          <li>출력 검증, 수수료 매칭</li>
+          <li>상태와 결과 조회</li>
+        </ol>
+      </div>
+    </section>
+    <section class="pane" data-tab="기술 선택">
+      <div>
+        <h3 class="pane-h">기술 선택</h3>
+        <div class="tiles" style="--cols:3">
+          <article class="tile glass">
+            <h5>인프라</h5>
+            <span class="lbl">선택</span><p>Supabase 하나로 Auth, Storage, Postgres, 큐, 워커까지</p>
+            <span class="lbl">대안</span><p>AWS Cognito, S3, DynamoDB, SQS, Lambda 조합 (첫날 설계)</p>
+            <span class="lbl">이유</span><p>28시간 안에 구현과 배포를 마치려고, 사용해 본 Supabase로 전환했습니다. SQS 대신 Postgres 행과 pg_net으로 큐를 구현하면서 인프라 설정 범위도 줄였습니다.</p>
+          </article>
+          <article class="tile glass">
+            <h5>분석 처리</h5>
+            <span class="lbl">선택</span><p>202 반환 후 Postgres 큐와 워커, 브라우저는 폴링</p>
+            <span class="lbl">대안</span><p>요청 핸들러에서 VLM 응답까지 동기로 대기</p>
+            <span class="lbl">이유</span><p>요청이 서버에 닿았는지, VLM이 실패했는지 구분해야 했지만 동기로 연결한 화면에는 로딩만 보였습니다. 작업을 행으로 남기면 상태와 오류 메시지가 남아 어느 단계에서 멈췄는지 확인할 수 있습니다.</p>
+          </article>
+          <article class="tile glass">
+            <h5>VLM 출력</h5>
+            <span class="lbl">선택</span><p>Structured Outputs strict JSON Schema, guardrail 필드 포함</p>
+            <span class="lbl">대안</span><p>자유 텍스트 응답을 서버에서 파싱</p>
+            <span class="lbl">이유</span><p>수수료 매칭에 필요한 입력을 strict JSON Schema로 고정했습니다. 모델이 반환한 guardrail 필드에 프롬프트 인젝션 신호가 있으면 결과를 저장하지 않고 실패 처리합니다.</p>
+          </article>
+        </div>
+      </div>
+    </section>
   </div>
 </article>
 
 <!-- 05 Apps in Toss -->
-<article class="ch wrap" id="toss" data-run="05 앱인토스 미니앱">
-  <div class="ch-in">
-    <header class="ch-head">
+<article class="ch tone" id="toss" data-run="05 앱인토스 미니앱" style="--h:40;--h2:285">
+  <header class="ch-head">
+    <div>
       <span class="no">05</span>
       <h2>앱인토스 미니앱 2종</h2>
       <p class="meta"><span>2026.07 – 08</span><span>팀 프로젝트</span><span>앱인토스 정식 출시</span></p>
-    </header>
-    <div class="apps">
-      <section class="app" aria-labelledby="diary-h">
-        <h3 id="diary-h">나의 여름방학 일기</h3>
-        <p class="facts"><span>2026.07</span><span>기획 주도, 작성부 구현</span></p>
-        <div class="phones">
-          <figure class="shot"><button type="button" class="frame"><img src="img/diary-write.webp" width="600" height="1000" alt="일기 쓰기 화면. 제목, 날씨, 일기 내용을 손글씨처럼 입력한다." loading="lazy"></button><figcaption>작성 화면</figcaption></figure>
-          <figure class="shot"><button type="button" class="frame"><img src="img/diary-result.webp" width="600" height="1000" alt="변환 결과. 크레파스로 그린 폭포 그림과 원고지 칸에 쓴 일기, 선생님 도장이 있다." loading="lazy"></button><figcaption>변환 결과</figcaption></figure>
-        </div>
-        <div class="body">
-          <p>사진과 짧은 글을 올리면 AI가 문장을 다듬고 크레파스 그림일기로 바꿔 주는 앱입니다.</p>
-          <p>팀원을 영입하고 의견을 조율했습니다. 일기 작성과 미리보기, 공유 화면, 금칙어 표시를 맡았습니다.</p>
-        </div>
-        <div class="links"><a href="https://github.com/TossHackathonTMD/SummerVacationDiary">GitHub 코드</a></div>
-      </section>
-      <section class="app" aria-labelledby="byeol-h">
-        <h3 id="byeol-h">별일 (Byeolil)</h3>
-        <p class="facts"><span>2026.08</span><span>팀장, 3D와 기록 흐름 구현</span></p>
-        <div class="phones">
-          <figure class="shot"><button type="button" class="frame"><img src="img/byeolil-home.webp" width="600" height="1000" alt="별일 관측국 메인 화면. 어두운 우주 배경에 주황색 구슬이 떠 있고, 왁뿌볼 안에 든 운세를 꺼내보세요라고 적혀 있다." loading="lazy"></button><figcaption>메인 화면</figcaption></figure>
-          <figure class="shot"><button type="button" class="frame"><img src="img/byeolil-news.webp" width="600" height="1299" alt="별일 속보 화면. 찾던 책이 방금 돌아옴이라는 기록에 별점과 책 그림, 관측국의 진지한 해석이 붙어 있다." loading="lazy"></button><figcaption>별일 속보</figcaption></figure>
-        </div>
-        <div class="body">
-          <p>하루의 사소한 일을 기록하고 운세와 칭호를 받는 앱입니다.</p>
-          <p>팀장으로 작업을 나누고, 3D 상호작용과 기록 흐름을 구현했습니다. AI 코딩 도구에서 함께 쓸 작업 규칙도 정리했습니다.</p>
-        </div>
-        <div class="links"><a href="https://github.com/TrivialOkay/TrivialOkay_toss">GitHub 코드</a></div>
-      </section>
     </div>
-    <p class="stack" style="margin-top:32px">React, TypeScript, Supabase Edge Function / 별일의 3D 화면은 three.js</p>
-    <details class="more">
-      <summary><span>자세히: 앱별로 맡은 일</span></summary>
-      <div class="more-in">
-        <div class="apps" style="margin-top:0">
-          <div>
-            <h4 class="h4">나의 여름방학 일기</h4>
-            <dl class="did" style="grid-template-columns:minmax(0,1fr)">
+    <div class="tabs glass" role="tablist" aria-label="앱인토스 미니앱 내용"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="요약">
+      <div>
+        <div class="apps">
+          <section class="app glass" aria-labelledby="diary-h" style="--ah:45">
+            <h3 id="diary-h">나의 여름방학 일기</h3>
+            <p class="facts"><span>2026.07</span><span>기획 주도, 작성부 구현</span></p>
+            <div class="phones">
+              <figure class="shot"><button type="button" class="frame"><img src="img/diary-write.webp" width="600" height="1000" alt="일기 쓰기 화면. 제목, 날씨, 일기 내용을 손글씨처럼 입력한다." loading="lazy"></button><figcaption>작성 화면</figcaption></figure>
+              <figure class="shot"><button type="button" class="frame"><img src="img/diary-result.webp" width="600" height="1000" alt="변환 결과. 크레파스로 그린 폭포 그림과 원고지 칸에 쓴 일기, 선생님 도장이 있다." loading="lazy"></button><figcaption>변환 결과</figcaption></figure>
+            </div>
+            <div class="body">
+              <p>사진과 짧은 글을 올리면 AI가 문장을 다듬고 크레파스 그림일기로 바꿔 주는 앱입니다.</p>
+              <p>팀원을 영입하고 의견을 조율했습니다. 일기 작성과 미리보기, 공유 화면, 금칙어 표시를 맡았습니다.</p>
+            </div>
+            <div class="links"><a href="https://github.com/TossHackathonTMD/SummerVacationDiary">GitHub 코드</a></div>
+          </section>
+          <section class="app glass" aria-labelledby="byeol-h" style="--ah:285">
+            <h3 id="byeol-h">별일 (Byeolil)</h3>
+            <p class="facts"><span>2026.08</span><span>팀장, 3D와 기록 흐름 구현</span></p>
+            <div class="phones">
+              <figure class="shot"><button type="button" class="frame"><img src="img/byeolil-home.webp" width="600" height="1000" alt="별일 관측국 메인 화면. 어두운 우주 배경에 주황색 구슬이 떠 있고, 왁뿌볼 안에 든 운세를 꺼내보세요라고 적혀 있다." loading="lazy"></button><figcaption>메인 화면</figcaption></figure>
+              <figure class="shot"><button type="button" class="frame"><img src="img/byeolil-news.webp" width="600" height="1299" alt="별일 속보 화면. 찾던 책이 방금 돌아옴이라는 기록에 별점과 책 그림, 관측국의 진지한 해석이 붙어 있다." loading="lazy"></button><figcaption>별일 속보</figcaption></figure>
+            </div>
+            <div class="body">
+              <p>하루의 사소한 일을 기록하고 운세와 칭호를 받는 앱입니다.</p>
+              <p>팀장으로 작업을 나누고, 3D 상호작용과 기록 흐름을 구현했습니다. AI 코딩 도구에서 함께 쓸 작업 규칙도 정리했습니다.</p>
+            </div>
+            <div class="links"><a href="https://github.com/TrivialOkay/TrivialOkay_toss">GitHub 코드</a></div>
+          </section>
+        </div>
+        <div class="foot">
+          <p class="stack">React, TypeScript, Supabase Edge Function / 별일의 3D 화면은 three.js</p>
+          <button type="button" class="next">자세히 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <section class="pane" data-tab="앱별로 맡은 일">
+      <div>
+        <h3 class="pane-h">앱별로 맡은 일</h3>
+        <div class="apps">
+          <div class="app glass" style="--ah:45">
+            <h4 class="sub-h">나의 여름방학 일기</h4>
+            <dl class="tiles">
               <div><dt>팀 구성과 조율</dt><dd>필요한 팀원을 직접 영입하고 의견을 조율해 방향을 정했습니다.</dd></div>
               <div><dt>작성부 구현</dt><dd>일기 입력, 미리보기, 공유 모달과 이미지 처리 유틸을 React와 TypeScript로 구현했습니다.</dd></div>
-              <div><dt>금칙어와 프롬프트</dt><dd>본문의 금칙어를 감지해 표시하는 로직을 만들고, 분석 프롬프트의 강조어와 금칙어 규칙을 다듬었습니다.</dd></div>
-              <div><dt>출시와 홍보</dt><dd>앱인토스 심사를 거쳐 출시하고, 완성된 그림일기를 SNS에 공유하기 쉬운 형태로 만들어 홍보했습니다.</dd></div>
+              <div><dt>금칙어와 프롬프트</dt><dd>본문의 금칙어를 찾아 표시하도록 로직을 구현했습니다. 분석 프롬프트에서는 강조어와 금칙어 규칙을 다듬었습니다.</dd></div>
+              <div><dt>출시와 홍보</dt><dd>앱인토스 심사를 거쳐 출시하고, 완성된 그림일기를 SNS에 공유하기 쉽게 만들어 홍보했습니다.</dd></div>
             </dl>
           </div>
-          <div>
-            <h4 class="h4">별일</h4>
-            <dl class="did" style="grid-template-columns:minmax(0,1fr)">
+          <div class="app glass" style="--ah:285">
+            <h4 class="sub-h">별일</h4>
+            <dl class="tiles">
               <div><dt>역할 분배와 온보딩</dt><dd>입문자 팀원의 숙련도에 맞춰 작업을 나누고 구현 기준을 설명했습니다.</dd></div>
-              <div><dt>작업 규칙</dt><dd>AGENTS.md와 CLAUDE.md를 공통 규칙으로 관리해 AI 코딩 도구의 작업 기준을 맞췄습니다.</dd></div>
+              <div><dt>작업 규칙</dt><dd>AI 코딩 도구의 작업 기준을 맞추기 위해 AGENTS.md와 CLAUDE.md를 공통 규칙으로 관리했습니다.</dd></div>
               <div><dt>직접 구현</dt><dd>3D 오브젝트 파괴 상호작용, 기록과 보관함 흐름, 숨은 카드와 사운드를 구현했습니다.</dd></div>
               <div><dt>출시</dt><dd>앱인토스 심사 대응을 거쳐 개발 시작부터 한 달 안에 정식 출시했습니다.</dd></div>
             </dl>
           </div>
         </div>
       </div>
-    </details>
+    </section>
   </div>
 </article>
 
 <!-- 06 Recent work -->
-<article class="ch wrap" id="recent" data-run="06 최근 작업과 코드">
-  <div class="ch-in">
-    <header class="ch-head">
+<article class="ch tone" id="recent" data-run="06 최근 작업과 코드" style="--h:205;--h2:165">
+  <header class="ch-head">
+    <div>
       <span class="no">06</span>
       <h2>최근 작업과 코드</h2>
       <p class="meta"><span>개인 프로젝트와 현재 업무</span></p>
-    </header>
-    <div class="own">
-      <section>
-        <h3>AND</h3>
-        <p>Autonomous Neuro Drive. 활동 기록과 AI 대화를 모아 다시 찾아보는 로컬 LLM 위키를 만들고 있습니다. 출처가 있는 기록을 검색하고, 근거가 없으면 답변을 중단하도록 구현했습니다.</p>
-        <p class="links"><span class="private">저장소 비공개</span></p>
-      </section>
-      <section>
-        <h3>Galpi와 Poom</h3>
-        <p>Galpi는 코딩 에이전트가 필요한 코드와 문맥을 찾도록 만든 도구입니다. Poom에서는 작은 작업을 로컬 모델에 맡기고 결과를 검사하는 방식을 실험합니다.</p>
-        <div class="links">
-          <a href="https://github.com/jasonwpgml/galpi">Galpi</a>
-          <a href="https://github.com/jasonwpgml/poom">Poom</a>
-          <a href="https://github.com/jasonwpgml/AQR">작업 큐 AQR</a>
+    </div>
+    <div class="tabs glass" role="tablist" aria-label="최근 작업과 코드 내용"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="요약">
+      <div>
+        <div class="own">
+          <section class="glass">
+            <h3>AND</h3>
+            <p>Autonomous Neuro Drive. 활동 기록과 AI 대화를 모아 다시 찾아보는 로컬 LLM 위키를 만들고 있습니다. 출처가 있는 기록을 검색하고, 근거가 없으면 답변을 중단하도록 구현했습니다.</p>
+            <p class="links"><span class="private">저장소 비공개</span></p>
+          </section>
+          <section class="glass">
+            <h3>Galpi와 Poom</h3>
+            <p>Galpi는 코딩 에이전트가 필요한 코드와 문맥을 찾도록 만든 도구입니다. Poom에서는 작은 작업을 로컬 모델에 맡기고 결과를 검사하는 방식을 실험합니다.</p>
+            <div class="links">
+              <a href="https://github.com/jasonwpgml/galpi">Galpi</a>
+              <a href="https://github.com/jasonwpgml/poom">Poom</a>
+              <a href="https://github.com/jasonwpgml/AQR">작업 큐 AQR</a>
+            </div>
+          </section>
+          <section class="glass">
+            <h3>AI 교육 자료</h3>
+            <p>현재 AI 교육 회사에서 강의자료를 만들고 강의합니다. 웹 교안과 시각화 자료를 만들며, 교육 화면에 로컬 AI 연결을 붙이는 작업도 하고 있습니다.</p>
+          </section>
         </div>
-      </section>
-      <section>
-        <h3>AI 교육 자료</h3>
-        <p>현재 AI 교육 회사에서 강의자료를 만들고 강의합니다. 웹 교안과 시각화 자료를 만들며, 교육 화면에 로컬 AI 연결을 붙이는 작업도 하고 있습니다.</p>
-      </section>
-    </div>
-    <div class="also">
-      <p class="k">그 밖의 개인 프로젝트 (저장소 비공개)</p>
-      <ul>
-        <li><b>cogito</b>개인 AI 에이전트. 반복 작업을 에이전트에 맡길지 코드로 고정할지 실험하는 기반.</li>
-        <li><b>나비서</b>휴대폰과 데스크톱을 연결해 배달 주문을 결제 직전 화면까지 자동으로 진행하는 MCP 기반 자동화 도구. LifeTrace(활동 기록)와 연동.</li>
-        <li><b>FAPA</b>개인 재무 에이전트. Playwright MCP로 카드 사용 내역을 수집해 지출을 정리하고 소비를 관리. 나비서와 연동.</li>
-        <li><b>Momento</b>과외 일정을 강사, 학생, 보호자가 역할별로 나눠 보는 PWA. 기획, 개발, 배포, 운영을 혼자 맡았고, 실사용자 피드백으로 기능을 고치고 있습니다.</li>
-      </ul>
-    </div>
+        <div class="foot">
+          <span></span>
+          <button type="button" class="next">그 밖의 개인 프로젝트<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <section class="pane" data-tab="그 밖의 프로젝트">
+      <div class="also">
+        <h3 class="pane-h">그 밖의 개인 프로젝트 (저장소 비공개)</h3>
+        <ul class="tiles" style="--cols:2">
+          <li class="tile glass"><b>cogito</b>반복 작업을 에이전트에 맡길지 코드로 고정할지, 개인 AI 에이전트로 실험합니다.</li>
+          <li class="tile glass"><b>나비서</b>휴대폰과 데스크톱을 연결한 MCP 기반 자동화 도구로, 배달 주문을 결제 직전 화면까지 자동으로 진행합니다. LifeTrace(활동 기록)와도 연동합니다.</li>
+          <li class="tile glass"><b>FAPA</b>Playwright MCP로 카드 사용 내역을 수집해 지출 정리와 소비 관리에 쓰는 개인 재무 에이전트로, 나비서와 연동합니다.</li>
+          <li class="tile glass"><b>Momento</b>과외 일정을 강사, 학생, 보호자가 역할별로 나눠 보는 PWA. 기획, 개발, 배포, 운영을 혼자 맡았고, 실사용자 피드백으로 기능을 고치고 있습니다.</li>
+        </ul>
+      </div>
+    </section>
   </div>
 </article>
 
 </div>
 
-<section class="contact wrap" data-run="연락처" aria-labelledby="contact-h">
-  <div>
+<section class="contact tone" data-run="연락처" aria-labelledby="contact-h">
+  <div class="contact-in glass">
     <p class="k" id="contact-h">연락처</p>
     <a class="mail" href="mailto:jae1450@naver.com">jae1450@naver.com</a>
     <div class="links"><a href="https://github.com/jasonwpgml">github.com/jasonwpgml</a></div>
-    <div class="colophon">
-      <span>Portfolio, 2026 edition</span>
-      <span>제목 마루 부리, 본문 Wanted Sans</span>
-      <span>© 2026 Jason</span>
-    </div>
+  </div>
+  <div class="colophon">
+    <span>Portfolio, 2026 edition</span>
+    <span>제목 마루 부리, 본문 Wanted Sans</span>
+    <span>© 2026 Jason</span>
   </div>
 </section>
 
 </main>
 
-<dialog class="sheet" id="sheet" aria-labelledby="sheet-h">
-  <div class="sheet-box">
-    <div class="sheet-bar">
-      <p class="sheet-run"><span class="no" id="sheet-no"></span><span class="sheet-h" id="sheet-h"></span></p>
-      <form method="dialog"><button class="sq">닫기</button></form>
-    </div>
-    <div class="sheet-in" id="sheet-in"></div>
-  </div>
-</dialog>
 
 <canvas class="rain" id="rain" aria-hidden="true"></canvas>
 <section class="agent wrap" aria-label="에이전트용 판본">
@@ -830,6 +913,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   const arrive = el => clamp((innerHeight * .62 - el.getBoundingClientRect().top) / (innerHeight * .32));
 
   // Project stage. A leaf taller than the screen sticks by its bottom, so it is read to the end before the next covers it.
+  const narrow = matchMedia('(max-width: 860px)');
   const stage = document.querySelector('.projects');
   const leaves = [...stage.children];
   let headH = 64, anchors = [];
@@ -837,7 +921,12 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     leaves.forEach((el, k) => {
       const next = leaves[k + 1];
       const p = next ? clamp((innerHeight - next.getBoundingClientRect().top) / (innerHeight - headH)) : 0;
-      if (el._cover !== p) { el._cover = p; el.style.setProperty('--cover', p.toFixed(3)); }
+      if (el._cover !== p) {
+        el._cover = p;
+        el.style.setProperty('--cover', p.toFixed(3));
+        // A scene the next one covers completely is not drawn, so its glass is not blurred underneath for nothing.
+        el.style.visibility = p >= 1 && !narrow.matches ? 'hidden' : '';
+      }
     });
     paintLabel(sections.slice(1).reduce((x, s) => x + arrive(s), 0));
   };
@@ -847,6 +936,8 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     let y = stage.getBoundingClientRect().top + scrollY;
     anchors = leaves.map(el => {
       el.style.top = Math.min(headH, innerHeight - el.offsetHeight) + 'px';
+      const track = el.querySelector('.track');
+      if (track && !narrow.matches) el.style.setProperty('--room', track.clientHeight + 'px');
       const a = y - headH;
       y += el.offsetHeight;
       return a;
@@ -931,7 +1022,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     }
   };
   addEventListener('wheel', e => {
-    if (reduce || e.ctrlKey || agentMode() || sheet.open || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    if (reduce || e.ctrlKey || agentMode() || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
     const now = performance.now(), inp = readWheel(e, now);
     if (!inp.raw) return;
     clearTimeout(snapT);
@@ -963,50 +1054,119 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   for (const type of ['pointerdown', 'keydown', 'touchstart'])
     addEventListener(type, () => { stop(); clearTimeout(snapT); rest = null; }, { passive: true });
 
-  // Project sheet: the screenshots of a project, larger, with its fold-out detail.
-  const sheet = document.getElementById('sheet'), sheetIn = document.getElementById('sheet-in');
-  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
-  const outsideMore = (leaf, sel) => [...leaf.querySelectorAll(sel)].find(n => !n.closest('.more, .app'));
-  const openSheet = (leaf, btn) => {
-    document.getElementById('sheet-no').textContent = leaf.querySelector('.ch-head .no').textContent;
-    document.getElementById('sheet-h').textContent = leaf.querySelector('.ch-head h2').textContent;
-    const more = leaf.querySelector('.more-in');
-    const top = el('div', 'sheet-top');
-    for (const n of [leaf.querySelector('.ch-head .meta'), leaf.querySelector('.say'), more && outsideMore(leaf, '.links'), more && outsideMore(leaf, '.stack')])
-      if (n) top.append(n.cloneNode(true));
-    const shots = el('div', 'sheet-shots');
-    let target;
-    const apps = [...leaf.querySelectorAll('.app')];
-    for (const g of apps.length ? apps : [leaf]) {
-      const grp = el('section', 'grp'), wide = el('div'), tall = el('div', 'row');
-      if (g !== leaf) grp.append(el('h3', '', g.querySelector('h3').textContent));
-      for (const fig of g.querySelectorAll('.shot')) {
-        const img = fig.querySelector('img').cloneNode();
-        img.loading = 'eager';
-        const f = el('figure', 'shot'), frame = el('span', 'frame');
-        frame.append(img);
-        f.append(frame, fig.querySelector('figcaption').cloneNode(true));
-        (+img.getAttribute('height') > +img.getAttribute('width') ? tall : wide).append(f);
-        if (fig.contains(btn)) target = f;
-      }
-      grp.append(wide, tall);
-      if (g !== leaf) for (const n of g.querySelectorAll('.links')) grp.append(n.cloneNode(true));
-      shots.append(grp);
+  // Contents jump to where a project has just covered the screen; a sticky scene has no fixed place of its own.
+  for (const a of document.querySelectorAll('.toc a')) a.addEventListener('click', e => {
+    const k = leaves.findIndex(el => '#' + el.id === a.hash);
+    if (k < 0 || narrow.matches) return;
+    e.preventDefault();
+    scrollTo({ top: anchors[k], behavior: reduce ? 'instant' : 'smooth' });
+    history.replaceState(null, '', a.hash);
+  });
+
+  // Each project reads left to right: the summary first, then its detail panes.
+  // Trackpad and touch swipe natively; a mouse drags; the tabs, the arrow keys and the buttons move one pane.
+  for (const leaf of leaves) {
+    const track = leaf.querySelector('.track'), tabs = leaf.querySelector('.tabs');
+    if (!track) continue;
+    const panes = [...track.children];
+    const pill = document.createElement('span');
+    pill.className = 'pill';
+    tabs.append(pill);
+    let at = -1;
+    const goPane = i => {
+      i = Math.max(0, Math.min(panes.length - 1, i));
+      track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'instant' : 'smooth' });
+    };
+    const btns = panes.map((pane, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.id = `${leaf.id}-tab${i}`;
+      b.textContent = pane.dataset.tab;
+      pane.id = `${leaf.id}-pane${i}`;
+      pane.setAttribute('role', 'tabpanel');
+      pane.setAttribute('aria-labelledby', b.id);
+      b.setAttribute('aria-controls', pane.id);
+      b.addEventListener('click', () => goPane(i));
+      tabs.insertBefore(b, pill);
+      return b;
+    });
+    tabs.addEventListener('keydown', e => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      const i = Math.max(0, Math.min(panes.length - 1, at + d));
+      goPane(i);
+      btns[i].focus();
+    });
+    for (const b of leaf.querySelectorAll('.next')) b.addEventListener('click', () => goPane(at + 1));
+    for (const b of panes[0].querySelectorAll('button.frame')) {
+      b.setAttribute('aria-label', leaf.querySelector('.ch-head h2').textContent + ' 자세히 보기');
+      b.addEventListener('click', () => goPane(1));
     }
-    // Chapters without a fold-out bring their own text along instead.
-    const tail = more ? more.cloneNode(true) : leaf.querySelector('.body')?.cloneNode(true);
-    sheetIn.replaceChildren(...[top, shots, tail].filter(n => n && n.childElementCount));
-    sheet.showModal();
-    sheet.scrollTop = 0;
-    if (target && target !== shots.querySelector('.shot')) target.scrollIntoView({ block: 'center' });
-  };
-  for (const btn of document.querySelectorAll('.projects button.frame')) {
-    const leaf = btn.closest('.ch');
-    btn.setAttribute('aria-haspopup', 'dialog');
-    btn.setAttribute('aria-label', leaf.querySelector('.ch-head h2').textContent + ' 자세히 보기');
-    btn.addEventListener('click', () => openSheet(leaf, btn));
+    // The pill sits between two tabs as far as the track has been swiped.
+    const sync = () => {
+      const x = track.scrollLeft / (track.clientWidth || 1);
+      const i = Math.max(0, Math.min(panes.length - 2, Math.floor(x))), f = clamp(x - i);
+      const a = btns[i], b = btns[i + 1];
+      pill.style.translate = a.offsetLeft + (b.offsetLeft - a.offsetLeft) * f + 'px 0';
+      pill.style.width = a.offsetWidth + (b.offsetWidth - a.offsetWidth) * f + 'px';
+      const now = Math.round(x);
+      if (now === at) return;
+      at = now;
+      btns.forEach((t, k) => { t.setAttribute('aria-selected', k === at); t.tabIndex = k === at ? 0 : -1; });
+      panes.forEach((p, k) => { p.inert = k !== at; });
+      if (narrow.matches) track.style.height = panes[at].offsetHeight + 'px';
+    };
+    track.addEventListener('scroll', sync, { passive: true });
+    // Only a width change needs a resync; the height is set here on narrow screens and must not loop back.
+    let width = 0;
+    new ResizeObserver(() => {
+      if (track.clientWidth === width) return;
+      width = track.clientWidth;
+      at = -1;
+      track.style.height = '';
+      sync();
+    }).observe(track);
+    sync();
+
+    // Mouse drag: the track follows the pointer, then settles on the pane the drag pointed to.
+    let drag = null;
+    track.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('a, input, textarea, select')) return;
+      drag = { x: e.clientX, left: track.scrollLeft, id: e.pointerId, moved: false };
+    });
+    track.addEventListener('pointermove', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved) {
+        if (Math.abs(dx) < 6) return;
+        drag.moved = true;
+        track.setPointerCapture(e.pointerId);
+        track.classList.add('dragging');
+        getSelection().removeAllRanges();
+      }
+      track.scrollLeft = drag.left - dx;
+    });
+    const release = e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const d = drag;
+      drag = null;
+      if (!d.moved) return;
+      const dx = e.clientX - d.x, from = Math.round(d.left / track.clientWidth);
+      goPane(Math.abs(dx) > Math.min(110, track.clientWidth * .12) ? from - Math.sign(dx) : from);
+      // Snapping returns once the glide has landed, so it cannot cut the glide short.
+      const done = () => track.classList.remove('dragging');
+      track.addEventListener('scrollend', done, { once: true });
+      setTimeout(done, 700);
+      // A drag is not a click on whatever it started over.
+      const eat = ev => { ev.preventDefault(); ev.stopPropagation(); };
+      track.addEventListener('click', eat, { capture: true });
+      setTimeout(() => track.removeEventListener('click', eat, { capture: true }), 60);
+    };
+    track.addEventListener('pointerup', release);
+    track.addEventListener('pointercancel', release);
   }
-  sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });
 
   // Agent edition: the same facts as structured text, decoded in place line by line.
   const data = JSON.parse(document.getElementById('profile-data').textContent);
