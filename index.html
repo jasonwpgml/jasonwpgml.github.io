@@ -24,12 +24,12 @@ try { const t = localStorage.getItem('theme'); if (t) document.documentElement.d
   --ink-2:light-dark(#5c5b68,#aaa9b8);
   --paper:light-dark(#f4f3f8,#0c0b12);
   --hair:light-dark(rgb(22 21 29/.12),rgb(245 244 250/.14));
-  --glass:light-dark(rgb(255 255 255/.55),rgb(255 255 255/.07));
-  --glass-2:light-dark(rgb(255 255 255/.3),rgb(255 255 255/.025));
+  --glass:light-dark(rgb(255 255 255/.6),rgb(255 255 255/.1));
+  --glass-2:light-dark(rgb(255 255 255/.34),rgb(255 255 255/.035));
   --edge:light-dark(rgb(255 255 255/.85),rgb(255 255 255/.15));
   --shadow:light-dark(rgb(40 30 80/.14),rgb(0 0 0/.45));
   --acc:var(--ink);
-  --blur:blur(24px) saturate(170%);
+  --blur:blur(14px) saturate(160%);
   --serif:"Maru Buri","Noto Serif KR","Nanum Myeongjo",serif;
   --sans:"Wanted Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace;
@@ -55,9 +55,9 @@ time,.no{font-variant-numeric:tabular-nums}
 .wrap{padding-inline:var(--gutter)}
 .wrap>*{max-width:var(--max);margin-inline:auto}
 
-/* glass: a frosted pane with a bright top edge; the scene's colour shows through it */
+/* glass: a translucent pane with a bright top edge. The scene behind is a soft gradient, so real blur would cost a lot and show nothing; only the head blurs. */
 .glass{background:linear-gradient(150deg,var(--glass),var(--glass-2));border:1px solid var(--edge);border-radius:22px;
-  box-shadow:inset 0 1px 0 var(--edge),0 24px 48px -30px var(--shadow);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+  box-shadow:inset 0 1px 0 var(--edge),0 24px 48px -30px var(--shadow)}
 
 /* scene tone: every colour of a scene comes from its hue pair, in both themes */
 .tone{--h:270;--h2:200;
@@ -70,7 +70,7 @@ time,.no{font-variant-numeric:tabular-nums}
   --orb2:light-dark(oklch(86% .1 var(--h2)/.75),oklch(42% .13 var(--h2)/.75));
   --shadow:light-dark(oklch(40% .09 var(--h)/.18),rgb(0 0 0/.45));
   position:relative;isolation:isolate;overflow:clip;background:var(--bg);color:var(--ink)}
-.tone::before{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;
+.tone::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(34% 44% at 14% 20%,var(--orb1),transparent 70%),radial-gradient(36% 46% at 88% 26%,var(--orb2),transparent 70%),
     radial-gradient(40% 40% at 62% 96%,var(--orb1),transparent 70%),radial-gradient(26% 30% at 40% 52%,var(--orb2),transparent 72%)}
 .tone ::selection{background:var(--acc);color:var(--bg)}
@@ -196,12 +196,12 @@ time,.no{font-variant-numeric:tabular-nums}
 /* screenshots: a glass bezel; the image shrinks to the room the screen has left */
 .shot{margin:0;min-width:0;display:grid;justify-items:center}
 .frame{display:block;max-width:100%;padding:6px;border:1px solid var(--edge);border-radius:18px;background:var(--glass);box-shadow:inset 0 1px 0 var(--edge),0 30px 60px -34px var(--shadow);
-  -webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
 .frame img{border-radius:12px;background:#fff}
 button.frame{appearance:none;font:inherit;color:inherit;text-align:left;cursor:pointer;position:relative}
 button.frame:hover{transform:translateY(-3px)}
 button.frame::after{content:"자세히 보기";position:absolute;right:14px;bottom:14px;padding:4px 11px;border-radius:999px;border:1px solid var(--edge);
-  background:light-dark(rgb(255 255 255/.75),rgb(20 18 30/.6));color:var(--ink);font:600 12.5px/1.4 var(--sans);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  background:light-dark(rgb(255 255 255/.88),rgb(20 18 30/.82));color:var(--ink);font:600 12.5px/1.4 var(--sans);
   opacity:0;translate:0 4px;transition:opacity .2s,translate .2s}
 button.frame:is(:hover,:focus-visible)::after{opacity:1;translate:0 0}
 @media (hover:none){button.frame::after{opacity:1;translate:0 0}}
@@ -286,7 +286,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   .pane{display:block;overflow:visible;padding-block:12px}
 }
 
-/* motion: one load sequence on the cover, colour fields that drift slowly; everything rests visible */
+/* motion: one load sequence on the cover; everything rests visible */
 @media (prefers-reduced-motion:no-preference){
   .name .l,.name .cap{animation:rise .9s cubic-bezier(.2,.75,0,1) both;animation-delay:calc(var(--i,0) * 70ms + 150ms)}
   .name .int{animation:int-out 1.9s cubic-bezier(.6,0,.2,1) both}
@@ -297,9 +297,6 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   @keyframes int-out{0%,55%{opacity:1;transform:translateX(-.3em)}100%{opacity:0;transform:translateX(-.34em) rotate(-24deg)}}
   @keyframes j-in{0%,55%{opacity:0;transform:rotate(18deg);margin-right:.14em}100%{opacity:1;transform:none;margin-right:0}}
   @keyframes settle{from{opacity:0;transform:translateY(14px)}}
-  .tone::before{animation:drift 24s ease-in-out infinite alternate}
-  .tone:nth-child(even)::before{animation-duration:30s;animation-direction:alternate-reverse}
-  @keyframes drift{to{transform:translate3d(4%,-3%,0) rotate(4deg) scale(1.06)}}
 }
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 
