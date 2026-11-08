@@ -153,8 +153,9 @@ const matrixHologram = (() => {
 
     Object.assign(canvas.style, { position: "fixed", transform: "translate(-50%, -50%)", pointerEvents: "none" });
     const anchor = () => { const a = Array.isArray(o.anchor) ? o.anchor : [0.5, 0.5]; return [Math.min(1, Math.max(0, +a[0] || 0.5)), Math.min(1, Math.max(0, +a[1] || 0.5))]; };
+    let custom = null; // useFace()로 넣은 사람 얼굴(가면과 같은 MediaPipe 점 468개)
     function use(key) {
-      M = model(key);
+      M = custom || model(key);
       bk = new Uint8Array(M.pts.length); order = new Uint16Array(M.pts.length); zbuf = new Float32Array(M.pts.length);
       proj = M.pts.map(() => ({ x: 0, y: 0, s: 0, b: 0, vis: false }));
     }
@@ -191,8 +192,8 @@ const matrixHologram = (() => {
         S.moved = now;
       } else { const k = Math.min(1, dt * 3); T.roll -= T.roll * k; T.jaw -= T.jaw * k; T.smile -= T.smile * k; T.brow -= T.brow * k; T.bl -= T.bl * k; T.br -= T.br * k; }
       if (!tr && now - S.moved > 3000) { S.ty = Math.sin(t * 0.45) * 0.35; S.tp = Math.sin(t * 0.31) * 0.12; } // 마우스가 멈추면 두리번거림
-      const k = 1 - Math.pow(0.002, dt); S.yaw += (S.ty - S.yaw) * k; S.pitch += (S.tp - S.pitch) * k; S.glitch += dt;
-      const wall = o.view === "wall", turn = wall ? 0.6 : 1;               // 벽에 붙은 얼굴은 덜 돈다
+      const k = 1 - Math.pow(tr ? 2e-5 : 0.002, dt); S.yaw += (S.ty - S.yaw) * k; S.pitch += (S.tp - S.pitch) * k; S.glitch += dt; // 따라 할 때는 더 빨리 따라간다
+      const wall = o.view === "wall", turn = wall && !tr ? 0.6 : 1;         // 벽에 붙은 얼굴은 덜 돈다(카메라로 따라 할 때는 그대로)
       const cy = Math.cos(S.yaw * turn), sy = Math.sin(S.yaw * turn), cp = Math.cos(S.pitch * turn), sp = Math.sin(S.pitch * turn);
       const cr = Math.cos(T.roll * turn), sr = Math.sin(T.roll * turn), expr = T.jaw > 0.01 || T.smile > 0.01 || T.brow > 0.01;
       // 등장: 가운데서 빛 고리가 천천히 퍼지며 지나간 자리부터 드러나고, 뒤로 잔물결이 남았다가 잦아든다.
@@ -205,10 +206,11 @@ const matrixHologram = (() => {
       for (let i = 0; i < P.length; i++) {
         const A = P[i]; let x = A.p[0], y = A.p[1], z = A.p[2];
         if (g) { const s = g * 0.65 * (0.9 + A.j[2]); x += A.n[0] * s * 0.9 + A.j[0] * s * 1.4; y += A.n[1] * s * 0.9 + A.j[1] * s * 1.4; z += A.n[2] * s * 0.9; }
-        if (expr) { // 표정: 턱을 내리고, 입꼬리를 위·옆으로, 눈썹 띠를 위로
-          y -= M.wJaw[i] * T.jaw * 0.2;
-          const c = M.wCorner[i] * T.smile; y += c * 0.08; x += M.side[i] * c * 0.05; z += c * 0.02;
-          y += M.wBrow[i] * T.brow * 0.07;
+        if (expr) { // 표정: 턱을 내리고, 입꼬리를 위·옆으로, 눈썹 띠를 위로(벽 모드는 비 글자 칸이 굵어서 더 크게)
+          const amp = wall ? 1.6 : 1;
+          y -= M.wJaw[i] * T.jaw * 0.2 * amp;
+          const c = M.wCorner[i] * T.smile * amp; y += c * 0.08; x += M.side[i] * c * 0.05; z += c * 0.02;
+          y += M.wBrow[i] * T.brow * 0.07 * amp;
         }
         let reveal = 1, ring = 0;
         if (rip) {
@@ -255,7 +257,7 @@ const matrixHologram = (() => {
       ctx.globalCompositeOperation = "lighter";
       const lv = eyeLevel(now) * Math.max(0, Math.min(1, (ap - 0.6) / 0.4)), size = Math.max(0.4, Math.min(2.5, +o.eyeSize || 1)); // 눈은 얼굴이 거의 다 드러난 뒤 켜진다
       for (const e of M.eyes) {
-        const x = e[0] * (+o.eyeSpread || 1) + (S.mx - 0.5) * 0.035, y = e[1] + (+o.eyeY || 0) - (S.my - 0.5) * 0.022 + T.brow * 0.012, z = e[2]; // 눈동자는 눈두덩 안에서만 조금 굴린다
+        const x = e[0] * (+o.eyeSpread || 1) + (S.mx - 0.5) * (tr ? 0.06 : 0.035), y = e[1] + (+o.eyeY || 0) - (S.my - 0.5) * 0.022 + T.brow * 0.012, z = e[2]; // 눈동자는 눈두덩 안에서만 조금 굴린다
         let X = x * cy + z * sy, Z = -x * sy + z * cy; let Y = y * cp - Z * sp; Z = y * sp + Z * cp;
         if (T.roll) { const X0 = X; X = X0 * cr - Y * sr; Y = X0 * sr + Y * cr; }
         const shut = e[0] < 0 ? T.bl : T.br; // 화면 왼쪽 눈 = 거울 속 그 사람의 왼쪽 눈
@@ -352,6 +354,14 @@ const matrixHologram = (() => {
       // 1.5초 동안 새 값이 없거나 얼굴이 없으면 마우스·두리번거림으로 돌아간다
       track(state) { if (state && typeof state === "object") { T.s = state; T.at = performance.now(); } },
       get tracking() { return tracking(performance.now()); },
+      // 사람 얼굴 모양으로 바꾼다: { v: [[x,y,z]×468], f: 삼각형 }(MediaPipe 얼굴 점 순서, 세로 -1 턱끝 ~ 1 이마 위, x는 화면 오른쪽 +, z는 앞 +).
+      // 가면과 같은 방식으로 등고선 점을 다시 만들고 빛 고리와 함께 다시 드러난다. null이면 원래 모델로 돌아간다
+      useFace(src) {
+        try { custom = src && Array.isArray(src.v) && src.v.length >= 468 && Array.isArray(src.f) ? maskPoints(src) : null; } catch { custom = null; }
+        use(o.model);
+        if (+o.appear > 0) S.appear = 0;
+        return !!custom;
+      },
       start() { this.set({ enabled: true }); },
       stop() { this.set({ enabled: false }); },
       get options() { return { ...o }; },

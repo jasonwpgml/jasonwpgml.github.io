@@ -51,10 +51,10 @@ function toState(res) {
 
 /**
  * 카메라를 켜고 인식을 시작한다.
- * @param {{video: HTMLVideoElement, dots: HTMLCanvasElement, out: HTMLElement, onState: (s: object) => void}} ui
+ * @param {{video: HTMLVideoElement, dots: HTMLCanvasElement, out: HTMLElement, onState: (s: object) => void, onShape?: (v: number[][]) => void}} ui
  * @returns {Promise<() => void>} 멈추는 함수
  */
-export async function start({ video, dots, out, onState }) {
+export async function start({ video, dots, out, onState, onShape }) {
   const say = (t) => { out.textContent = t; };
   say("> face.link\n  인식 모델을 불러오는 중입니다(처음 한 번, 약 17MB)…");
   let landmarker = null, delegate = "GPU";
@@ -79,6 +79,23 @@ export async function start({ video, dots, out, onState }) {
   await video.play();
   const ctx = dots.getContext("2d");
   let raf = 0, lastVideo = -1, frames = 0, fps = 0, fpsT = performance.now(), lastPaint = 0, stopped = false;
+  // 얼굴 본뜨기: 정면을 보는 프레임 15개(약 1초)의 점을 평균 내 홀로그램 얼굴을 그 사람 모양으로 바꾼다
+  const SHAPE_FRAMES = 15, sum = new Float64Array(468 * 3);
+  let shapeCount = 0, shaped = false;
+  const capture = (lm, s) => {
+    if (shaped || !onShape || !lm || lm.length < 468) return;
+    if (Math.abs(s.yaw) > 8 || Math.abs(s.pitch) > 10 || Math.abs(s.roll) > 6) { shapeCount = 0; sum.fill(0); return; }
+    const vw = video.videoWidth, vh = video.videoHeight;
+    for (let i = 0; i < 468; i++) { sum[i * 3] += lm[i].x * vw; sum[i * 3 + 1] += lm[i].y * vh; sum[i * 3 + 2] += lm[i].z * vw; } // z는 x와 같은 크기로 나온다
+    if (++shapeCount < SHAPE_FRAMES) return;
+    const P = (i) => [sum[i * 3] / shapeCount, sum[i * 3 + 1] / shapeCount, sum[i * 3 + 2] / shapeCount];
+    // 가면 데이터와 같은 자리: 세로는 턱끝(152) -1 ~ 이마 위(10) 1, 가로 가운데는 두 눈꼬리(33·263) 사이, 앞(+z)은 카메라 쪽
+    const top = P(10), chin = P(152), cx = (P(33)[0] + P(263)[0]) / 2, cy = (top[1] + chin[1]) / 2, zref = (top[2] + chin[2]) / 2;
+    const k = 2 / Math.max(1, chin[1] - top[1]);
+    const v = Array.from({ length: 468 }, (_, i) => { const p = P(i); return [(p[0] - cx) * k, -(p[1] - cy) * k, -(p[2] - zref) * k + 0.5]; });
+    shaped = true;
+    onShape(v);
+  };
 
   const paint = (res, s, now) => {
     const vw = video.videoWidth, vh = video.videoHeight;
@@ -98,6 +115,7 @@ export async function start({ video, dots, out, onState }) {
       `  model      MediaPipe Face Landmarker (float16) · ${RUNTIME} · WebAssembly ${delegate}`,
       `  camera     ${vw}×${vh}  ${fps}fps  faces=${lm ? 1 : 0}  landmarks=${lm ? lm.length : 0}  blendshapes=${res.faceBlendshapes?.[0]?.categories?.length ?? 0}`,
     ];
+    lines.push(`  shape      ${shaped ? "내 얼굴 점 468개로 홀로그램을 다시 만들었습니다" : onShape ? `정면을 1초 보면 내 얼굴 모양으로 바뀝니다 (${shapeCount}/${SHAPE_FRAMES})` : "—"}`);
     if (s.present) {
       lines.push(`  pose       yaw ${sign(s.yaw)}°  pitch ${sign(s.pitch)}°  roll ${sign(s.roll)}°`);
       lines.push(`  gaze       x ${sign(s.gazeX, 2)}  y ${sign(s.gazeY, 2)}`);
@@ -119,6 +137,7 @@ export async function start({ video, dots, out, onState }) {
     const res = landmarker.detectForVideo(video, now);
     const s = toState(res);
     onState(s);
+    capture(res.faceLandmarks?.[0], s);
     frames++;
     if (now - fpsT > 1000) { fps = frames; frames = 0; fpsT = now; }
     paint(res, s, now);
