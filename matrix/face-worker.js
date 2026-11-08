@@ -1,5 +1,20 @@
 // face.link 일꾼: MediaPipe Face Landmarker를 페이지와 다른 스레드에서 돌린다.
 // 페이지는 카메라 프레임을 ImageBitmap으로 넘기고 결과만 받아서, 인식하는 동안에도 비와 홀로그램이 멈추지 않는다.
+// 페이지의 CSP(connect-src 'self')는 일꾼에는 적용되지 않는다(일꾼의 CSP는 응답 헤더로만 정해지는데 GitHub Pages는 헤더를 못 바꾼다).
+// 그래서 MediaPipe가 사용량 지표를 구글로 보내지 못하게, 번들을 불러오기 전에 사이트 밖으로 나가는 통신을 여기서 막는다
+const sameOrigin = (u) => { try { return new URL(String(u), self.location.href).origin === self.location.origin; } catch { return false; } };
+const realFetch = self.fetch.bind(self);
+self.fetch = (input, init) => sameOrigin(input && input.url ? input.url : input)
+  ? realFetch(input, init) : Promise.reject(new TypeError("face.link: 사이트 밖 통신은 막혀 있습니다"));
+if (self.XMLHttpRequest) {
+  const open = self.XMLHttpRequest.prototype.open;
+  self.XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+    if (!sameOrigin(url)) throw new TypeError("face.link: 사이트 밖 통신은 막혀 있습니다");
+    return open.call(this, method, url, ...rest);
+  };
+}
+if (self.WebSocket) self.WebSocket = function () { throw new TypeError("face.link: 사이트 밖 통신은 막혀 있습니다"); };
+
 importScripts("face/vision_bundle.js"); // self.Vision (IIFE 판)
 
 let landmarker = null;

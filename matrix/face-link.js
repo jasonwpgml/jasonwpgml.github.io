@@ -1,6 +1,6 @@
 // face.link: 카메라로 얼굴 표정을 읽어 홀로그램이 거울처럼 따라 하게 한다(에이전트용 판본의 숨은 버튼).
 // 인식은 MediaPipe Face Landmarker(Apache 2.0)를 이 사이트에 둔 파일로 기기 안에서 돌린다. 영상은 어디에도 보내지 않는다.
-// MediaPipe가 보내려는 사용량 지표는 페이지의 CSP(connect-src 'self')가 막는다.
+// MediaPipe가 보내려는 사용량 지표는 페이지에서는 CSP(connect-src 'self')가, 일꾼에서는 face-worker.js의 통신 막기가 막는다.
 // 인식은 되도록 일꾼(face-worker.js)에서 돌려 페이지(비·홀로그램)를 막지 않는다. 일꾼이 안 되는 브라우저는 페이지에서 돌린다.
 
 const here = (p) => new URL(p, import.meta.url).href;
