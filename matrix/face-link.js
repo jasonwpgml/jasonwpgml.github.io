@@ -1,7 +1,7 @@
 // face.link: 카메라로 얼굴 표정을 읽어 홀로그램이 거울처럼 따라 하게 한다(에이전트용 판본의 숨은 버튼).
 // 인식은 MediaPipe Face Landmarker(Apache 2.0)를 이 사이트에 둔 파일로 기기 안에서 돌린다. 영상은 어디에도 보내지 않는다.
 // MediaPipe가 보내려는 사용량 지표는 페이지의 CSP(connect-src 'self')가 막는다.
-import { FaceLandmarker } from "./face/vision_bundle.mjs";
+// 인식은 되도록 일꾼(face-worker.js)에서 돌려 페이지(비·홀로그램)를 막지 않는다. 일꾼이 안 되는 브라우저는 페이지에서 돌린다.
 
 const here = (p) => new URL(p, import.meta.url).href;
 const FILES = { wasmLoaderPath: here("./face/wasm/vision_wasm_internal.js"), wasmBinaryPath: here("./face/wasm/vision_wasm_internal.wasm") };
@@ -49,6 +49,41 @@ function toState(res) {
   return s;
 }
 
+// 일꾼에서 돌리는 인식기. 안 되면(예: 일꾼 안 그래픽을 못 쓰는 브라우저) 페이지에서 돌린다
+async function createDetector() {
+  try {
+    const worker = new Worker(here("./face-worker.js"));
+    const ready = await new Promise((ok, no) => {
+      const t = setTimeout(() => no(new Error("시간 초과")), 30000);
+      worker.onmessage = (e) => { if (e.data.type === "ready") { clearTimeout(t); ok(e.data.delegate); } else if (e.data.type === "error") { clearTimeout(t); no(new Error(e.data.message)); } };
+      worker.onerror = (e) => { clearTimeout(t); no(new Error(e.message || "일꾼 오류")); };
+      worker.postMessage({ type: "init", files: FILES, model: MODEL });
+    });
+    let pending = null;
+    worker.onmessage = (e) => { if (e.data.type === "result" && pending) { const p = pending; pending = null; p(e.data.res); } };
+    return {
+      mode: `Web Worker ${ready}`,
+      async detect(video, t) {
+        const bitmap = await createImageBitmap(video);
+        return new Promise((ok) => { pending = ok; worker.postMessage({ type: "frame", bitmap, t }, [bitmap]); });
+      },
+      close() { worker.postMessage({ type: "close" }); setTimeout(() => worker.terminate(), 500); },
+    };
+  } catch (err) {
+    console.warn("face.link: 일꾼에서 못 돌려 페이지에서 돌린다", err);
+  }
+  const { FaceLandmarker } = await import("./face/vision_bundle.mjs");
+  for (const delegate of ["GPU", "CPU"]) {
+    try {
+      const lm = await FaceLandmarker.createFromOptions(FILES, {
+        baseOptions: { modelAssetPath: MODEL, delegate }, runningMode: "VIDEO", numFaces: 1,
+        outputFaceBlendshapes: true, outputFacialTransformationMatrixes: true,
+      });
+      return { mode: `main ${delegate}`, detect: async (video, t) => lm.detectForVideo(video, t), close: () => lm.close() };
+    } catch (e) { if (delegate === "CPU") throw new Error(`인식 모델을 불러오지 못했습니다: ${e?.message ?? e}`); }
+  }
+}
+
 /**
  * 카메라를 켜고 인식을 시작한다.
  * @param {{video: HTMLVideoElement, dots: HTMLCanvasElement, out: HTMLElement, onState: (s: object) => void, onShape?: (v: number[][]) => void}} ui
@@ -57,22 +92,14 @@ function toState(res) {
 export async function start({ video, dots, out, onState, onShape }) {
   const say = (t) => { out.textContent = t; };
   say("> face.link\n  인식 모델을 불러오는 중입니다(처음 한 번, 약 17MB)…");
-  let landmarker = null, delegate = "GPU";
-  for (const d of ["GPU", "CPU"]) {
-    try {
-      landmarker = await FaceLandmarker.createFromOptions(FILES, {
-        baseOptions: { modelAssetPath: MODEL, delegate: d }, runningMode: "VIDEO", numFaces: 1,
-        outputFaceBlendshapes: true, outputFacialTransformationMatrixes: true,
-      });
-      delegate = d; break;
-    } catch (e) { if (d === "CPU") throw new Error(`인식 모델을 불러오지 못했습니다: ${e?.message ?? e}`); }
-  }
+  const detector = await createDetector();
+  const delegate = detector.mode;
   say("> face.link\n  카메라 권한을 묻는 중입니다…");
   let stream;
   try {
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
   } catch (e) {
-    landmarker.close();
+    detector.close();
     throw new Error(e?.name === "NotAllowedError" ? "카메라 권한이 거부됐습니다." : `카메라를 켜지 못했습니다: ${e?.message ?? e}`);
   }
   video.srcObject = stream;
@@ -112,7 +139,7 @@ export async function start({ video, dots, out, onState, onShape }) {
     lastPaint = now;
     const lines = [
       "> face.link",
-      `  model      MediaPipe Face Landmarker (float16) · ${RUNTIME} · WebAssembly ${delegate}`,
+      `  model      MediaPipe Face Landmarker (float16) · ${RUNTIME} · ${delegate}`,
       `  camera     ${vw}×${vh}  ${fps}fps  faces=${lm ? 1 : 0}  landmarks=${lm ? lm.length : 0}  blendshapes=${res.faceBlendshapes?.[0]?.categories?.length ?? 0}`,
     ];
     lines.push(`  shape      ${shaped ? "내 얼굴 점 468개로 홀로그램을 다시 만들었습니다" : onShape ? `정면을 1초 보면 내 얼굴 모양으로 바뀝니다 (${shapeCount}/${SHAPE_FRAMES})` : "—"}`);
@@ -128,19 +155,25 @@ export async function start({ video, dots, out, onState, onShape }) {
     say(lines.join("\n"));
   };
 
-  const loop = () => {
+  // 앞 프레임 인식이 끝나야 다음 프레임을 넘긴다(쌓이지 않게). 일꾼이면 그동안 페이지는 계속 그린다
+  let busy = false;
+  const handle = (res) => {
     if (stopped) return;
-    raf = requestAnimationFrame(loop);
-    if (video.readyState < 2 || video.currentTime === lastVideo) return;
-    lastVideo = video.currentTime;
     const now = performance.now();
-    const res = landmarker.detectForVideo(video, now);
     const s = toState(res);
     onState(s);
     capture(res.faceLandmarks?.[0], s);
     frames++;
     if (now - fpsT > 1000) { fps = frames; frames = 0; fpsT = now; }
     paint(res, s, now);
+  };
+  const loop = () => {
+    if (stopped) return;
+    raf = requestAnimationFrame(loop);
+    if (busy || video.readyState < 2 || video.currentTime === lastVideo) return;
+    lastVideo = video.currentTime;
+    busy = true;
+    detector.detect(video, performance.now()).then(handle, () => {}).finally(() => { busy = false; });
   };
   raf = requestAnimationFrame(loop);
 
@@ -149,7 +182,7 @@ export async function start({ video, dots, out, onState, onShape }) {
     cancelAnimationFrame(raf);
     stream.getTracks().forEach((t) => t.stop());
     video.srcObject = null;
-    landmarker.close();
+    detector.close();
     onState({ present: false });
   };
 }
