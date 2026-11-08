@@ -1,0 +1,1547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- 이 페이지는 자기 사이트 밖으로 통신하지 않는다. face.link의 MediaPipe가 보내려는 사용량 지표도 여기서 막힌다 -->
+<meta http-equiv="Content-Security-Policy" content="connect-src 'self' blob: data:">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jason Portfolio</title>
+<meta name="author" content="JSonJh (https://github.com/jasonwpgml)">
+<meta name="description" content="Portfolio of Jason, a math major who has taught for 10 years and builds personal agent tools and web services.">
+<link rel="alternate" hreflang="ko" href="https://jasonwpgml.github.io/">
+<link rel="alternate" hreflang="en" href="https://jasonwpgml.github.io/en/">
+<meta name="color-scheme" content="light dark">
+<script>
+// Apply a saved theme before first paint so the page never flashes the wrong one.
+try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+</script>
+<style>
+/* Layout: one screen per scene. Each scene is lit by soft colour fields in its project's hue; text sits on frosted glass. */
+@font-face{font-family:"Maru Buri";font-weight:400;font-display:swap;src:url("../fonts/MaruBuri-Regular.woff2") format("woff2")}
+@font-face{font-family:"Maru Buri";font-weight:600;font-display:swap;src:url("../fonts/MaruBuri-SemiBold.woff2") format("woff2")}
+@font-face{font-family:"Maru Buri";font-weight:700;font-display:swap;src:url("../fonts/MaruBuri-Bold.woff2") format("woff2")}
+@font-face{font-family:"Wanted Sans";font-weight:400;font-display:swap;src:url("../fonts/WantedSans-Regular.woff2") format("woff2")}
+@font-face{font-family:"Wanted Sans";font-weight:600;font-display:swap;src:url("../fonts/WantedSans-SemiBold.woff2") format("woff2")}
+
+:root{
+  color-scheme:light dark;
+  --ink:light-dark(#16151d,#f5f4fa);
+  --ink-2:light-dark(#5c5b68,#aaa9b8);
+  --paper:light-dark(#f4f3f8,#0c0b12);
+  --hair:light-dark(rgb(22 21 29/.12),rgb(245 244 250/.14));
+  --glass:light-dark(rgb(255 255 255/.6),rgb(255 255 255/.1));
+  --glass-2:light-dark(rgb(255 255 255/.34),rgb(255 255 255/.035));
+  --edge:light-dark(rgb(255 255 255/.85),rgb(255 255 255/.15));
+  --shadow:light-dark(rgb(40 30 80/.14),rgb(0 0 0/.45));
+  --acc:var(--ink);
+  --blur:blur(14px) saturate(160%);
+  --serif:"Maru Buri","Noto Serif KR","Nanum Myeongjo",serif;
+  --sans:"Wanted Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"D2Coding",monospace;
+  --gutter:clamp(16px,4.5vw,64px);
+  --max:1240px;
+  --measure:34em;
+}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
+@supports not (color:light-dark(#000,#fff)){
+  :root{--ink:#16151d;--ink-2:#5c5b68;--paper:#f4f3f8;--hair:rgb(22 21 29/.12);--glass:rgb(255 255 255/.55);--glass-2:rgb(255 255 255/.3);--edge:rgb(255 255 255/.85);--shadow:rgb(40 30 80/.14)}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:var(--head,64px);background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16.5px/1.65 var(--sans);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration-thickness:1px;text-underline-offset:.25em}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+img{display:block;max-width:100%;height:auto}
+h1,h2,h3,h4,h5{font-family:var(--serif);font-weight:600;margin:0;text-wrap:balance;line-height:1.25}
+p{margin:0;text-wrap:pretty}
+time,.no{font-variant-numeric:tabular-nums}
+.wrap{padding-inline:var(--gutter)}
+.wrap>*{max-width:var(--max);margin-inline:auto}
+
+/* glass: a translucent pane with a bright top edge. The scene behind is a soft gradient, so real blur would cost a lot and show nothing; only the head blurs. */
+.glass{background:linear-gradient(150deg,var(--glass),var(--glass-2));border:1px solid var(--edge);border-radius:22px;
+  box-shadow:inset 0 1px 0 var(--edge),0 24px 48px -30px var(--shadow)}
+
+/* scene tone: every colour of a scene comes from its hue pair, in both themes */
+.tone{--h:270;--h2:200;
+  --ink:light-dark(oklch(24% .035 var(--h)),oklch(97% .014 var(--h)));
+  --ink-2:light-dark(oklch(43% .05 var(--h)),oklch(81% .04 var(--h)));
+  --acc:light-dark(oklch(47% .16 var(--h)),oklch(84% .12 var(--h)));
+  --hair:light-dark(oklch(30% .05 var(--h)/.14),oklch(97% .02 var(--h)/.16));
+  --bg:light-dark(oklch(95% .028 var(--h)),oklch(19% .045 var(--h)));
+  --orb1:light-dark(oklch(80% .13 var(--h)/.85),oklch(48% .15 var(--h)/.8));
+  --orb2:light-dark(oklch(86% .1 var(--h2)/.75),oklch(42% .13 var(--h2)/.75));
+  --shadow:light-dark(oklch(40% .09 var(--h)/.18),rgb(0 0 0/.45));
+  position:relative;isolation:isolate;overflow:clip;background:var(--bg);color:var(--ink)}
+.tone::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(34% 44% at 14% 20%,var(--orb1),transparent 70%),radial-gradient(36% 46% at 88% 26%,var(--orb2),transparent 70%),
+    radial-gradient(40% 40% at 62% 96%,var(--orb1),transparent 70%),radial-gradient(26% 30% at 40% 52%,var(--orb2),transparent 72%)}
+.tone ::selection{background:var(--acc);color:var(--bg)}
+@supports not (color:light-dark(#000,#fff)){
+  .tone{--ink:oklch(24% .035 var(--h));--ink-2:oklch(43% .05 var(--h));--acc:oklch(47% .16 var(--h));--bg:oklch(95% .028 var(--h));--orb1:oklch(80% .13 var(--h)/.85);--orb2:oklch(86% .1 var(--h2)/.75)}
+}
+
+/* Beorimi: neon green on black in both themes */
+#beorimi{color-scheme:dark;--bg:oklch(12.5% .018 150);--ink:oklch(97% .02 140);--ink-2:oklch(80% .06 140);--acc:oklch(89% .24 138);
+  --orb1:oklch(78% .25 140/.42);--orb2:oklch(58% .2 155/.4);--hair:oklch(89% .24 138/.2)}
+#beorimi .frame img{background:#000}
+#beorimi .next{border-color:oklch(89% .24 138/.6)}
+#beorimi .next:hover{background:oklch(89% .24 138/.18)}
+
+/* running head: a glass bar the scenes pass under */
+.head{position:sticky;top:0;z-index:10;background:light-dark(rgb(255 255 255/.5),rgb(14 13 20/.42));-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
+  border-bottom:1px solid var(--hair);padding-block:calc(env(safe-area-inset-top,0px) + 12px) 12px;font-size:14px}
+.head-in{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
+.head .ed{font-family:var(--serif);font-weight:600;text-decoration:none;font-size:16px;justify-self:start}
+.head .now{font-family:var(--serif);color:var(--ink-2);white-space:nowrap;font-kerning:none}
+/* running head label: while it changes, each letter keeps its own slot */
+.now i{display:inline-block;font-style:normal;text-align:center;white-space:pre}
+.now i.nz{font:400 .86em/1 var(--mono);color:var(--ink-2)}
+.ctl{justify-self:end;display:flex;gap:12px}
+.keys{display:flex;gap:6px}
+/* glass pills; the pressed one fills with ink */
+.sq{all:unset;box-sizing:border-box;cursor:pointer;padding:5px 13px;border:1px solid var(--edge);border-radius:999px;
+  background:var(--glass);color:var(--ink);font:600 13px/1.45 var(--sans);box-shadow:inset 0 1px 0 var(--edge);
+  transition:background-color .2s,color .2s,transform .14s cubic-bezier(.2,.7,.2,1)}
+.sq:hover{background:light-dark(rgb(255 255 255/.8),rgb(255 255 255/.14))}
+.sq:active{transform:scale(.96)}
+.sq[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);cursor:default}
+.sq:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
+/* cover: name, who, and the way in, all on the first screen */
+.cover{--h:285;--h2:160;min-height:calc(100svh - var(--head,56px));display:grid;align-items:center;padding:clamp(28px,5svh,64px) var(--gutter)}
+.cover::before{background:
+  radial-gradient(30% 40% at 10% 16%,light-dark(oklch(82% .12 160/.8),oklch(46% .13 160/.7)),transparent 70%),
+  radial-gradient(28% 38% at 36% 88%,light-dark(oklch(84% .11 40/.75),oklch(48% .13 40/.6)),transparent 70%),
+  radial-gradient(32% 42% at 70% 18%,light-dark(oklch(80% .12 285/.8),oklch(44% .15 285/.75)),transparent 70%),
+  radial-gradient(30% 40% at 94% 80%,light-dark(oklch(84% .1 255/.75),oklch(42% .13 255/.7)),transparent 70%)}
+.cover-in{width:min(var(--max),100%);margin-inline:auto;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(28px,5vw,88px);align-items:center}
+.name{font:700 clamp(4rem,min(12vw,19svh),10.5rem)/.9 var(--serif);letter-spacing:-.035em;margin-left:-.05em}
+.name .mask{display:inline-flex;overflow:hidden;padding:.06em .04em .22em;margin:-.06em -.04em -.22em}
+.name .cap{position:relative}
+.name .int{position:absolute;inset:0 auto auto 0;opacity:0;transform:translateX(-.3em)}
+.name .j,.name .l{display:inline-block}
+.role{font:400 clamp(1.2rem,min(2.2vw,3.6svh),1.85rem)/1.4 var(--serif);margin-top:clamp(12px,2.4svh,24px);color:var(--acc)}
+.intro{margin-top:clamp(20px,4svh,44px)}
+.intro p{max-width:30em}
+.intro p+p{margin-top:12px}
+.lede{font:400 clamp(1.1rem,min(1.6vw,2.8svh),1.35rem)/1.55 var(--serif)}
+.intro .lede+p{margin-top:clamp(12px,2svh,20px)}
+.reach{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:clamp(16px,3svh,28px);font-size:15px}
+.cover-side{display:grid;gap:clamp(12px,2svh,20px)}
+.cover-side>.glass{padding:clamp(14px,2.4svh,24px) clamp(18px,2vw,28px)}
+.k{font-size:14px;color:var(--ink-2);margin-bottom:8px}
+.toc{list-style:none;margin:0;padding:0;display:grid}
+.toc a{text-decoration:none;display:grid;grid-template-columns:2.4em 1fr auto;align-items:baseline;padding-block:clamp(6px,1.25svh,11px);font:400 1.1rem/1.4 var(--serif)}
+.toc li+li a{border-top:1px solid var(--hair)}
+.toc .n,.toc .y{color:var(--ink-2);font-size:13.5px;font-variant-numeric:tabular-nums}
+.toc .t{transition:transform .25s cubic-bezier(.2,.7,.2,1)}
+.toc a:hover .t{transform:translateX(6px)}
+.news h2{font:400 14px/1.6 var(--sans);color:var(--ink-2)}
+.news ol{list-style:none;margin:0;padding:0;display:grid;gap:clamp(6px,1.2svh,12px)}
+.news li{display:grid;grid-template-columns:6.6em minmax(0,1fr);gap:14px;font-size:15px}
+.news time{font-family:var(--serif);color:var(--acc)}
+
+/* project scenes: stacked in order, each slides up over the one before and fills exactly one screen */
+.ch{display:grid;grid-template-rows:auto minmax(0,1fr);gap:clamp(12px,2.2svh,24px);padding-block:clamp(18px,3.4svh,40px) clamp(16px,3svh,36px)}
+.projects .ch{position:sticky;top:var(--head,56px);height:calc(100svh - var(--head,56px));border-radius:28px 28px 0 0}
+.projects .ch+.ch{box-shadow:0 -28px 56px -24px rgb(0 0 0/.4)}
+.projects .ch::after{content:"";position:absolute;inset:0;background:#000;opacity:calc(var(--cover,0) * .38);pointer-events:none}
+.ch-head{width:min(var(--max),calc(100% - 2 * var(--gutter)));margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 32px;align-items:end}
+.ch-head .no{font-family:var(--serif);color:var(--acc);font-size:15px;display:block;margin-bottom:2px}
+.ch-head h2{font-size:clamp(1.8rem,min(3.6vw,6svh),3.1rem);letter-spacing:-.015em}
+.meta{display:flex;flex-wrap:wrap;gap:2px 0;color:var(--ink-2);font-size:14.5px;margin-top:4px}
+.meta span:not(:last-child)::after,.app .facts span:not(:last-child)::after{content:"/";padding-inline:.6em;color:var(--hair)}
+
+/* tabs: the panes of a project, a glass pill follows the swipe */
+.tabs{position:relative;display:flex;gap:2px;padding:4px;border-radius:999px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{all:unset;position:relative;z-index:1;cursor:pointer;padding:6px 14px;border-radius:999px;font:600 13.5px/1.35 var(--sans);color:var(--ink-2);white-space:nowrap;transition:color .2s}
+.tabs button:hover,.tabs button[aria-selected="true"]{color:var(--ink)}
+.tabs button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.tabs .pill{position:absolute;top:4px;bottom:4px;left:0;border-radius:999px;background:light-dark(rgb(255 255 255/.9),rgb(255 255 255/.17));
+  box-shadow:inset 0 1px 0 var(--edge),0 4px 14px -6px var(--shadow);pointer-events:none}
+
+/* track: panes side by side; swipe, drag, the tabs or the keys move between them */
+.track{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;min-height:0}
+.track::-webkit-scrollbar{display:none}
+@media (hover:hover) and (pointer:fine){.track{cursor:grab}}
+.track.dragging{scroll-snap-type:none;cursor:grabbing;user-select:none}
+.track.dragging *{pointer-events:none}
+.pane{flex:0 0 100%;min-width:0;min-height:0;scroll-snap-align:start;scroll-snap-stop:always;display:grid;align-content:center;overflow-y:auto;scrollbar-width:none;padding:2px var(--gutter) 6px}
+.pane::-webkit-scrollbar{display:none}
+.pane>*{width:min(var(--max),100%);margin-inline:auto}
+.pane-h{font:600 clamp(1.2rem,min(2vw,3.4svh),1.6rem)/1.3 var(--serif);margin-bottom:clamp(10px,2svh,20px)}
+.pane-h+.lead{margin-top:calc(-1 * clamp(4px,1svh,10px))}
+.lead{max-width:44em;margin-bottom:clamp(12px,2.2svh,22px)}
+
+/* summary pane: glass text card beside the screenshots */
+.duo{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(20px,3.6vw,56px);align-items:center}
+.duo.flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.duo.flip>.card{order:2}
+.card{padding:clamp(18px,3svh,32px) clamp(20px,2.4vw,34px)}
+.card p+p,.card p+.with{margin-top:.8em}
+.say{font:400 clamp(1.12rem,min(1.8vw,3svh),1.5rem)/1.5 var(--serif);margin-bottom:clamp(10px,2svh,18px)}
+.sub-h{font-size:1.1rem;margin-bottom:4px}
+.with{margin-top:clamp(12px,2.2svh,20px)}
+.links{display:flex;flex-wrap:wrap;align-items:center;gap:6px 22px;margin-top:clamp(12px,2.2svh,20px);font-size:15px}
+.stack{font-size:13.5px;color:var(--ink-2);margin-top:8px}
+.private{color:var(--ink-2)}
+.next{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:clamp(14px,2.6svh,24px);padding:7px 14px 7px 16px;border-radius:999px;
+  border:1px solid var(--edge);background:light-dark(rgb(255 255 255/.7),rgb(255 255 255/.12));font:600 14px/1.3 var(--sans);color:var(--ink);box-shadow:inset 0 1px 0 var(--edge);
+  transition:background-color .2s,gap .25s cubic-bezier(.2,.7,.2,1)}
+.next svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.next:hover{gap:10px;background:light-dark(rgb(255 255 255/.92),rgb(255 255 255/.2))}
+.next:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;margin-top:clamp(12px,2.4svh,24px)}
+.foot .next,.foot .stack{margin-top:0}
+
+/* screenshots: a glass bezel; the image shrinks to the room the screen has left */
+.shot{margin:0;min-width:0;display:grid;justify-items:center}
+.frame{display:block;max-width:100%;padding:6px;border:1px solid var(--edge);border-radius:18px;background:var(--glass);box-shadow:inset 0 1px 0 var(--edge),0 30px 60px -34px var(--shadow);
+  transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.frame img{border-radius:12px;background:#fff}
+button.frame{appearance:none;font:inherit;color:inherit;text-align:left;cursor:pointer;position:relative}
+button.frame:hover{transform:translateY(-3px)}
+button.frame::after{content:"Details";position:absolute;right:14px;bottom:14px;padding:4px 11px;border-radius:999px;border:1px solid var(--edge);
+  background:light-dark(rgb(255 255 255/.88),rgb(20 18 30/.82));color:var(--ink);font:600 12.5px/1.4 var(--sans);
+  opacity:0;translate:0 4px;transition:opacity .2s,translate .2s}
+button.frame:is(:hover,:focus-visible)::after{opacity:1;translate:0 0}
+@media (hover:none){button.frame::after{opacity:1;translate:0 0}}
+.shot figcaption{font-size:13.5px;color:var(--ink-2);margin-top:10px;text-align:center}
+.wide .frame img{max-height:calc(var(--room,70svh) - 54px);width:auto;max-width:100%}
+.phones{display:flex;justify-content:center;gap:clamp(10px,1.6vw,20px);align-items:start}
+.phones .shot{flex:1 1 0;max-width:calc((var(--room,70svh) - 60px) * .6)}
+.phones img{aspect-ratio:3/5;object-fit:cover;object-position:top;width:100%}
+
+/* detail panes: glass tiles */
+.tiles{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:clamp(10px,1.4vw,18px)}
+.tile{border-radius:18px;padding:clamp(14px,2.2svh,22px) clamp(16px,1.6vw,22px)}
+.tile dt,.tile h5,.tile b{display:block;font:600 1.05rem/1.4 var(--serif);margin-bottom:6px}
+.tile dd{margin:0}
+.tile dd,.tile p,.tile span{font-size:15px;line-height:1.6}
+.tile .lbl{display:block;font-size:12.5px;color:var(--acc);margin-top:10px;letter-spacing:.02em}
+.tile h5+.lbl{margin-top:0}
+.seq{counter-reset:s}
+.seq li{counter-increment:s}
+.seq li::before{content:counter(s,decimal-leading-zero);display:block;font:400 13px/1 var(--serif);color:var(--acc);margin-bottom:10px;font-variant-numeric:tabular-nums}
+.trouble-q{font:400 clamp(1.15rem,min(2vw,3.4svh),1.6rem)/1.45 var(--serif);max-width:28em;margin-bottom:clamp(12px,2.4svh,22px)}
+.scope{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 32px;padding:clamp(16px,2.6svh,26px) clamp(18px,2vw,26px)}
+.scope h4{font-size:1.1rem;margin-bottom:8px}
+.scope ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:15px}
+.split2{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,7fr);gap:clamp(12px,1.6vw,20px);align-items:stretch}
+.flow{list-style:none;margin:clamp(14px,2.6svh,24px) 0 0;padding:clamp(14px,2.4svh,22px) clamp(16px,2vw,26px);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;counter-reset:f}
+.flow li{counter-increment:f;font-size:14.5px;line-height:1.5;padding-top:12px;border-top:2px solid var(--acc)}
+.flow li::before{content:counter(f,decimal-leading-zero);display:block;font-family:var(--serif);color:var(--acc);margin-bottom:4px}
+
+/* apps in toss: one glass card per app, each tinted with its own app */
+.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,2vw,28px);align-items:stretch}
+.app{--ah:45;padding:clamp(16px,2.6svh,26px) clamp(18px,2vw,28px);display:grid;align-content:start;
+  background:linear-gradient(150deg,light-dark(oklch(93% .06 var(--ah)/.75),oklch(46% .11 var(--ah)/.32)),var(--glass-2))}
+.app h3{font-size:clamp(1.25rem,min(2vw,3.4svh),1.6rem)}
+.app .facts{display:flex;flex-wrap:wrap;color:var(--ink-2);font-size:13.5px;margin-top:2px}
+.app .phones{margin-block:clamp(10px,2svh,18px)}
+.app .phones .shot{max-width:calc((var(--room,70svh) - 345px) * .6)}
+.app .body{font-size:15px}
+.app .body p+p{margin-top:6px}
+.app .links{margin-top:10px}
+.app .tiles{--cols:1;margin-top:10px;gap:clamp(10px,2svh,16px)}
+.app dl.tiles dt{font:600 1rem/1.4 var(--serif)}
+.app dl.tiles dd{margin:2px 0 0;font-size:14.5px}
+
+/* recent work */
+.own{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,1.6vw,22px);align-items:stretch}
+.own section{padding:clamp(18px,3svh,30px) clamp(18px,2vw,28px)}
+.own h3{font-size:clamp(1.3rem,min(2.1vw,3.6svh),1.7rem);font-weight:600;margin-bottom:10px}
+.own p{font-size:15.5px}
+.own .links{margin-top:14px}
+.also b{display:block}
+
+/* contact */
+.contact{--h:285;--h2:200;min-height:calc(100svh - var(--head,56px));display:grid;grid-template-rows:minmax(0,1fr) auto;padding:clamp(24px,5svh,56px) var(--gutter) 24px}
+.contact-in{align-self:center;width:min(var(--max),100%);margin-inline:auto;padding:clamp(24px,5svh,56px) clamp(22px,4vw,56px)}
+.contact .mail{display:inline-block;font:400 clamp(2rem,min(6.2vw,10svh),5.5rem)/1.05 var(--serif);letter-spacing:-.02em;text-decoration:none;word-break:break-all;margin-top:8px}
+.contact .mail:hover{text-decoration:underline;text-decoration-thickness:2px}
+.colophon{width:min(var(--max),100%);margin-inline:auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:16px;border-top:1px solid var(--hair);font-size:13px;color:var(--ink-2)}
+
+/* agent edition: the same facts as a terminal, green on black, with a slow rain in the margins */
+html[data-edition="agent"]{color-scheme:dark;--paper:#030a05;--ink:#c6f6d2;--ink-2:#5fae76;--hair:#16331f;--glass:transparent;--edge:#2f8a4a}
+html[data-edition="agent"] .head{background:rgb(3 10 5/.8)}
+html[data-edition="agent"] .sq{border-radius:3px;box-shadow:none}
+.agent{display:none;position:relative;min-height:100svh;padding-block:56px 80px;font:400 14.5px/1.75 var(--mono)}
+.agent pre{position:relative;z-index:1;margin:0 0 0 max(0px,(100% - var(--max)) / 2);white-space:pre-wrap;word-break:break-word;font:inherit;max-width:92ch;
+  color:#9fe0b0;text-shadow:0 0 6px rgb(80 220 120/.18);font-kerning:none;font-variant-ligatures:none}
+.agent .k{color:#d8ffe2}
+.agent .c{color:#4f8d61}
+.agent .h{color:#7dff9f}
+.agent .nz{color:#2f8a4a}
+.agent .nz.w{display:inline-block;width:1ic;text-align:center}
+.agent .gh{color:transparent;text-shadow:none}
+.rain{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
+.face{z-index:0;display:none}
+/* the rain covers the whole screen and the face sits in the middle, behind the text.
+   A light veil plus a dark halo around each glyph keeps the text readable on top of it */
+html[data-edition="agent"] .agent::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:rgb(3 10 5/.42)}
+html[data-edition="agent"] .agent pre,html[data-edition="agent"] .agent .credit{text-shadow:0 0 2px #030a05,0 0 6px #030a05,0 0 12px rgb(3 10 5/.9)}
+.agent .credit{position:relative;z-index:1;max-width:92ch;margin:32px 0 0 max(0px,(100% - var(--max)) / 2);font-size:12px;color:var(--ink-2)}
+.agent .credit a{color:inherit}
+/* face.link: 글이 끝난 뒤 한참 빈 공간이 이어지고, 그 끝에 숨 쉬듯 빛나는 구슬 하나. 누르면 카메라 표정 인식 창이 뜬다 */
+.agent .void{height:85svh}
+.agent .orb-wrap{position:relative;z-index:1;display:flex;justify-content:center;padding:0 0 9svh}
+.agent .orb{all:unset;position:relative;width:46px;height:46px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle,#eafff1 0 2px,rgb(125 255 159/.85) 3px,rgb(60 255 149/.22) 9px,rgb(3 10 5/0) 70%);
+  box-shadow:0 0 0 1px rgb(47 138 74/.55),0 0 22px rgb(60 255 149/.28),inset 0 0 12px rgb(60 255 149/.18);
+  animation:orb 3.6s ease-in-out infinite}
+.agent .orb::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgb(60 255 149/.18);animation:orbring 3.6s ease-out infinite}
+.agent .orb::after{content:"face.link";position:absolute;left:50%;top:calc(100% + 14px);transform:translateX(-50%);font:400 11px/1 var(--mono);letter-spacing:.2em;color:#4f8d61;opacity:0;transition:opacity .4s}
+.agent .orb:hover,.agent .orb:focus-visible{box-shadow:0 0 0 1px rgb(125 255 159/.9),0 0 34px rgb(60 255 149/.6),inset 0 0 14px rgb(125 255 159/.35)}
+.agent .orb:hover::after,.agent .orb:focus-visible::after{opacity:1}
+@keyframes orb{0%,100%{transform:scale(.9);filter:brightness(.8)}50%{transform:scale(1.04);filter:brightness(1.25)}}
+@keyframes orbring{0%{transform:scale(.7);opacity:0}30%{opacity:.9}100%{transform:scale(1.5);opacity:0}}
+@media (prefers-reduced-motion:reduce){.agent .orb,.agent .orb::before{animation:none}}
+.facelink{position:fixed;right:16px;bottom:16px;z-index:5;width:min(560px,calc(100vw - 32px));max-height:calc(100svh - 96px);overflow:auto;
+  background:rgb(3 10 5/.86);border:1px solid #2f8a4a;border-radius:6px;padding:12px;font:400 12px/1.6 var(--mono);color:#c6f6d2;backdrop-filter:blur(2px)}
+.facelink[hidden]{display:none}
+.facelink .fl-view{position:relative;width:200px;aspect-ratio:4/3;float:right;margin:0 0 8px 12px;border:1px solid #16331f;overflow:hidden;background:#000}
+.facelink video,.facelink canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.facelink video{opacity:.55}
+.facelink pre{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit}
+.facelink .sq{clear:both;margin-top:8px}
+@media (max-width:700px){.facelink{right:8px;left:8px;bottom:8px;width:auto;font-size:11px}.facelink .fl-view{width:120px}}
+html[data-edition="agent"] .human{display:none}
+html[data-edition="agent"] .agent,html[data-edition="agent"] .rain,html[data-edition="agent"] .face{display:block}
+html[data-edition="agent"] .head .now{visibility:hidden}
+
+@media print{
+  .projects .ch{position:static;height:auto;box-shadow:none;border-radius:0}
+  .projects .ch::after,.rain,.face,.tabs,.next,button.frame::after{display:none}
+  .track{display:block;overflow:visible}
+  .pane{display:block;overflow:visible;padding-block:12px}
+}
+
+/* motion: one load sequence on the cover; everything rests visible */
+@media (prefers-reduced-motion:no-preference){
+  .name .l,.name .cap{animation:rise .9s cubic-bezier(.2,.75,0,1) both;animation-delay:calc(var(--i,0) * 70ms + 150ms)}
+  .name .int{animation:int-out 1.9s cubic-bezier(.6,0,.2,1) both}
+  .name .j{animation:j-in 1.9s cubic-bezier(.6,0,.2,1) both}
+  .role,.intro,.cover-side>*{animation:settle .9s cubic-bezier(.2,.75,0,1) both;animation-delay:1.15s}
+  .cover-side>*+*{animation-delay:1.3s}
+  @keyframes rise{from{transform:translateY(105%)}}
+  @keyframes int-out{0%,55%{opacity:1;transform:translateX(-.3em)}100%{opacity:0;transform:translateX(-.34em) rotate(-24deg)}}
+  @keyframes j-in{0%,55%{opacity:0;transform:rotate(18deg);margin-right:.14em}100%{opacity:1;transform:none;margin-right:0}}
+  @keyframes settle{from{opacity:0;transform:translateY(14px)}}
+}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+
+/* short screens: tighter type and spacing so each scene still fits */
+@media (min-width:861px) and (max-height:820px){
+  body{font-size:15px;line-height:1.6}
+  .tile dd,.tile p,.tile span,.app .body,.own p,.news li{font-size:14px}
+  .tile dt,.tile h5,.tile b{font-size:1rem;margin-bottom:4px}
+  .tile .lbl{margin-top:6px}
+  .seq li::before{margin-bottom:6px}
+  .flow li{font-size:13.5px}
+  .links{font-size:14px}
+  .card{padding-block:16px}
+  .card p+p,.card p+.with{margin-top:.6em}
+  .say{font-size:clamp(1.05rem,min(1.7vw,2.9svh),1.4rem);margin-bottom:10px}
+  .next{margin-top:12px;padding-block:6px}
+}
+
+@media (max-width:860px){
+  body{font-size:16px}
+  .cover{min-height:0;padding-block:40px 48px}
+  .cover-in,.duo,.duo.flip,.apps,.own,.split2,.scope{grid-template-columns:minmax(0,1fr)}
+  .duo.flip>.card{order:0}
+  .tiles{--cols:1 !important}
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .projects .ch{position:relative;top:auto;height:auto;border-radius:24px 24px 0 0}
+  .projects .ch::after{display:none}
+  .ch-head{grid-template-columns:minmax(0,1fr)}
+  .tabs{justify-self:start}
+  .track{align-items:flex-start;transition:height .35s cubic-bezier(.2,.7,.2,1)}
+  .pane{overflow:visible;align-content:start}
+  .wide .frame img{max-height:none;width:100%}
+  .phones .shot,.app .phones .shot{max-width:none}
+  .news li{grid-template-columns:minmax(0,1fr);gap:0}
+  .head-in{grid-template-columns:1fr auto}
+  .head .now{display:none}
+  .contact{min-height:0}
+}
+@media (max-width:560px){
+  /* three phones side by side get too small; let them scroll inside their own row */
+  .phones.row{display:grid;grid-auto-flow:column;grid-auto-columns:64%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;justify-content:start}
+  .phones.row .shot{scroll-snap-align:start}
+  .head .ed{font-size:15px}
+  .sq{padding:4px 10px}
+  .ctl{gap:8px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="head wrap">
+  <div class="head-in">
+    <a class="ed" href="#top">Jason</a>
+    <span class="now" id="running" aria-hidden="true">Cover</span>
+    <div class="ctl">
+      <a class="sq" href="../" hreflang="ko" lang="ko">한국어</a>
+      <button type="button" class="sq" id="theme" aria-pressed="false">Dark</button>
+      <div class="keys" role="group" aria-label="Edition">
+        <button type="button" class="sq" id="m-human" aria-pressed="true">Human</button>
+        <button type="button" class="sq" id="m-agent" aria-pressed="false">Agent</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="human" id="top">
+
+<section class="cover tone" data-run="Cover">
+  <div class="cover-in">
+    <div>
+      <h1 class="name" aria-label="Jason"><span class="mask" aria-hidden="true"><span class="cap"><span class="int">∫</span><span class="j">J</span></span><span class="l" style="--i:1">a</span><span class="l" style="--i:2">s</span><span class="l" style="--i:3">o</span><span class="l" style="--i:4">n</span></span></h1>
+      <p class="role">Personal agent tools and web services</p>
+      <div class="intro">
+        <p class="lede">I’m Jason, an explorer at the frontier of knowledge.</p>
+        <p>I majored in math and have been teaching for 10 years. Besides math, I now also teach machine learning, deep learning and AI.</p>
+        <p>I built tools that I share across several devices and agents.</p>
+        <div class="reach">
+          <a href="mailto:jae1450@naver.com">jae1450@naver.com</a>
+          <a href="https://github.com/jasonwpgml">github.com/jasonwpgml</a>
+        </div>
+      </div>
+    </div>
+    <div class="cover-side">
+      <nav class="glass" aria-label="Contents">
+        <p class="k">Projects</p>
+        <ol class="toc">
+          <li><a href="#agenthub"><span class="n">01</span><span class="t">AgentHub</span><span class="y">In use</span></a></li>
+          <li><a href="#poc"><span class="n">02</span><span class="t">Bearable PoC</span><span class="y">2026.08</span></a></li>
+          <li><a href="#publium"><span class="n">03</span><span class="t">Publium</span><span class="y">2026.07</span></a></li>
+          <li><a href="#beorimi"><span class="n">04</span><span class="t">Beorimi</span><span class="y">2026.08</span></a></li>
+          <li><a href="#toss"><span class="n">05</span><span class="t">Two Apps in Toss mini apps</span><span class="y">2026.07</span></a></li>
+          <li><a href="#recent"><span class="n">06</span><span class="t">Recent work and code</span><span class="y">Now</span></a></li>
+        </ol>
+      </nav>
+      <section class="glass news" aria-labelledby="news-h">
+        <h2 id="news-h" class="k">News</h2>
+        <ol>
+          <li><time datetime="2026-10-06">2026.10.06</time><p>Started working at a company in AICE certification. I also teach machine learning and deep learning certification courses.</p></li>
+          <li><time datetime="2026-09">2026.09</time><p>Finished the Bearable PoC, which I led.</p></li>
+          <li><time>2026.07 – 08</time><p>Launched two mini apps on Apps in Toss.</p></li>
+        </ol>
+      </section>
+    </div>
+  </div>
+</section>
+
+<div class="projects">
+
+<!-- 01 AgentHub -->
+<article class="ch tone" id="agenthub" data-run="01 AgentHub" style="--h:160;--h2:200">
+  <header class="ch-head">
+    <div>
+      <span class="no">01</span>
+      <h2>AgentHub</h2>
+      <p class="meta"><span>Personal project</span><span>In use</span></p>
+    </div>
+    <div class="tabs glass" role="tablist" aria-label="AgentHub sections"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="Summary">
+      <div class="duo">
+        <div class="card glass">
+          <p>I use agents and tools I built myself to bring AI automation into daily life.</p>
+          <p>I work across several devices and agents, and sharing skills and work between them was awkward.</p>
+          <p>Now a skill made anywhere works on every device. I can look up work from the office at home and build on it in the next task.</p>
+          <p>I set it up so files stay in sync and are quick to find.</p>
+          <p class="links"><span class="private">Private repository</span></p>
+          <button type="button" class="next">Details<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <figure class="shot wide">
+          <button type="button" class="frame"><img src="../img/agenthub-discovery.webp" width="1280" height="807" alt="Agent Hub import screen. The left menu lists Dashboard, Tools, Skills and MCP servers; the middle shows a search for the reduce-ai-cliches skill and where it is installed for Codex and Claude Code." loading="lazy"></button>
+          <figcaption>Finding and sharing installed skills and tools</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="pane" data-tab="Automation">
+      <div class="card glass" style="max-width:44em">
+        <h3 class="pane-h">Shared automation</h3>
+        <p>Every morning a Grok bot briefs me on my schedule, email and top news. Anything I haven’t checked rolls over to the next briefing. I see important information from X, email and my personal schedule in one place.</p>
+        <p class="stack" style="margin-top:16px">Next: save morning briefings to AND automatically, and turn more repeated tasks into code.</p>
+      </div>
+    </section>
+  </div>
+</article>
+
+<!-- 02 Bearable PoC -->
+<article class="ch tone" id="poc" data-run="02 Bearable PoC" style="--h:258;--h2:220">
+  <header class="ch-head">
+    <div>
+      <span class="no">02</span>
+      <h2>Bearable PoC</h2>
+      <p class="meta"><span>2026.08 – 09</span><span>5-person team with a company</span><span>Lead, agent and UI, deployment</span></p>
+    </div>
+    <div class="tabs glass" role="tablist" aria-label="Bearable PoC sections"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="Summary">
+      <div class="duo flip">
+        <div class="card glass">
+          <p class="say">A PoC with the startup Bearable. We built university information and high school credit system screens, and a course registration assistant.</p>
+          <p>We agreed on scope with the company contact in weekly meetings. I built the first course-planning agent, the experiment screens, and the links from answers to school notices as evidence.</p>
+          <p>I also ran experiments to cut model input. I dropped the methods that broke evidence references or changed the course list, and kept the one that organizes saved reading results with code.</p>
+          <div class="with">
+            <h3 class="sub-h">Built with teammates</h3>
+            <p>The final Jev score and the improved course placement include teammates’ work.</p>
+          </div>
+          <p class="links"><span class="private">The repository is private because this was a company project.</span></p>
+          <button type="button" class="next">Details<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <figure class="shot wide">
+          <button type="button" class="frame"><img src="../img/bearable-roadmap.webp" width="1800" height="801" alt="Myfolio high school credit roadmap screen. Elective course cards are arranged in columns by grade and semester." loading="lazy"></button>
+          <figcaption>Final roadmap screen built by the team</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="pane" data-tab="My scope">
+      <div>
+        <h3 class="pane-h">My scope and running the team</h3>
+        <div class="split2">
+          <div class="scope glass">
+            <div><h4>University info</h4><ul><li>School basics</li><li>Department details</li><li>Admission tracks</li></ul></div>
+            <div><h4>High school credits</h4><ul><li>Weekly timetable</li><li>Courses offered</li><li>Career course suggestions</li></ul></div>
+          </div>
+          <dl class="tiles" style="--cols:2">
+            <div class="tile glass"><dt>UI and deployment</dt><dd>Built two screens with React and Vite and deployed them on Vercel.</dd></div>
+            <div class="tile glass"><dt>Requirements</dt><dd>Ran sprints, agreeing on requirements each week with the company’s developer.</dd></div>
+            <div class="tile glass"><dt>Team roles and workflow</dt><dd>Split roles between 2 developers and 3 planners, and set the rules for the GitHub repository and branches.</dd></div>
+            <div class="tile glass"><dt>Student interview</dt><dd>Interviewed an 11th grader I tutor to shape the screens and the next features.</dd></div>
+          </dl>
+        </div>
+        <p class="stack" style="margin-top:14px">A company project at the Gangnam-gu Innovative Talent Academy.</p>
+      </div>
+    </section>
+  </div>
+</article>
+
+<!-- 03 Publium -->
+<article class="ch tone" id="publium" data-run="03 Publium" style="--h:288;--h2:245">
+  <header class="ch-head">
+    <div>
+      <span class="no">03</span>
+      <h2>Publium</h2>
+      <p class="meta"><span>2026.07</span><span>2-person team, 8 days</span><span>Backend, search agent, deployment</span></p>
+    </div>
+    <div class="tabs glass" role="tablist" aria-label="Publium sections"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="Summary">
+      <div class="duo flip">
+        <div class="card glass">
+          <p class="say">A service that searches collected PubMed papers to answer a question and shows the PMIDs of the papers it used.</p>
+          <p>I built the FastAPI backend, PubMed collection, and the agent connected to a paper search tool. Answers show the PMIDs they used.</p>
+          <p>While papers were being collected, every other request had to wait. I moved the synchronous calls to a separate thread and checked that health checks still respond during collection.</p>
+          <p class="private">A teammate later took on the renewal with pgvector and graph RAG.</p>
+          <div class="links">
+            <a href="https://team-pubmed.vercel.app">Live service</a>
+            <a href="https://github.com/hansol-dev/team-pubmed">Code on GitHub</a>
+          </div>
+          <p class="stack">Python, FastAPI, LangChain, Supabase Postgres, Render</p>
+          <button type="button" class="next">Details<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <figure class="shot wide">
+          <button type="button" class="frame"><img src="../img/publium-answer.webp" width="2880" height="1800" alt="Publium search and answer screen. PubMed search filters on the left, a list of paper chat rooms in the middle, and an AI answer based on the selected papers on the right." loading="lazy"></button>
+          <figcaption>Search and answer screen, current live version</figcaption>
+        </figure>
+      </div>
+    </section>
+    <section class="pane" data-tab="What I built">
+      <div>
+        <h3 class="pane-h">What I built</h3>
+        <dl class="tiles" style="--cols:3">
+          <div class="tile glass"><dt>FastAPI backend and data layer</dt><dd>Collection through PubMed E-utilities, and APIs to save and delete paper lists and chat history. Supabase Postgres connection and Google sign-in.</dd></div>
+          <div class="tile glass"><dt>Tool-calling agent</dt><dd>Attached a search tool over the collected papers to LangChain’s create_agent. The prompt has it search first for questions that need evidence, and answers show the PMIDs used.</dd></div>
+          <div class="tile glass"><dt>Server-side guard</dt><dd>Requests for medical advice such as diagnosis, prescriptions or dosage are blocked by regex before they reach the LLM, and get a fixed notice instead.</dd></div>
+          <div class="tile glass"><dt>Streaming and responsiveness</dt><dd>Answers stream token by token, and synchronous DB and PubMed calls run in threads so the event loop never stalls.</dd></div>
+          <div class="tile glass"><dt>Deployment</dt><dd>Deployed on Render’s free tier with Supabase Postgres. A teammate handles the later renewal (pgvector, graph RAG).</dd></div>
+        </dl>
+      </div>
+    </section>
+    <section class="pane" data-tab="Technical choices">
+      <div>
+        <h3 class="pane-h">Technical choices</h3>
+        <div class="tiles" style="--cols:3">
+          <article class="tile glass">
+            <h5>Answer flow</h5>
+            <span class="lbl">Chose</span><p>A LangChain tool-calling agent. The model decides whether and what to search</p>
+            <span class="lbl">Instead of</span><p>A fixed pipeline that pastes search results into the prompt</p>
+            <span class="lbl">Why</span><p>Follow-up questions had to search again with PMIDs or keywords from the chat history. Code no longer picks the search terms; in exchange, the prompt sets the order so it says so when nothing is found.</p>
+          </article>
+          <article class="tile glass">
+            <h5>Blocking I/O</h5>
+            <span class="lbl">Chose</span><p>Move only the synchronous calls to threads with asyncio.to_thread</p>
+            <span class="lbl">Instead of</span><p>Replace the DB driver and HTTP client with async ones</p>
+            <span class="lbl">Why</span><p>The synchronous code already worked and time was short. The problem was synchronous calls inside async handlers, so moving just those calls was the smallest change.</p>
+          </article>
+          <article class="tile glass">
+            <h5>Blocking medical advice</h5>
+            <span class="lbl">Chose</span><p>A server regex guard with a fixed reply</p>
+            <span class="lbl">Instead of</span><p>Forbidding it in the system prompt only</p>
+            <span class="lbl">Why</span><p>Prompt instructions can be bypassed, and the blocked reply had to be the same every time. Stopping it on the server before the LLM call also costs nothing.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section class="pane" data-tab="Troubleshooting">
+      <div>
+        <h3 class="pane-h">Troubleshooting</h3>
+        <p class="trouble-q">When a paper collection request ran long, the whole server stopped responding.</p>
+        <ol class="tiles seq" style="--cols:4">
+          <li class="tile glass"><b>Symptom</b><span>During a PubMed collection request, every other request, even health checks, had to wait.</span></li>
+          <li class="tile glass"><b>Cause</b><span>Synchronous PubMed and DB calls ran directly inside async def handlers and blocked the whole event loop.</span></li>
+          <li class="tile glass"><b>Fix</b><span>Handed the synchronous calls to a thread pool with asyncio.to_thread and limited concurrent collection to 2 with a semaphore. Added a test that checks /health responds during collection.</span></li>
+          <li class="tile glass"><b>Next time</b><span>I would use async drivers from the start, or declare handlers that use synchronous libraries with def so FastAPI runs them in its thread pool.</span></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+</article>
+
+<!-- 04 Beorimi -->
+<article class="ch tone" id="beorimi" data-run="04 Beorimi" style="--h:122;--h2:85">
+  <header class="ch-head">
+    <div>
+      <span class="no">04</span>
+      <h2>Beorimi</h2>
+      <p class="meta"><span>2026.08</span><span>3-person team, 28-hour MVP</span><span>Lead, backend and analysis worker</span></p>
+    </div>
+    <div class="tabs glass" role="tablist" aria-label="Beorimi sections"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="Summary">
+      <div class="duo flip">
+        <div class="card glass">
+          <p class="say">Photograph the bulky items you want to throw away. It shows what they are and the expected disposal fee, then links to the report page.</p>
+          <p>Photo analysis runs in a worker, and the screen shows its progress.</p>
+          <p>The items and sizes the model finds are matched to the official Gangnam-gu catalog to calculate fees. Users can correct anything it got wrong.</p>
+          <div class="links">
+            <a href="https://frontend-delta-red-74.vercel.app/">Live service</a>
+            <a href="https://github.com/TrinityBalance/beorimi">Code on GitHub</a>
+          </div>
+          <p class="stack">Next.js, Supabase, OpenAI</p>
+          <button type="button" class="next">Details<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="phones row">
+          <figure class="shot"><button type="button" class="frame"><img src="../img/beorimi-home.webp" width="600" height="1000" alt="Beorimi start screen. A photo button sits under the line “How should I throw this away?”" loading="lazy"></button><figcaption>Take or upload a photo</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="../img/beorimi-result.webp" width="600" height="1000" alt="Detection result. Numbered boxes mark four items in the photo, chairs and a chest of drawers." loading="lazy"></button><figcaption>Several items detected</figcaption></figure>
+          <figure class="shot"><button type="button" class="frame"><img src="../img/beorimi-report.webp" width="600" height="1299" alt="Report preparation screen. Under the title “I’ll get the report for 3 items ready” are the expected fee per item, a note field for disposal details, and a button to the official report page." loading="lazy"></button><figcaption>Report ready</figcaption></figure>
+        </div>
+      </div>
+    </section>
+    <section class="pane" data-tab="Flow">
+      <div>
+        <h3 class="pane-h">From one photo to an expected fee</h3>
+        <p class="lead">Several pieces of waste in one photo are split into items and tied to the district’s rules. Instead of showing the VLM’s estimates as they are, the values it returns in a fixed schema are matched again against the official Gangnam-gu fee catalog.</p>
+        <ol class="tiles seq" style="--cols:4">
+          <li class="tile glass"><b>Photo</b><span>Take one photo with several items in the frame.</span></li>
+          <li class="tile glass"><b>Multi-item detection</b><span>Tells chairs, drawers and so on apart and estimates the size of each.</span></li>
+          <li class="tile glass"><b>User check</b><span>Users fix any item it got wrong.</span></li>
+          <li class="tile glass"><b>Fee</b><span>Shows the fee per item and the total from the Gangnam-gu fee table.</span></li>
+        </ol>
+        <h3 class="pane-h" style="margin-top:clamp(16px,3svh,30px)">Async analysis flow</h3>
+        <ol class="flow glass" style="margin-top:0">
+          <li>Upload photo</li>
+          <li>Queue job, return 202</li>
+          <li>Worker runs the VLM</li>
+          <li>Validate output, match fees</li>
+          <li>Poll status and result</li>
+        </ol>
+      </div>
+    </section>
+    <section class="pane" data-tab="Technical choices">
+      <div>
+        <h3 class="pane-h">Technical choices</h3>
+        <div class="tiles" style="--cols:3">
+          <article class="tile glass">
+            <h5>Infrastructure</h5>
+            <span class="lbl">Chose</span><p>Supabase alone for Auth, Storage, Postgres, the queue and the worker</p>
+            <span class="lbl">Instead of</span><p>AWS Cognito, S3, DynamoDB, SQS and Lambda (the day-one design)</p>
+            <span class="lbl">Why</span><p>To build and deploy within 28 hours, we switched to Supabase, which we had used before. Building the queue from Postgres rows and pg_net instead of SQS also cut down infrastructure setup.</p>
+          </article>
+          <article class="tile glass">
+            <h5>Running analysis</h5>
+            <span class="lbl">Chose</span><p>Return 202, then a Postgres queue and a worker; the browser polls</p>
+            <span class="lbl">Instead of</span><p>Waiting for the VLM synchronously in the request handler</p>
+            <span class="lbl">Why</span><p>We needed to tell whether a request reached the server or the VLM failed, but the synchronous version only showed a spinner. Keeping each job as a row keeps its status and error message, so you can see which step it stopped at.</p>
+          </article>
+          <article class="tile glass">
+            <h5>VLM output</h5>
+            <span class="lbl">Chose</span><p>Structured Outputs with a strict JSON Schema, including a guardrail field</p>
+            <span class="lbl">Instead of</span><p>Parsing free-text replies on the server</p>
+            <span class="lbl">Why</span><p>A strict JSON Schema fixes the inputs that fee matching needs. If the guardrail field the model returns flags a prompt injection, the result is not saved and the job fails.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </div>
+</article>
+
+<!-- 05 Apps in Toss -->
+<article class="ch tone" id="toss" data-run="05 Apps in Toss" style="--h:40;--h2:285">
+  <header class="ch-head">
+    <div>
+      <span class="no">05</span>
+      <h2>Two Apps in Toss mini apps</h2>
+      <p class="meta"><span>2026.07 – 08</span><span>Team projects</span><span>Launched on Apps in Toss</span></p>
+    </div>
+    <div class="tabs glass" role="tablist" aria-label="Apps in Toss sections"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="Summary">
+      <div>
+        <div class="apps">
+          <section class="app glass" aria-labelledby="diary-h" style="--ah:45">
+            <h3 id="diary-h">My Summer Vacation Diary</h3>
+            <p class="facts"><span>2026.07</span><span>Led planning, built the editor</span></p>
+            <div class="phones">
+              <figure class="shot"><button type="button" class="frame"><img src="../img/diary-write.webp" width="600" height="1000" alt="Diary writing screen. The title, weather and entry are typed in a handwriting style." loading="lazy"></button><figcaption>Writing</figcaption></figure>
+              <figure class="shot"><button type="button" class="frame"><img src="../img/diary-result.webp" width="600" height="1000" alt="Converted result. A crayon drawing of a waterfall, the entry written on manuscript paper, and a teacher’s stamp." loading="lazy"></button><figcaption>Result</figcaption></figure>
+            </div>
+            <div class="body">
+              <p>Upload a photo and a short note, and AI polishes the writing and turns it into a crayon picture diary.</p>
+              <p>I recruited the team and brought opinions together. I built diary writing, preview, the share screen and banned-word highlighting.</p>
+            </div>
+            <div class="links"><a href="https://github.com/TossHackathonTMD/SummerVacationDiary">Code on GitHub</a></div>
+          </section>
+          <section class="app glass" aria-labelledby="byeol-h" style="--ah:285">
+            <h3 id="byeol-h">Byeolil</h3>
+            <p class="facts"><span>2026.08</span><span>Lead, built 3D and the record flow</span></p>
+            <div class="phones">
+              <figure class="shot"><button type="button" class="frame"><img src="../img/byeolil-home.webp" width="600" height="1000" alt="Byeolil Observatory main screen. An orange orb floats on a dark space background, with a line inviting you to take out the fortune inside it." loading="lazy"></button><figcaption>Main screen</figcaption></figure>
+              <figure class="shot"><button type="button" class="frame"><img src="../img/byeolil-news.webp" width="600" height="1299" alt="Byeolil breaking news screen. The entry “The book I was looking for just came back” has a star rating, a book drawing and the observatory’s serious interpretation." loading="lazy"></button><figcaption>Breaking news</figcaption></figure>
+            </div>
+            <div class="body">
+              <p>Log the small things in your day and get a fortune and a title.</p>
+              <p>As lead I split the work and built the 3D interaction and the record flow. I also wrote shared working rules for our AI coding tools.</p>
+            </div>
+            <div class="links"><a href="https://github.com/TrivialOkay/TrivialOkay_toss">Code on GitHub</a></div>
+          </section>
+        </div>
+        <div class="foot">
+          <p class="stack">React, TypeScript, Supabase Edge Function / Byeolil’s 3D screen uses three.js</p>
+          <button type="button" class="next">Details<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <section class="pane" data-tab="My part in each app">
+      <div>
+        <h3 class="pane-h">My part in each app</h3>
+        <div class="apps">
+          <div class="app glass" style="--ah:45">
+            <h4 class="sub-h">My Summer Vacation Diary</h4>
+            <dl class="tiles">
+              <div><dt>Team and coordination</dt><dd>Recruited the teammates we needed myself, and brought opinions together to set the direction.</dd></div>
+              <div><dt>Editor</dt><dd>Built diary input, preview, the share modal and image utilities in React and TypeScript.</dd></div>
+              <div><dt>Banned words and prompts</dt><dd>Wrote the logic that finds and marks banned words in the text, and refined the emphasis and banned-word rules in the analysis prompt.</dd></div>
+              <div><dt>Launch and promotion</dt><dd>Launched after Apps in Toss review, and promoted it by making finished picture diaries easy to share on social media.</dd></div>
+            </dl>
+          </div>
+          <div class="app glass" style="--ah:285">
+            <h4 class="sub-h">Byeolil</h4>
+            <dl class="tiles">
+              <div><dt>Roles and onboarding</dt><dd>Split the work to fit each beginner teammate’s skill and explained how things should be built.</dd></div>
+              <div><dt>Working rules</dt><dd>Kept AGENTS.md and CLAUDE.md as shared rules so everyone’s AI coding tools worked the same way.</dd></div>
+              <div><dt>Built myself</dt><dd>The 3D object-breaking interaction, the record and archive flow, hidden cards and sound.</dd></div>
+              <div><dt>Launch</dt><dd>Went through Apps in Toss review and launched within a month of starting development.</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</article>
+
+<!-- 06 Recent work -->
+<article class="ch tone" id="recent" data-run="06 Recent work and code" style="--h:205;--h2:165">
+  <header class="ch-head">
+    <div>
+      <span class="no">06</span>
+      <h2>Recent work and code</h2>
+      <p class="meta"><span>Personal projects and current job</span></p>
+    </div>
+    <div class="tabs glass" role="tablist" aria-label="Recent work sections"></div>
+  </header>
+  <div class="track">
+    <section class="pane" data-tab="Summary">
+      <div>
+        <div class="own">
+          <section class="glass">
+            <h3>AND</h3>
+            <p>Autonomous Neuro Drive. I’m building a local LLM wiki that gathers my activity logs and AI chats so I can look them up again. It searches records that have sources and stops answering when there is no evidence.</p>
+            <p class="links"><span class="private">Private repository</span></p>
+          </section>
+          <section class="glass">
+            <h3>Galpi and Poom</h3>
+            <p>Galpi helps coding agents find the code and context they need. Poom is an experiment in handing small tasks to local models and checking the results.</p>
+            <div class="links">
+              <a href="https://github.com/jasonwpgml/galpi">Galpi</a>
+              <a href="https://github.com/jasonwpgml/poom">Poom</a>
+              <a href="https://github.com/jasonwpgml/AQR">AQR task queue</a>
+            </div>
+          </section>
+          <section class="glass">
+            <h3>AI teaching materials</h3>
+            <p>I make course materials and teach at an AI education company. I build web lessons and visualizations, and I’m connecting local AI to the teaching screens.</p>
+          </section>
+        </div>
+        <div class="foot">
+          <span></span>
+          <button type="button" class="next">More personal projects<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <section class="pane" data-tab="More projects">
+      <div class="also">
+        <h3 class="pane-h">More personal projects (private repositories)</h3>
+        <ul class="tiles" style="--cols:2">
+          <li class="tile glass"><b>cogito</b>A personal AI agent for testing when a repeated task should go to an agent and when it should be fixed in code.</li>
+          <li class="tile glass"><b>Nabiseo</b>An MCP-based automation tool that links my phone and desktop. It takes a food delivery order up to the payment screen on its own, and works with LifeTrace (activity log).</li>
+          <li class="tile glass"><b>FAPA</b>A personal finance agent that collects card transactions with Playwright MCP to sort and track spending. It works with Nabiseo.</li>
+          <li class="tile glass"><b>Momento</b>A PWA where tutors, students and parents each see the tutoring schedule in their own view. I planned, built, deployed and run it alone, and keep improving it from real users’ feedback.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</article>
+
+</div>
+
+<section class="contact tone" data-run="Contact" aria-labelledby="contact-h">
+  <div class="contact-in glass">
+    <p class="k" id="contact-h">Contact</p>
+    <a class="mail" href="mailto:jae1450@naver.com">jae1450@naver.com</a>
+    <div class="links"><a href="https://github.com/jasonwpgml">github.com/jasonwpgml</a></div>
+  </div>
+  <div class="colophon">
+    <span>© 2026 Jason</span>
+  </div>
+</section>
+
+</main>
+
+
+<canvas class="rain" id="rain" aria-hidden="true"></canvas>
+<canvas class="face" id="face" aria-hidden="true"></canvas>
+<section class="agent wrap" aria-label="Agent edition">
+  <pre id="agent-out" data-no-matrix></pre>
+  <p class="credit" data-no-matrix>Background: matrix rain and a hologram face (my own dynamic-css-motion skill). Face model: MediaPipe face mesh (Apache 2.0), "Infinite, 3D Head Scan" by Lee Perry-Smith (<a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>). Expression tracking: MediaPipe Face Landmarker (Apache 2.0). Licenses: <a href="../matrix/licenses/MediaPipe-LICENSE.txt">MediaPipe</a>, <a href="../matrix/licenses/LeePerrySmith_License.txt">Lee Perry-Smith</a></p>
+  <div class="void" aria-hidden="true"></div>
+  <div class="orb-wrap" data-no-matrix><button type="button" class="orb" id="face-secret" aria-label="Link your facial expression with the camera (face.link)"></button></div>
+</section>
+<section class="facelink" id="facelink" hidden data-no-matrix aria-label="face.link facial expression tracking">
+  <div class="fl-view"><video id="fl-video" playsinline muted></video><canvas id="fl-dots"></canvas></div>
+  <pre id="fl-out" aria-live="polite"></pre>
+  <button type="button" class="sq" id="fl-stop">Disconnect</button>
+</section>
+
+<script type="application/json" id="profile-data">
+{
+  "$schema": "agent-profile/1.0",
+  "subject": {
+    "id": "github:jasonwpgml",
+    "name": "Jason",
+    "role": "full_stack_ai_developer"
+  },
+  "summary": "Math major. Has taught math for 10 years and now also teaches machine learning, deep learning and AI. Builds personal agent tools and web services.",
+  "status": {
+    "employment": {
+      "since": "2026-10-06",
+      "org": "company in AICE certification"
+    },
+    "teaching": "visiting instructor, machine learning and deep learning certification courses",
+    "recent": [
+      "led the Bearable PoC, completed 2026-09",
+      "launched 2 Apps in Toss mini apps"
+    ]
+  },
+  "projects": [
+    {
+      "id": "01",
+      "name": "AgentHub",
+      "kind": "personal",
+      "state": "in use",
+      "does": "lets multiple devices and agents share and search skills and work history",
+      "built_on": [
+        "Tailscale",
+        "SSH"
+      ],
+      "automation": "Grok bot morning briefing: schedule, email, top news; unread items roll over to the next briefing",
+      "next": [
+        "save morning briefings to AND automatically",
+        "turn repeated tasks into code"
+      ],
+      "repo": "private"
+    },
+    {
+      "id": "02",
+      "name": "Bearable PoC",
+      "period": [
+        "2026-08",
+        "2026-09"
+      ],
+      "team": {
+        "size": 5,
+        "dev": 2,
+        "planning": 3
+      },
+      "role": [
+        "lead",
+        "agent",
+        "frontend",
+        "deploy"
+      ],
+      "does": "university info, high school credit system screens, course registration assistant",
+      "stack": [
+        "React",
+        "Vite",
+        "Vercel"
+      ],
+      "own": [
+        "initial course-planning agent",
+        "experiment screens",
+        "linking school notices as evidence",
+        "model input reduction experiments"
+      ],
+      "teammates": [
+        "final Jev score",
+        "advanced course placement"
+      ],
+      "context": "company-linked project, Gangnam-gu Innovative Talent Academy",
+      "state": "completed",
+      "repo": "private"
+    },
+    {
+      "id": "03",
+      "name": "Publium",
+      "period": "2026-07",
+      "duration": "8 days",
+      "team": 2,
+      "role": [
+        "backend",
+        "search_agent",
+        "deploy"
+      ],
+      "state": "live",
+      "does": "collects PubMed papers, searches the collection, cites PMIDs",
+      "stack": [
+        "Python",
+        "FastAPI",
+        "LangChain",
+        "Supabase Postgres",
+        "Render"
+      ],
+      "decisions": {
+        "answer": "tool_calling_agent",
+        "blocking_io": "asyncio.to_thread",
+        "medical_advice": "server_regex_guard"
+      },
+      "teammates": [
+        "renewal with pgvector and graph RAG"
+      ],
+      "service": "team-pubmed.vercel.app",
+      "repo": "github.com/hansol-dev/team-pubmed"
+    },
+    {
+      "id": "04",
+      "name": "Beorimi",
+      "period": "2026-08",
+      "duration": "28h MVP",
+      "team": 3,
+      "role": [
+        "lead",
+        "backend",
+        "analysis_worker"
+      ],
+      "does": "detects multiple bulky waste items in one photo, matches Gangnam-gu fees, links to the report page",
+      "stack": [
+        "Next.js",
+        "Supabase",
+        "OpenAI"
+      ],
+      "pipeline": [
+        "upload",
+        "enqueue_202",
+        "worker_vlm",
+        "validate_and_match_fee",
+        "poll_result"
+      ],
+      "rule": "model observes, code decides, user confirms",
+      "service": "frontend-delta-red-74.vercel.app",
+      "repo": "github.com/TrinityBalance/beorimi"
+    },
+    {
+      "id": "05",
+      "name": "Apps in Toss x2",
+      "period": [
+        "2026-07",
+        "2026-08"
+      ],
+      "state": "2 official launches",
+      "stack": [
+        "React",
+        "TypeScript",
+        "Supabase Edge Function"
+      ],
+      "apps": [
+        {
+          "name": "My Summer Vacation Diary",
+          "role": [
+            "planning_lead",
+            "editor_ui",
+            "forbidden_word_check"
+          ],
+          "repo": "github.com/TossHackathonTMD/SummerVacationDiary"
+        },
+        {
+          "name": "Byeolil",
+          "role": [
+            "lead",
+            "3d_interaction",
+            "record_flow",
+            "agent_rules"
+          ],
+          "stack": [
+            "three.js"
+          ],
+          "repo": "github.com/TrivialOkay/TrivialOkay_toss"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "name": "Recent work",
+      "items": [
+        {
+          "name": "AND",
+          "does": "local LLM wiki of activity logs and AI chats; stops answering without evidence",
+          "repo": "private"
+        },
+        {
+          "name": "Galpi",
+          "does": "code and context search tool for coding agents",
+          "repo": "github.com/jasonwpgml/galpi"
+        },
+        {
+          "name": "Poom",
+          "does": "hands small tasks to local models and checks the results",
+          "repo": "github.com/jasonwpgml/poom"
+        },
+        {
+          "name": "AQR",
+          "does": "task queue",
+          "repo": "github.com/jasonwpgml/AQR"
+        },
+        {
+          "name": "AI teaching materials",
+          "does": "lecture materials, web course slides, visualizations, local AI in teaching screens"
+        }
+      ]
+    }
+  ],
+  "own_work": [
+    "cogito",
+    "Nabiseo",
+    "FAPA",
+    "Momento"
+  ],
+  "contact": {
+    "email": "jae1450@naver.com",
+    "github": "github.com/jasonwpgml"
+  },
+  "trust": "verify_by_evidence"
+}
+</script>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const head = document.querySelector('.head');
+  const clamp = n => Math.min(1, Math.max(0, n));
+  const ease = n => n * n * (3 - 2 * n);
+  const agentMode = () => root.dataset.edition === 'agent';
+
+  // Matrix noise is ASCII only and picked by slot and step, so a paused frame never flickers.
+  const NOISE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&+<>=[]{}?/';
+  const noise = (c, r, t) => NOISE[(c * 73 + r * 37 + t * 19) % NOISE.length];
+  const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+
+  // Running head: the label turns into the next one in place, as far as the reader has scrolled.
+  const running = document.getElementById('running');
+  const sections = [...document.querySelectorAll('main [data-run]')];
+  const labels = sections.map(s => s.dataset.run);
+  const ctx = document.createElement('canvas').getContext('2d');
+  let pair = '', slots = [];
+  const build = (a, b) => {
+    const cs = getComputedStyle(running);
+    ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const A = [...a], B = [...b], n = Math.max(A.length, B.length);
+    running.textContent = '';
+    slots = Array.from({ length: n }, (_, i) => {
+      const from = A[i] || '', to = B[i] || '', el = running.appendChild(document.createElement('i'));
+      return { el, from, to, wf: from ? ctx.measureText(from).width : 0, wt: to ? ctx.measureText(to).width : 0, d: i / Math.max(1, n - 1) * .38 };
+    });
+  };
+  const paintLabel = x => {
+    if (!Number.isFinite(x)) return; // a zero-height viewport (hidden tab) gives NaN
+    const i = Math.min(labels.length - 1, Math.floor(x)), f = x - i;
+    if (f <= 0 || i === labels.length - 1) {
+      if (pair !== labels[i]) { pair = labels[i]; running.textContent = labels[i]; }
+      return;
+    }
+    if (pair !== i + '>') { pair = i + '>'; build(labels[i], labels[i + 1]); }
+    slots.forEach((s, k) => {
+      const q = clamp((f - s.d) / .62), t = Math.floor(q * 9);
+      let g = s.from, nz = false, o = 1;
+      if (s.from === s.to) g = s.from;
+      else if (s.from && s.to) { if (q >= .22) { g = q > .72 ? s.to : noise(k, 1, t); nz = q <= .72; } }
+      else if (s.from) { if (q >= .38) { g = noise(k, 1, t); nz = true; } o = 1 - ease(clamp((q - .7) / .3)); }
+      else { g = q > .72 ? s.to : noise(k, 1, t); nz = q <= .72; o = ease(clamp(q / .3)); }
+      s.el.textContent = g;
+      s.el.className = nz ? 'nz' : '';
+      s.el.style.width = s.wf + (s.wt - s.wf) * ease(q) + 'px';
+      s.el.style.opacity = o;
+    });
+  };
+  const arrive = el => clamp((innerHeight * .62 - el.getBoundingClientRect().top) / (innerHeight * .32));
+
+  // Project stage. A leaf taller than the screen sticks by its bottom, so it is read to the end before the next covers it.
+  const narrow = matchMedia('(max-width: 860px)');
+  const stage = document.querySelector('.projects');
+  const leaves = [...stage.children];
+  let headH = 64, anchors = [];
+  const paint = () => {
+    leaves.forEach((el, k) => {
+      const next = leaves[k + 1];
+      const p = next ? clamp((innerHeight - next.getBoundingClientRect().top) / (innerHeight - headH)) : 0;
+      if (el._cover !== p) {
+        el._cover = p;
+        el.style.setProperty('--cover', p.toFixed(3));
+        // A scene the next one covers completely is not drawn, so its glass is not blurred underneath for nothing.
+        el.style.visibility = p >= 1 && !narrow.matches ? 'hidden' : '';
+      }
+    });
+    paintLabel(sections.slice(1).reduce((x, s) => x + arrive(s), 0));
+  };
+  const layout = () => {
+    headH = head.offsetHeight;
+    root.style.setProperty('--head', headH + 'px');
+    let y = stage.getBoundingClientRect().top + scrollY;
+    anchors = leaves.map(el => {
+      el.style.top = Math.min(headH, innerHeight - el.offsetHeight) + 'px';
+      const track = el.querySelector('.track');
+      if (track && !narrow.matches) el.style.setProperty('--room', track.clientHeight + 'px');
+      const a = y - headH;
+      y += el.offsetHeight;
+      return a;
+    });
+    paint();
+  };
+  let ticking = false;
+  addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; paint(); });
+  }, { passive: true });
+  const ro = new ResizeObserver(layout);
+  leaves.forEach(el => ro.observe(el));
+  addEventListener('resize', layout);
+  layout();
+
+  // Wheel: a project that has just covered the screen holds once; more wheel input moves on.
+  // Between those stops the browser scrolls natively. Keys, links and touch are never held.
+  const wheel = { last: -Infinity, value: 0, repeats: 0, continuousUntil: 0 };
+  const readWheel = (e, now) => {
+    const mode = e.deltaMode, raw = e.deltaY * (mode === 1 ? 18 : mode === 2 ? innerHeight : 1);
+    const amount = Math.abs(raw), gap = now - wheel.last;
+    const similar = amount > 0 && Math.sign(raw) === Math.sign(wheel.value) && Math.abs(amount - Math.abs(wheel.value)) <= 1;
+    wheel.repeats = gap >= 70 && gap <= 1800 && similar ? wheel.repeats + 1 : 0;
+    if (gap < 36) { wheel.continuousUntil = now + 140; wheel.repeats = 0; }
+    wheel.last = now; wheel.value = raw;
+    const coarse = mode !== 0 || (amount >= 24 && Number.isInteger(raw)) || wheel.repeats >= 2;
+    const pulse = amount > 0 && now >= wheel.continuousUntil && gap >= 36 && coarse;
+    return { raw, kind: pulse ? 'pulse' : 'continuous', delta: pulse ? Math.sign(raw) * Math.min(180, Math.max(54, amount)) : raw };
+  };
+  const hold = now => ({ created: now, until: now + 520, last: now, direction: 0, debt: 0, waitRelease: true });
+  // Returns 0 while the stop holds, or the small distance to set off with once enough extra input has come in.
+  const consume = (s, delta, now, kind) => {
+    if (kind === 'pulse') {
+      if (now - s.created < 90) return 0;
+      return Math.sign(delta) * Math.min(180, Math.abs(delta));
+    }
+    const direction = Math.sign(delta), gap = now - s.last;
+    s.last = now;
+    if (now < s.until) { s.debt = 0; return 0; }
+    if (s.waitRelease) {
+      if (gap < 160 && now < s.until + 380) { s.debt = 0; return 0; }
+      s.waitRelease = false; s.debt = 0; s.direction = 0;
+    }
+    if (direction !== s.direction || gap > 900) s.debt = 0;
+    s.direction = direction;
+    s.debt += Math.min(Math.abs(delta), 160);
+    const distance = Math.min(90, Math.max(0, s.debt - Math.max(240, Math.min(340, innerHeight * .44))));
+    return distance ? direction * distance : 0;
+  };
+  const checkpoint = (y, delta) => {
+    const dir = Math.sign(delta);
+    // Strictly ahead: small trackpad steps can land a pixel short of a stop and must still be caught.
+    const next = anchors.filter(a => (a - y) * dir > 0).sort((a, b) => (a - b) * dir)[0];
+    return next !== undefined && Math.abs(delta) >= Math.abs(next - y) ? next : null;
+  };
+
+  let glide = null, rest = null, snapT, lastDir = 1;
+  const stop = () => { if (glide) cancelAnimationFrame(glide.raf); glide = null; };
+  const glideTo = (to, dur, done) => {
+    stop();
+    const from = scrollY, t0 = performance.now(), g = glide = { to };
+    const step = now => {
+      if (glide !== g) return;
+      const p = clamp((now - t0) / dur); // the first frame can be stamped before t0; clamp holds it at the start
+      scrollTo({ top: from + (to - from) * (1 - (1 - p) ** 3), behavior: 'instant' });
+      if (p < 1) g.raf = requestAnimationFrame(step); else { glide = null; done?.(); }
+    };
+    g.raf = requestAnimationFrame(step);
+  };
+  // Near the end of a cover, a pause settles it the way the reader was going. The middle is left alone.
+  const snap = () => {
+    if (rest || glide) return;
+    for (const [k, el] of leaves.entries()) {
+      const t = el.getBoundingClientRect().top;
+      if (t <= headH + 1 || t >= innerHeight) continue;
+      const p = (innerHeight - t) / (innerHeight - headH);
+      if (lastDir > 0 && p >= .78) glideTo(anchors[k], 380, () => { rest = { y: anchors[k], dir: 1, s: hold(performance.now()) }; });
+      else if (lastDir < 0 && p <= .18) glideTo(anchors[k] - (innerHeight - headH), 380);
+      return;
+    }
+  };
+  addEventListener('wheel', e => {
+    if (reduce || e.ctrlKey || agentMode() || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    const now = performance.now(), inp = readWheel(e, now);
+    if (!inp.raw) return;
+    clearTimeout(snapT);
+    lastDir = Math.sign(inp.raw);
+    if (rest && !glide && Math.abs(scrollY - rest.y) > 4) rest = null;
+    if (rest) {
+      if (lastDir !== rest.dir) { rest = null; stop(); }
+      else {
+        e.preventDefault();
+        const go = consume(rest.s, inp.delta, now, inp.kind);
+        if (go) { const from = rest.y; rest = null; glideTo(from + go, 110); }
+        return;
+      }
+    }
+    const y = glide ? glide.to : scrollY, cp = checkpoint(y, inp.raw);
+    if (cp !== null) {
+      e.preventDefault();
+      glideTo(cp, 140);
+      rest = { y: cp, dir: lastDir, s: hold(now) };
+      return;
+    }
+    if (glide) {
+      // Wheel notches add to the glide; a continuous stream (trackpad) takes over natively instead of restarting it every event.
+      if (inp.kind === 'pulse') { e.preventDefault(); glideTo(y + inp.delta, 110); return; }
+      stop();
+    }
+    snapT = setTimeout(snap, 170);
+  }, { passive: false });
+  for (const type of ['pointerdown', 'keydown', 'touchstart'])
+    addEventListener(type, () => { stop(); clearTimeout(snapT); rest = null; }, { passive: true });
+
+  // Contents jump to where a project has just covered the screen; a sticky scene has no fixed place of its own.
+  for (const a of document.querySelectorAll('.toc a')) a.addEventListener('click', e => {
+    const k = leaves.findIndex(el => '#' + el.id === a.hash);
+    if (k < 0 || narrow.matches) return;
+    e.preventDefault();
+    scrollTo({ top: anchors[k], behavior: reduce ? 'instant' : 'smooth' });
+    history.replaceState(null, '', a.hash);
+  });
+
+  // Each project reads left to right: the summary first, then its detail panes.
+  // Trackpad and touch swipe natively; a mouse drags; the tabs, the arrow keys and the buttons move one pane.
+  for (const leaf of leaves) {
+    const track = leaf.querySelector('.track'), tabs = leaf.querySelector('.tabs');
+    if (!track) continue;
+    const panes = [...track.children];
+    const pill = document.createElement('span');
+    pill.className = 'pill';
+    tabs.append(pill);
+    let at = -1;
+    const goPane = i => {
+      i = Math.max(0, Math.min(panes.length - 1, i));
+      track.scrollTo({ left: i * track.clientWidth, behavior: reduce ? 'instant' : 'smooth' });
+    };
+    const btns = panes.map((pane, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.id = `${leaf.id}-tab${i}`;
+      b.textContent = pane.dataset.tab;
+      pane.id = `${leaf.id}-pane${i}`;
+      pane.setAttribute('role', 'tabpanel');
+      pane.setAttribute('aria-labelledby', b.id);
+      b.setAttribute('aria-controls', pane.id);
+      b.addEventListener('click', () => goPane(i));
+      tabs.insertBefore(b, pill);
+      return b;
+    });
+    tabs.addEventListener('keydown', e => {
+      const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      const i = Math.max(0, Math.min(panes.length - 1, at + d));
+      goPane(i);
+      btns[i].focus();
+    });
+    for (const b of leaf.querySelectorAll('.next')) b.addEventListener('click', () => goPane(at + 1));
+    for (const b of panes[0].querySelectorAll('button.frame')) {
+      b.setAttribute('aria-label', 'Details: ' + leaf.querySelector('.ch-head h2').textContent);
+      b.addEventListener('click', () => goPane(1));
+    }
+    // The pill sits between two tabs as far as the track has been swiped.
+    const sync = () => {
+      const x = track.scrollLeft / (track.clientWidth || 1);
+      const i = Math.max(0, Math.min(panes.length - 2, Math.floor(x))), f = clamp(x - i);
+      const a = btns[i], b = btns[i + 1];
+      pill.style.translate = a.offsetLeft + (b.offsetLeft - a.offsetLeft) * f + 'px 0';
+      pill.style.width = a.offsetWidth + (b.offsetWidth - a.offsetWidth) * f + 'px';
+      const now = Math.round(x);
+      if (now === at) return;
+      at = now;
+      btns.forEach((t, k) => { t.setAttribute('aria-selected', k === at); t.tabIndex = k === at ? 0 : -1; });
+      panes.forEach((p, k) => { p.inert = k !== at; });
+      if (narrow.matches) track.style.height = panes[at].offsetHeight + 'px';
+    };
+    track.addEventListener('scroll', sync, { passive: true });
+    // Only a width change needs a resync; the height is set here on narrow screens and must not loop back.
+    let width = 0;
+    new ResizeObserver(() => {
+      if (track.clientWidth === width) return;
+      width = track.clientWidth;
+      at = -1;
+      track.style.height = '';
+      sync();
+    }).observe(track);
+    sync();
+
+    // Mouse drag: the track follows the pointer, then settles on the pane the drag pointed to.
+    let drag = null;
+    track.addEventListener('pointerdown', e => {
+      if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('a, input, textarea, select')) return;
+      drag = { x: e.clientX, left: track.scrollLeft, id: e.pointerId, moved: false };
+    });
+    track.addEventListener('pointermove', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved) {
+        if (Math.abs(dx) < 6) return;
+        drag.moved = true;
+        track.setPointerCapture(e.pointerId);
+        track.classList.add('dragging');
+        getSelection().removeAllRanges();
+      }
+      track.scrollLeft = drag.left - dx;
+    });
+    const release = e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const d = drag;
+      drag = null;
+      if (!d.moved) return;
+      const dx = e.clientX - d.x, from = Math.round(d.left / track.clientWidth);
+      goPane(Math.abs(dx) > Math.min(110, track.clientWidth * .12) ? from - Math.sign(dx) : from);
+      // Snapping returns once the glide has landed, so it cannot cut the glide short.
+      const done = () => track.classList.remove('dragging');
+      track.addEventListener('scrollend', done, { once: true });
+      setTimeout(done, 700);
+      // A drag is not a click on whatever it started over.
+      const eat = ev => { ev.preventDefault(); ev.stopPropagation(); };
+      track.addEventListener('click', eat, { capture: true });
+      setTimeout(() => track.removeEventListener('click', eat, { capture: true }), 60);
+    };
+    track.addEventListener('pointerup', release);
+    track.addEventListener('pointercancel', release);
+  }
+
+  // Agent edition: the same facts as structured text, decoded in place line by line.
+  const data = JSON.parse(document.getElementById('profile-data').textContent);
+  const out = document.getElementById('agent-out');
+  const render = (v, pad = '') => {
+    if (Array.isArray(v)) return v.every(x => typeof x !== 'object')
+      ? '[' + v.join(', ') + ']'
+      : v.map(x => '\n' + pad + '- ' + render(x, pad + '  ').trimStart()).join('');
+    if (v && typeof v === 'object') return Object.entries(v)
+      .map(([k, x]) => '\n' + pad + k + ': ' + render(x, pad + '  ')).join('');
+    return String(v);
+  };
+  const text = 'AGENT://JASON  edition=2026  transport=html  verify=required\n'
+    + '# Same facts as the human edition, structured. Source JSON: #profile-data on this page.\n'
+    + render(data) + '\n\nACK :: transmission_complete';
+  const esc = c => c === '<' ? '&lt;' : c === '&' ? '&amp;' : c;
+  const wideRe = /[ᄀ-ᇿ㄰-㆏가-힣一-鿿＀-￯]/;
+  const rows = text.split('\n').map(r => {
+    const chars = [...r];
+    let tone = () => '';
+    if (r.startsWith('AGENT://') || r.startsWith('ACK')) tone = () => 'h';
+    else if (r.startsWith('#')) tone = () => 'c';
+    else {
+      const m = r.match(/^(\s*(?:- )?)([^:\s][^:]*):(?=\s|$)/);
+      if (m) tone = j => j >= m[1].length && j <= m[1].length + m[2].length ? 'k' : '';
+    }
+    return { chars, tones: chars.map((_, j) => tone(j)), jitter: hash(r) % 1000 / 1000 * .06 };
+  });
+  // Rows start in reading order across one screenful; lines further down share the last start.
+  const paintAgent = p => {
+    const vis = Math.max(8, Math.ceil(innerHeight / 25));
+    let html = '';
+    rows.forEach(({ chars, tones, jitter }, i) => {
+      const s = Math.min(i, vis) / vis * .5 + jitter;
+      let run = '', cls = null;
+      const flush = () => { if (run) html += cls ? `<span class="${cls}">${run}</span>` : run; run = ''; };
+      chars.forEach((c, j) => {
+        const q = p >= 1 ? 1 : clamp((p - s - j / Math.max(1, chars.length) * .18) / .24);
+        let k, g = esc(c);
+        if (c === ' ' || q > .72) k = tones[j];
+        else if (q <= 0) k = 'gh';
+        else { k = wideRe.test(c) ? 'nz w' : 'nz'; g = noise(j, i, Math.floor(q * 8)); }
+        if (k !== cls || k === 'nz w') { flush(); cls = k; }
+        run += g;
+      });
+      flush();
+      if (i < rows.length - 1) html += '\n';
+    });
+    out.innerHTML = html;
+  };
+  let decodeRaf;
+  const play = (from, to, dur, done) => {
+    cancelAnimationFrame(decodeRaf);
+    const t0 = performance.now();
+    const step = now => {
+      const k = clamp((now - t0) / dur);
+      paintAgent(from + (to - from) * k);
+      if (k < 1) decodeRaf = requestAnimationFrame(step); else done?.();
+    };
+    decodeRaf = requestAnimationFrame(step);
+  };
+
+  // Background: the matrix wallpaper (rain + hologram face) from the dynamic-css-motion skill, loaded the first time the agent edition opens.
+  // The rain starts falling on a black screen over the whole page; 1.6 s later the face rises in the middle with a slow ripple.
+  // A light veil and glyph halos (.agent::before, text-shadow) keep the text readable. Phones get the rain only.
+  const rainCanvas = document.getElementById('rain'), faceCanvas = document.getElementById('face');
+  const PRESET = {"holo": {"enabled": true,"eyeBlink": "led","eyeColor": "#3cff95","eyeCore": "#dcfff0","eyeSize": 1,"eyeSpread": 1,"eyeY": 0.03,"look": "glyph","model": "mask","sweep": true,"view": "wall"},"options": {"bloom": 1.3,"charset": "ascii","color": "hgrad","density": 0.6,"depth": true,"intensity": 0.9,"intercept": true,"parallax": true,"scale": 0.55,"scan": true,"scatter": true,"speed": 0.9,"tail": 1.35,"vignette": true}};
+  let mx = null, loading = null, faceTimer = 0;
+  const load = () => loading ??= ['../matrix/wallpaper-matrix.js', '../matrix/matrix-hologram-data.js', '../matrix/matrix-hologram.js'].reduce((p, src) =>
+    p.then(() => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.append(s); })), Promise.resolve());
+  const placeFace = () => ({ room: innerWidth >= 700, anchor: [0.5, 0.52], size: 1 }); // in the middle of the screen; phones get the rain only
+  const runRain = async on => {
+    clearTimeout(faceTimer);
+    if (!on) { if (mx) { mx.rain.stop(); mx.face.set({ enabled: false }); } return; }
+    try { await load(); } catch { return; }
+    if (!agentMode()) return;
+    const L = placeFace(), small = innerWidth < 700;
+    if (!mx) {
+      const rain = wallpaperMatrix.create(rainCanvas, { ...PRESET.options, ...(small ? { depth: false, density: 0.45 } : {}), fps: small ? 24 : 30, maxDpr: 1.5, fromTop: true });
+      const face = matrixHologram.create(faceCanvas, rain, { ...PRESET.holo, enabled: false, fps: 30, maxDpr: 1.5, anchor: L.anchor, size: L.size });
+      mx = { rain, face, first: true };
+    }
+    mx.rain.start();
+    mx.face.set({ anchor: L.anchor, size: L.size });
+    if (L.room) faceTimer = setTimeout(() => agentMode() && mx.face.set({ enabled: true }), mx.first ? 1600 : 400);
+    mx.first = false;
+  };
+  addEventListener('resize', () => { if (!agentMode() || !mx) return; const L = placeFace(); mx.face.set({ anchor: L.anchor, size: L.size, enabled: L.room || !!stopLink }); });
+
+  // face.link: 터미널 맨 끝의 숨은 버튼을 누르면 카메라로 표정을 읽어 홀로그램이 거울처럼 따라 한다(matrix/face-link.js).
+  // 인식 모델(약 17MB)은 누를 때만 불러오고, 영상은 기기 안에서만 처리한다
+  const linkPanel = document.getElementById('facelink'), linkOut = document.getElementById('fl-out'), linkBtn = document.getElementById('face-secret');
+  let stopLink = null, linking = false;
+  const endLink = () => {
+    if (stopLink) { stopLink(); stopLink = null; mx?.face.useFace(null); } // 원래 얼굴로
+    linkPanel.hidden = true;
+    if (mx && !placeFace().room) mx.face.set({ enabled: false }); // 폰은 평소처럼 비만
+  };
+  linkBtn.addEventListener('click', async () => {
+    if (linking || stopLink) return;
+    linking = true; linkPanel.hidden = false;
+    try {
+      await runRain(true);
+      if (!mx) throw new Error('Could not load the hologram.');
+      mx.face.set({ enabled: true }); // 폰에서도 따라 하는 얼굴은 보여 준다
+      const { start } = await import('../matrix/face-link.js');
+      stopLink = await start({ video: document.getElementById('fl-video'), dots: document.getElementById('fl-dots'), out: linkOut, onState: s => mx.face.track(s),
+        onShape: v => mx.face.useFace({ v, f: MATRIX_HOLOGRAM_MODELS.mask.f }) }); // 정면 1초 → 내 얼굴 모양으로
+    } catch (e) {
+      linkOut.textContent = `> face.link\n  ${e?.message ?? e}`;
+    } finally { linking = false; }
+  });
+  document.getElementById('fl-stop').addEventListener('click', endLink);
+
+  // Both switches open the new state as a circle growing from the button pressed.
+  const reveal = (btn, update) => {
+    if (reduce || !document.startViewTransition) return update();
+    const r = btn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const end = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    document.startViewTransition(update).ready.then(() => root.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${end}px at ${x}px ${y}px)`] },
+      { duration: 700, easing: 'cubic-bezier(.7,0,.2,1)', pseudoElement: '::view-transition-new(root)' }));
+  };
+
+  // Theme: follows the system until the reader picks one.
+  const bTheme = document.getElementById('theme');
+  const dark = matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () => (root.dataset.theme || (dark.matches ? 'dark' : 'light')) === 'dark';
+  const syncTheme = () => bTheme.setAttribute('aria-pressed', isDark());
+  bTheme.addEventListener('click', () => reveal(bTheme, () => {
+    const next = isDark() ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch {}
+    syncTheme();
+  }));
+  dark.addEventListener('change', syncTheme);
+  syncTheme();
+
+  const bHuman = document.getElementById('m-human'), bAgent = document.getElementById('m-agent');
+  let leaving = false;
+  const set = (mode, animate) => {
+    root.dataset.edition = mode;
+    bHuman.setAttribute('aria-pressed', mode === 'human');
+    bAgent.setAttribute('aria-pressed', mode === 'agent');
+    if (mode === 'agent') {
+      if (animate && !reduce) { paintAgent(0); play(0, 1, 1200); } else out.textContent = text;
+      scrollTo({ top: 0, behavior: 'instant' });
+    } else { cancelAnimationFrame(decodeRaf); endLink(); }
+    runRain(mode === 'agent');
+    try { localStorage.setItem('edition', mode); } catch {}
+  };
+  const go = (mode, btn) => {
+    if (leaving || root.dataset.edition === mode || (!root.dataset.edition && mode === 'human')) return;
+    if (mode === 'human' && !reduce) {
+      // Leaving: the terminal text breaks back into noise, then the paper edition opens.
+      leaving = true;
+      play(1, 0, 420, () => { leaving = false; reveal(btn, () => set('human')); });
+    } else reveal(btn, () => set(mode, true));
+  };
+  bHuman.addEventListener('click', () => go('human', bHuman));
+  bAgent.addEventListener('click', () => go('agent', bAgent));
+  let saved = 'human';
+  try { saved = localStorage.getItem('edition') || 'human'; } catch {}
+  if (location.hash === '#agent') saved = 'agent';
+  if (saved === 'agent') set('agent', false);
+})();
+</script>
+
+<!-- build b47ea57ff031 -->
+</body>
+</html>

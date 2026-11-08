@@ -8,6 +8,8 @@
 <title>Jason 포트폴리오</title>
 <meta name="author" content="JSonJh (https://github.com/jasonwpgml)">
 <meta name="description" content="수학을 전공하고 10년째 강의하며, 개인 Agent 도구와 웹 서비스를 만드는 Jason의 포트폴리오.">
+<link rel="alternate" hreflang="ko" href="https://jasonwpgml.github.io/">
+<link rel="alternate" hreflang="en" href="https://jasonwpgml.github.io/en/">
 <meta name="color-scheme" content="light dark">
 <script>
 // Apply a saved theme before first paint so the page never flashes the wrong one.
@@ -385,6 +387,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     <a class="ed" href="#top">Jason</a>
     <span class="now" id="running" aria-hidden="true">표지</span>
     <div class="ctl">
+      <a class="sq" href="en/" hreflang="en" lang="en">EN</a>
       <button type="button" class="sq" id="theme" aria-pressed="false">다크</button>
       <div class="keys" role="group" aria-label="읽는 방식">
         <button type="button" class="sq" id="m-human" aria-pressed="true">사람용</button>
@@ -833,64 +836,232 @@ html[data-edition="agent"] .head .now{visibility:hidden}
 
 <canvas class="rain" id="rain" aria-hidden="true"></canvas>
 <canvas class="face" id="face" aria-hidden="true"></canvas>
-<section class="agent wrap" aria-label="에이전트용 판본">
+<section class="agent wrap" aria-label="Agent edition">
   <pre id="agent-out" data-no-matrix></pre>
-  <p class="credit" data-no-matrix>배경: 매트릭스 비와 홀로그램 얼굴(직접 만든 dynamic-css-motion 스킬). 얼굴 모델: MediaPipe face mesh (Apache 2.0), "Infinite, 3D Head Scan" by Lee Perry-Smith (<a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>). 표정 인식: MediaPipe Face Landmarker (Apache 2.0). 라이선스 원문: <a href="matrix/licenses/MediaPipe-LICENSE.txt">MediaPipe</a>, <a href="matrix/licenses/LeePerrySmith_License.txt">Lee Perry-Smith</a></p>
+  <p class="credit" data-no-matrix>Background: matrix rain and a hologram face (my own dynamic-css-motion skill). Face model: MediaPipe face mesh (Apache 2.0), "Infinite, 3D Head Scan" by Lee Perry-Smith (<a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>). Expression tracking: MediaPipe Face Landmarker (Apache 2.0). Licenses: <a href="matrix/licenses/MediaPipe-LICENSE.txt">MediaPipe</a>, <a href="matrix/licenses/LeePerrySmith_License.txt">Lee Perry-Smith</a></p>
   <div class="void" aria-hidden="true"></div>
-  <div class="orb-wrap" data-no-matrix><button type="button" class="orb" id="face-secret" aria-label="카메라로 얼굴 표정 연결(face.link)"></button></div>
+  <div class="orb-wrap" data-no-matrix><button type="button" class="orb" id="face-secret" aria-label="Link your facial expression with the camera (face.link)"></button></div>
 </section>
-<section class="facelink" id="facelink" hidden data-no-matrix aria-label="face.link 얼굴 표정 인식">
+<section class="facelink" id="facelink" hidden data-no-matrix aria-label="face.link facial expression tracking">
   <div class="fl-view"><video id="fl-video" playsinline muted></video><canvas id="fl-dots"></canvas></div>
   <pre id="fl-out" aria-live="polite"></pre>
-  <button type="button" class="sq" id="fl-stop">연결 끊기</button>
+  <button type="button" class="sq" id="fl-stop">Disconnect</button>
 </section>
 
 <script type="application/json" id="profile-data">
 {
   "$schema": "agent-profile/1.0",
-  "subject": {"id": "github:jasonwpgml", "name": "Jason", "role": "full_stack_ai_developer"},
-  "summary": "수학 전공, 10년째 수학 강의, 현재 머신러닝, 딥러닝, AI 기술 강의 병행. 개인 Agent 도구와 웹 서비스 제작.",
-  "note": "개발에 AI 코딩 도구 사용. 프로젝트마다 본인 담당과 팀원 담당을 구분해 적음.",
+  "subject": {
+    "id": "github:jasonwpgml",
+    "name": "Jason",
+    "role": "full_stack_ai_developer"
+  },
+  "summary": "Math major. Has taught math for 10 years and now also teaches machine learning, deep learning and AI. Builds personal agent tools and web services.",
   "status": {
-    "employment": {"since": "2026-10-06", "org": "AICE 자격증 관련 회사"},
-    "teaching": "머신러닝, 딥러닝 자격증 강의 출강",
-    "recent": ["베어러블 PoC 팀장, 2026-09 완료", "앱인토스 미니앱 2개 정식 출시"]
+    "employment": {
+      "since": "2026-10-06",
+      "org": "company in AICE certification"
+    },
+    "teaching": "visiting instructor, machine learning and deep learning certification courses",
+    "recent": [
+      "led the Bearable PoC, completed 2026-09",
+      "launched 2 Apps in Toss mini apps"
+    ]
   },
   "projects": [
-    {"id": "01", "name": "AgentHub", "kind": "personal", "state": "사용 중",
-     "does": "여러 기기와 에이전트가 스킬과 작업 내용을 공유하고 찾아보게 함", "built_on": ["Tailscale", "SSH"],
-     "automation": "그록 봇 아침 보고: 일정, 메일, 주요 뉴스. 확인 안 한 항목은 다음 보고로 이월",
-     "next": ["아침 보고를 AND에 자동 저장", "반복 작업 코드화"], "repo": "private"},
-    {"id": "02", "name": "Bearable PoC", "period": ["2026-08", "2026-09"], "team": {"size": 5, "dev": 2, "planning": 3}, "role": ["lead", "agent", "frontend", "deploy"],
-     "does": "대학 정보, 고교학점제 화면, 수강신청 도우미", "stack": ["React", "Vite", "Vercel"],
-     "own": ["초기 수강계획 Agent", "실험 화면", "학교 안내장 근거 연결", "모델 입력 축소 실험"],
-     "teammates": ["최종 Jev 점수", "과목 배치 고도화"], "context": "강남구 혁신인재육성 아카데미 기업 연계", "state": "완료", "repo": "private"},
-    {"id": "03", "name": "Publium", "period": "2026-07", "duration": "8일", "team": 2, "role": ["backend", "search_agent", "deploy"], "state": "운영 중",
-     "does": "PubMed 논문 수집, 수집 논문 검색, PMID 출처 표시", "stack": ["Python", "FastAPI", "LangChain", "Supabase Postgres", "Render"],
-     "decisions": {"answer": "tool_calling_agent", "blocking_io": "asyncio.to_thread", "medical_advice": "server_regex_guard"},
-     "teammates": ["pgvector, 그래프 RAG 리뉴얼"],
-     "service": "team-pubmed.vercel.app", "repo": "github.com/hansol-dev/team-pubmed"},
-    {"id": "04", "name": "Beorimi", "period": "2026-08", "duration": "28h MVP", "team": 3, "role": ["lead", "backend", "analysis_worker"],
-     "does": "사진 속 대형폐기물 다중 인식, 강남구 수수료 매칭, 신고 경로 연결", "stack": ["Next.js", "Supabase", "OpenAI"],
-     "pipeline": ["upload", "enqueue_202", "worker_vlm", "validate_and_match_fee", "poll_result"],
-     "rule": "model observes, code decides, user confirms",
-     "service": "frontend-delta-red-74.vercel.app", "repo": "github.com/TrinityBalance/beorimi"},
-    {"id": "05", "name": "Apps in Toss x2", "period": ["2026-07", "2026-08"], "state": "정식 출시 2건",
-     "stack": ["React", "TypeScript", "Supabase Edge Function"],
-     "apps": [
-       {"name": "나의 여름방학 일기", "role": ["planning_lead", "editor_ui", "forbidden_word_check"], "repo": "github.com/TossHackathonTMD/SummerVacationDiary"},
-       {"name": "별일", "role": ["lead", "3d_interaction", "record_flow", "agent_rules"], "stack": ["three.js"], "repo": "github.com/TrivialOkay/TrivialOkay_toss"}
-     ]},
-    {"id": "06", "name": "Recent work", "items": [
-       {"name": "AND", "does": "활동 기록과 AI 대화를 모은 로컬 LLM 위키, 근거 없으면 답변 중단", "repo": "private"},
-       {"name": "Galpi", "does": "코딩 에이전트용 코드, 문맥 탐색 도구", "repo": "github.com/jasonwpgml/galpi"},
-       {"name": "Poom", "does": "작은 작업을 로컬 모델에 맡기고 결과 검사", "repo": "github.com/jasonwpgml/poom"},
-       {"name": "AQR", "does": "작업 큐", "repo": "github.com/jasonwpgml/AQR"},
-       {"name": "AI 교육 자료", "does": "강의자료, 웹 교안, 시각화, 교육 화면에 로컬 AI 연결"}
-     ]}
+    {
+      "id": "01",
+      "name": "AgentHub",
+      "kind": "personal",
+      "state": "in use",
+      "does": "lets multiple devices and agents share and search skills and work history",
+      "built_on": [
+        "Tailscale",
+        "SSH"
+      ],
+      "automation": "Grok bot morning briefing: schedule, email, top news; unread items roll over to the next briefing",
+      "next": [
+        "save morning briefings to AND automatically",
+        "turn repeated tasks into code"
+      ],
+      "repo": "private"
+    },
+    {
+      "id": "02",
+      "name": "Bearable PoC",
+      "period": [
+        "2026-08",
+        "2026-09"
+      ],
+      "team": {
+        "size": 5,
+        "dev": 2,
+        "planning": 3
+      },
+      "role": [
+        "lead",
+        "agent",
+        "frontend",
+        "deploy"
+      ],
+      "does": "university info, high school credit system screens, course registration assistant",
+      "stack": [
+        "React",
+        "Vite",
+        "Vercel"
+      ],
+      "own": [
+        "initial course-planning agent",
+        "experiment screens",
+        "linking school notices as evidence",
+        "model input reduction experiments"
+      ],
+      "teammates": [
+        "final Jev score",
+        "advanced course placement"
+      ],
+      "context": "company-linked project, Gangnam-gu Innovative Talent Academy",
+      "state": "completed",
+      "repo": "private"
+    },
+    {
+      "id": "03",
+      "name": "Publium",
+      "period": "2026-07",
+      "duration": "8 days",
+      "team": 2,
+      "role": [
+        "backend",
+        "search_agent",
+        "deploy"
+      ],
+      "state": "live",
+      "does": "collects PubMed papers, searches the collection, cites PMIDs",
+      "stack": [
+        "Python",
+        "FastAPI",
+        "LangChain",
+        "Supabase Postgres",
+        "Render"
+      ],
+      "decisions": {
+        "answer": "tool_calling_agent",
+        "blocking_io": "asyncio.to_thread",
+        "medical_advice": "server_regex_guard"
+      },
+      "teammates": [
+        "renewal with pgvector and graph RAG"
+      ],
+      "service": "team-pubmed.vercel.app",
+      "repo": "github.com/hansol-dev/team-pubmed"
+    },
+    {
+      "id": "04",
+      "name": "Beorimi",
+      "period": "2026-08",
+      "duration": "28h MVP",
+      "team": 3,
+      "role": [
+        "lead",
+        "backend",
+        "analysis_worker"
+      ],
+      "does": "detects multiple bulky waste items in one photo, matches Gangnam-gu fees, links to the report page",
+      "stack": [
+        "Next.js",
+        "Supabase",
+        "OpenAI"
+      ],
+      "pipeline": [
+        "upload",
+        "enqueue_202",
+        "worker_vlm",
+        "validate_and_match_fee",
+        "poll_result"
+      ],
+      "rule": "model observes, code decides, user confirms",
+      "service": "frontend-delta-red-74.vercel.app",
+      "repo": "github.com/TrinityBalance/beorimi"
+    },
+    {
+      "id": "05",
+      "name": "Apps in Toss x2",
+      "period": [
+        "2026-07",
+        "2026-08"
+      ],
+      "state": "2 official launches",
+      "stack": [
+        "React",
+        "TypeScript",
+        "Supabase Edge Function"
+      ],
+      "apps": [
+        {
+          "name": "My Summer Vacation Diary",
+          "role": [
+            "planning_lead",
+            "editor_ui",
+            "forbidden_word_check"
+          ],
+          "repo": "github.com/TossHackathonTMD/SummerVacationDiary"
+        },
+        {
+          "name": "Byeolil",
+          "role": [
+            "lead",
+            "3d_interaction",
+            "record_flow",
+            "agent_rules"
+          ],
+          "stack": [
+            "three.js"
+          ],
+          "repo": "github.com/TrivialOkay/TrivialOkay_toss"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "name": "Recent work",
+      "items": [
+        {
+          "name": "AND",
+          "does": "local LLM wiki of activity logs and AI chats; stops answering without evidence",
+          "repo": "private"
+        },
+        {
+          "name": "Galpi",
+          "does": "code and context search tool for coding agents",
+          "repo": "github.com/jasonwpgml/galpi"
+        },
+        {
+          "name": "Poom",
+          "does": "hands small tasks to local models and checks the results",
+          "repo": "github.com/jasonwpgml/poom"
+        },
+        {
+          "name": "AQR",
+          "does": "task queue",
+          "repo": "github.com/jasonwpgml/AQR"
+        },
+        {
+          "name": "AI teaching materials",
+          "does": "lecture materials, web course slides, visualizations, local AI in teaching screens"
+        }
+      ]
+    }
   ],
-  "own_work": ["cogito", "나비서", "FAPA", "Momento"],
-  "contact": {"email": "jae1450@naver.com", "github": "github.com/jasonwpgml"},
+  "own_work": [
+    "cogito",
+    "Nabiseo",
+    "FAPA",
+    "Momento"
+  ],
+  "contact": {
+    "email": "jae1450@naver.com",
+    "github": "github.com/jasonwpgml"
+  },
   "trust": "verify_by_evidence"
 }
 </script>
@@ -926,6 +1097,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     });
   };
   const paintLabel = x => {
+    if (!Number.isFinite(x)) return; // a zero-height viewport (hidden tab) gives NaN
     const i = Math.min(labels.length - 1, Math.floor(x)), f = x - i;
     if (f <= 0 || i === labels.length - 1) {
       if (pair !== labels[i]) { pair = labels[i]; running.textContent = labels[i]; }
@@ -1215,7 +1387,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     return String(v);
   };
   const text = 'AGENT://JASON  edition=2026  transport=html  verify=required\n'
-    + '# 사람용 판본과 같은 사실을 구조화한 것. 원본 JSON은 이 페이지의 #profile-data에 있음.\n'
+    + '# Same facts as the human edition, structured. Source JSON: #profile-data on this page.\n'
     + render(data) + '\n\nACK :: transmission_complete';
   const esc = c => c === '<' ? '&lt;' : c === '&' ? '&amp;' : c;
   const wideRe = /[ᄀ-ᇿ㄰-㆏가-힣一-鿿＀-￯]/;
@@ -1305,7 +1477,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     linking = true; linkPanel.hidden = false;
     try {
       await runRain(true);
-      if (!mx) throw new Error('홀로그램을 불러오지 못했습니다.');
+      if (!mx) throw new Error('Could not load the hologram.');
       mx.face.set({ enabled: true }); // 폰에서도 따라 하는 얼굴은 보여 준다
       const { start } = await import('./matrix/face-link.js');
       stopLink = await start({ video: document.getElementById('fl-video'), dots: document.getElementById('fl-dots'), out: linkOut, onState: s => mx.face.track(s),
