@@ -2,6 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<!-- 이 페이지는 자기 사이트 밖으로 통신하지 않는다. face.link의 MediaPipe가 보내려는 사용량 지표도 여기서 막힌다 -->
+<meta http-equiv="Content-Security-Policy" content="connect-src 'self' blob: data:">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jason 포트폴리오</title>
 <meta name="author" content="JSonJh (https://github.com/jasonwpgml)">
@@ -283,6 +285,29 @@ html[data-edition="agent"] .agent::before{content:"";position:fixed;inset:0;z-in
 html[data-edition="agent"] .agent pre,html[data-edition="agent"] .agent .credit{text-shadow:0 0 2px #030a05,0 0 6px #030a05,0 0 12px rgb(3 10 5/.9)}
 .agent .credit{position:relative;z-index:1;max-width:92ch;margin:32px 0 0 max(0px,(100% - var(--max)) / 2);font-size:12px;color:var(--ink-2)}
 .agent .credit a{color:inherit}
+/* face.link: 글이 끝난 뒤 한참 빈 공간이 이어지고, 그 끝에 숨 쉬듯 빛나는 구슬 하나. 누르면 카메라 표정 인식 창이 뜬다 */
+.agent .void{height:85svh}
+.agent .orb-wrap{position:relative;z-index:1;display:flex;justify-content:center;padding:0 0 9svh}
+.agent .orb{all:unset;position:relative;width:46px;height:46px;border-radius:50%;cursor:pointer;
+  background:radial-gradient(circle,#eafff1 0 2px,rgb(125 255 159/.85) 3px,rgb(60 255 149/.22) 9px,rgb(3 10 5/0) 70%);
+  box-shadow:0 0 0 1px rgb(47 138 74/.55),0 0 22px rgb(60 255 149/.28),inset 0 0 12px rgb(60 255 149/.18);
+  animation:orb 3.6s ease-in-out infinite}
+.agent .orb::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid rgb(60 255 149/.18);animation:orbring 3.6s ease-out infinite}
+.agent .orb::after{content:"face.link";position:absolute;left:50%;top:calc(100% + 14px);transform:translateX(-50%);font:400 11px/1 var(--mono);letter-spacing:.2em;color:#4f8d61;opacity:0;transition:opacity .4s}
+.agent .orb:hover,.agent .orb:focus-visible{box-shadow:0 0 0 1px rgb(125 255 159/.9),0 0 34px rgb(60 255 149/.6),inset 0 0 14px rgb(125 255 159/.35)}
+.agent .orb:hover::after,.agent .orb:focus-visible::after{opacity:1}
+@keyframes orb{0%,100%{transform:scale(.9);filter:brightness(.8)}50%{transform:scale(1.04);filter:brightness(1.25)}}
+@keyframes orbring{0%{transform:scale(.7);opacity:0}30%{opacity:.9}100%{transform:scale(1.5);opacity:0}}
+@media (prefers-reduced-motion:reduce){.agent .orb,.agent .orb::before{animation:none}}
+.facelink{position:fixed;right:16px;bottom:16px;z-index:5;width:min(560px,calc(100vw - 32px));max-height:calc(100svh - 96px);overflow:auto;
+  background:rgb(3 10 5/.86);border:1px solid #2f8a4a;border-radius:6px;padding:12px;font:400 12px/1.6 var(--mono);color:#c6f6d2;backdrop-filter:blur(2px)}
+.facelink[hidden]{display:none}
+.facelink .fl-view{position:relative;width:200px;aspect-ratio:4/3;float:right;margin:0 0 8px 12px;border:1px solid #16331f;overflow:hidden;background:#000}
+.facelink video,.facelink canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.facelink video{opacity:.55}
+.facelink pre{margin:0;white-space:pre-wrap;word-break:break-word;font:inherit}
+.facelink .sq{clear:both;margin-top:8px}
+@media (max-width:700px){.facelink{right:8px;left:8px;bottom:8px;width:auto;font-size:11px}.facelink .fl-view{width:120px}}
 html[data-edition="agent"] .human{display:none}
 html[data-edition="agent"] .agent,html[data-edition="agent"] .rain,html[data-edition="agent"] .face{display:block}
 html[data-edition="agent"] .head .now{visibility:hidden}
@@ -810,7 +835,14 @@ html[data-edition="agent"] .head .now{visibility:hidden}
 <canvas class="face" id="face" aria-hidden="true"></canvas>
 <section class="agent wrap" aria-label="에이전트용 판본">
   <pre id="agent-out" data-no-matrix></pre>
-  <p class="credit" data-no-matrix>배경: 매트릭스 비와 홀로그램 얼굴(직접 만든 dynamic-css-motion 스킬). 얼굴 모델: MediaPipe face mesh (Apache 2.0), "Infinite, 3D Head Scan" by Lee Perry-Smith (<a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>). 라이선스 원문: <a href="matrix/licenses/MediaPipe-LICENSE.txt">MediaPipe</a>, <a href="matrix/licenses/LeePerrySmith_License.txt">Lee Perry-Smith</a></p>
+  <p class="credit" data-no-matrix>배경: 매트릭스 비와 홀로그램 얼굴(직접 만든 dynamic-css-motion 스킬). 얼굴 모델: MediaPipe face mesh (Apache 2.0), "Infinite, 3D Head Scan" by Lee Perry-Smith (<a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>). 표정 인식: MediaPipe Face Landmarker (Apache 2.0). 라이선스 원문: <a href="matrix/licenses/MediaPipe-LICENSE.txt">MediaPipe</a>, <a href="matrix/licenses/LeePerrySmith_License.txt">Lee Perry-Smith</a></p>
+  <div class="void" aria-hidden="true"></div>
+  <div class="orb-wrap" data-no-matrix><button type="button" class="orb" id="face-secret" aria-label="카메라로 얼굴 표정 연결(face.link)"></button></div>
+</section>
+<section class="facelink" id="facelink" hidden data-no-matrix aria-label="face.link 얼굴 표정 인식">
+  <div class="fl-view"><video id="fl-video" playsinline muted></video><canvas id="fl-dots"></canvas></div>
+  <pre id="fl-out" aria-live="polite"></pre>
+  <button type="button" class="sq" id="fl-stop">연결 끊기</button>
 </section>
 
 <script type="application/json" id="profile-data">
@@ -1257,7 +1289,31 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     if (L.room) faceTimer = setTimeout(() => agentMode() && mx.face.set({ enabled: true }), mx.first ? 1600 : 400);
     mx.first = false;
   };
-  addEventListener('resize', () => { if (!agentMode() || !mx) return; const L = placeFace(); mx.face.set({ anchor: L.anchor, size: L.size, enabled: L.room }); });
+  addEventListener('resize', () => { if (!agentMode() || !mx) return; const L = placeFace(); mx.face.set({ anchor: L.anchor, size: L.size, enabled: L.room || !!stopLink }); });
+
+  // face.link: 터미널 맨 끝의 숨은 버튼을 누르면 카메라로 표정을 읽어 홀로그램이 거울처럼 따라 한다(matrix/face-link.js).
+  // 인식 모델(약 17MB)은 누를 때만 불러오고, 영상은 기기 안에서만 처리한다
+  const linkPanel = document.getElementById('facelink'), linkOut = document.getElementById('fl-out'), linkBtn = document.getElementById('face-secret');
+  let stopLink = null, linking = false;
+  const endLink = () => {
+    if (stopLink) { stopLink(); stopLink = null; }
+    linkPanel.hidden = true;
+    if (mx && !placeFace().room) mx.face.set({ enabled: false }); // 폰은 평소처럼 비만
+  };
+  linkBtn.addEventListener('click', async () => {
+    if (linking || stopLink) return;
+    linking = true; linkPanel.hidden = false;
+    try {
+      await runRain(true);
+      if (!mx) throw new Error('홀로그램을 불러오지 못했습니다.');
+      mx.face.set({ enabled: true }); // 폰에서도 따라 하는 얼굴은 보여 준다
+      const { start } = await import('./matrix/face-link.js');
+      stopLink = await start({ video: document.getElementById('fl-video'), dots: document.getElementById('fl-dots'), out: linkOut, onState: s => mx.face.track(s) });
+    } catch (e) {
+      linkOut.textContent = `> face.link\n  ${e?.message ?? e}`;
+    } finally { linking = false; }
+  });
+  document.getElementById('fl-stop').addEventListener('click', endLink);
 
   // Both switches open the new state as a circle growing from the button pressed.
   const reveal = (btn, update) => {
@@ -1292,7 +1348,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     if (mode === 'agent') {
       if (animate && !reduce) { paintAgent(0); play(0, 1, 1200); } else out.textContent = text;
       scrollTo({ top: 0, behavior: 'instant' });
-    } else cancelAnimationFrame(decodeRaf);
+    } else { cancelAnimationFrame(decodeRaf); endLink(); }
     runRain(mode === 'agent');
     try { localStorage.setItem('edition', mode); } catch {}
   };

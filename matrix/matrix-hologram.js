@@ -16,6 +16,7 @@ const matrixHologram = (() => {
     eyeBlink: "off", // off · led: 랜선 LED처럼 불규칙하게 톡톡 깜빡 · crt: 화면 지직거림처럼 떨리다 가끔 꺼짐
     anchor: [0.5, 0.5], // 얼굴 가운데 위치(화면 가로·세로 비율). 글이 왼쪽에 있으면 [0.8, 0.5]처럼 오른쪽 빈 곳에 둔다
     size: 1,         // 얼굴 크기 배율(화면 짧은 변의 36%가 1)
+    appearDelay: 0,  // 켠 뒤 드러나기 시작할 때까지 기다리는 시간(초). 미리 켜 두면 처음 그릴 때의 준비 비용이 화면이 빈 동안 지나간다
     appear: 4,       // 켤 때 가운데서 빛 고리가 퍼지며 잔물결과 함께 드러나는 시간(초). 0이면 바로 보인다
     fps: 60,         // 프레임 상한. 하루 종일 도는 바탕화면에서는 30으로 낮춘다(벽 모드는 늘 30 이하)
     maxDpr: 1.5,
@@ -70,13 +71,44 @@ const matrixHologram = (() => {
       }
     }
     const eyes = [[33, 133], [362, 263]].map(([a, b]) => V[a].map((q, i) => (q + V[b][i]) / 2 + (i === 2 ? 0.02 : 0)));
-    return { pts, eyes, scale: 1, lift: 0, F: 3.2 };
+    // 표정 자리: MediaPipe 점 번호로 입 가운데(13·14), 입꼬리(61·291), 턱끝(152)
+    const mid = (a, b) => V[a].map((q, i) => (q + V[b][i]) / 2);
+    const m = { pts, eyes, scale: 1, lift: 0, F: 3.2 };
+    rig(m, { mouth: mid(13, 14), corners: [V[61], V[291]], chin: V[152] });
+    return m;
+  }
+  // 표정에 쓰는 점별 무게: 턱(입 벌림), 입꼬리(웃음), 눈썹 띠(눈썹 올림)
+  function rig(m, at) {
+    const ey = (m.eyes[0][1] + m.eyes[1][1]) / 2, ed = Math.abs(m.eyes[1][0] - m.eyes[0][0]) || 0.6;
+    const mouth = at.mouth, chinY = at.chin ? at.chin[1] : mouth[1] - ed * 0.9, n = m.pts.length;
+    m.wJaw = new Float32Array(n); m.wCorner = new Float32Array(n); m.wBrow = new Float32Array(n); m.side = new Int8Array(n);
+    const s2 = (ed * 0.28) ** 2;
+    m.pts.forEach((P, i) => {
+      const [x, y] = P.p;
+      m.side[i] = x < 0 ? -1 : 1;
+      // 턱: 입 너비 안쪽은 입 줄 아래가 한 번에 내려가 입술 틈이 생기고, 그 바깥 턱은 아래로 갈수록 완만하게 따라 내려간다
+      const below = (mouth[1] - y) / Math.max(0.05, mouth[1] - chinY), half = Math.abs(at.corners[1][0] - at.corners[0][0]) / 2 || ed * 0.4;
+      const gap = (0.7 + 0.3 * Math.min(1, below)) * Math.max(0, 1 - (Math.abs(x) / (half * 1.15)) ** 4);
+      const slope = Math.min(1, below * 1.2) * Math.max(0, 1 - Math.abs(x) / (ed * 1.3)) ** 2 * 0.85;
+      m.wJaw[i] = below > 0 ? Math.max(gap, slope) : 0;
+      // 입꼬리: 가까운 입꼬리에서 멀어질수록 줄어든다
+      const c = at.corners[x < 0 ? 0 : 1], d2 = (x - c[0]) ** 2 + (y - c[1]) ** 2;
+      m.wCorner[i] = Math.exp(-d2 / s2);
+      // 눈썹 띠: 눈보다 조금 위부터 이마 아래까지
+      const up = (y - ey) / ed;
+      m.wBrow[i] = up > 0.12 && up < 0.75 ? Math.sin(((up - 0.12) / 0.63) * Math.PI) * Math.max(0, 1 - Math.abs(x) / (ed * 1.4)) : 0;
+    });
   }
   function headPoints(src) {
     const pts = [];
     for (let i = 0; i < src.d.length; i++)
       pts.push({ p: src.p.slice(i * 3, i * 3 + 3), n: src.n.slice(i * 3, i * 3 + 3), d: src.d[i], e: src.e[i], g: (Math.random() * 40) | 0, j: jitter() });
-    return { pts, eyes: src.eyes, scale: 0.8, lift: 0.26, F: 4.2 };
+    const m = { pts, eyes: src.eyes, scale: 0.8, lift: 0.26, F: 4.2 };
+    // 전체 머리 모델은 점 번호가 없어 눈 위치로 입·입꼬리 자리를 어림한다
+    const ey = (src.eyes[0][1] + src.eyes[1][1]) / 2, ez = (src.eyes[0][2] + src.eyes[1][2]) / 2, ed = Math.abs(src.eyes[1][0] - src.eyes[0][0]) || 0.6;
+    const mouth = [0, ey - ed * 1.05, ez];
+    rig(m, { mouth, corners: [[-ed * 0.42, mouth[1] + ed * 0.03, ez], [ed * 0.42, mouth[1] + ed * 0.03, ez]], chin: [0, mouth[1] - ed * 0.85, ez] });
+    return m;
   }
   const cache = {};
   function model(key) {
@@ -97,6 +129,9 @@ const matrixHologram = (() => {
     const S = { yaw: 0, pitch: 0, ty: 0, tp: 0, moved: -1e9, mx: 0.5, my: 0.5, glitch: 9, last: performance.now(), appear: 0, shown: false };
     // 눈 깜빡임 상태: LED는 '오래 켜져 있다가 몇 번 톡톡톡' 하는 묶음, CRT는 늘 미세하게 떨리다 가끔 한두 프레임 꺼짐
     const B = { on: true, left: 0, next: 0, drop: 0, jx: 0 };
+    // 카메라로 읽은 사람 얼굴(holoface FaceState). 거울처럼 따라 한다: 고개·기울기·시선·눈 감김·입·웃음·눈썹
+    const T = { at: -1e9, s: null, jaw: 0, smile: 0, brow: 0, bl: 0, br: 0, roll: 0 };
+    const tracking = (now) => T.s && T.s.present && now - T.at < 1500;
     function eyeLevel(now) {
       B.jx = 0;
       if (o.eyeBlink === "led") {
@@ -144,13 +179,25 @@ const matrixHologram = (() => {
 
     function frame(now) {
       const dt = Math.min(0.05, (now - S.last) / 1000); S.last = now; const t = now / 1000;
-      if (now - S.moved > 3000) { S.ty = Math.sin(t * 0.45) * 0.35; S.tp = Math.sin(t * 0.31) * 0.12; } // 마우스가 멈추면 두리번거림
+      const tr = tracking(now);
+      if (tr) { // 사람이 자기 오른쪽으로 돌면 화면 오른쪽으로, 위를 보면 위로(거울)
+        const s = T.s, k = Math.min(1, dt * 12), ke = Math.min(1, dt * 18);
+        S.ty = Math.max(-0.75, Math.min(0.75, (+s.yaw || 0) * Math.PI / 180));
+        S.tp = Math.max(-0.45, Math.min(0.45, -(+s.pitch || 0) * Math.PI / 180));
+        S.mx = 0.5 + Math.max(-1, Math.min(1, +s.gazeX || 0)) * 0.5; S.my = 0.5 - Math.max(-1, Math.min(1, +s.gazeY || 0)) * 0.5;
+        T.roll += (Math.max(-0.5, Math.min(0.5, -(+s.roll || 0) * Math.PI / 180)) - T.roll) * k;
+        T.jaw += ((+s.mouthOpen || 0) - T.jaw) * k; T.smile += ((+s.smile || 0) - T.smile) * k; T.brow += ((+s.browRaise || 0) - T.brow) * k;
+        T.bl += ((+s.blinkLeft || 0) - T.bl) * ke; T.br += ((+s.blinkRight || 0) - T.br) * ke;
+        S.moved = now;
+      } else { const k = Math.min(1, dt * 3); T.roll -= T.roll * k; T.jaw -= T.jaw * k; T.smile -= T.smile * k; T.brow -= T.brow * k; T.bl -= T.bl * k; T.br -= T.br * k; }
+      if (!tr && now - S.moved > 3000) { S.ty = Math.sin(t * 0.45) * 0.35; S.tp = Math.sin(t * 0.31) * 0.12; } // 마우스가 멈추면 두리번거림
       const k = 1 - Math.pow(0.002, dt); S.yaw += (S.ty - S.yaw) * k; S.pitch += (S.tp - S.pitch) * k; S.glitch += dt;
       const wall = o.view === "wall", turn = wall ? 0.6 : 1;               // 벽에 붙은 얼굴은 덜 돈다
       const cy = Math.cos(S.yaw * turn), sy = Math.sin(S.yaw * turn), cp = Math.cos(S.pitch * turn), sp = Math.sin(S.pitch * turn);
+      const cr = Math.cos(T.roll * turn), sr = Math.sin(T.roll * turn), expr = T.jaw > 0.01 || T.smile > 0.01 || T.brow > 0.01;
       // 등장: 가운데서 빛 고리가 천천히 퍼지며 지나간 자리부터 드러나고, 뒤로 잔물결이 남았다가 잦아든다.
       // 조금 뒤(작게)에서 어둡게 시작해 앞으로 다가오며 밝아진다
-      const ap = +o.appear > 0 && !reduce.matches ? (S.appear = Math.min(1, S.appear + dt / +o.appear)) : 1;
+      const ap = +o.appear > 0 && !reduce.matches ? Math.max(0, (S.appear = Math.min(1, S.appear + dt / +o.appear))) : 1;
       const rip = ap < 1, ease = ap * ap * (3 - 2 * ap), front = Math.pow(ap, 1.4) * 1.95 - 0.15, calm = 1 - ease;
       const SZ = canvas.width, R = Rcss * dpr * M.scale * (0.9 + 0.1 * ease), ox = SZ / 2, oy = SZ / 2 - M.lift * R, F = M.F;
       const g = S.glitch < 1.1 ? Math.pow(1 - S.glitch / 1.1, 2.2) : 0;  // 누른 직후 흩어짐(1 → 0)
@@ -158,6 +205,11 @@ const matrixHologram = (() => {
       for (let i = 0; i < P.length; i++) {
         const A = P[i]; let x = A.p[0], y = A.p[1], z = A.p[2];
         if (g) { const s = g * 0.65 * (0.9 + A.j[2]); x += A.n[0] * s * 0.9 + A.j[0] * s * 1.4; y += A.n[1] * s * 0.9 + A.j[1] * s * 1.4; z += A.n[2] * s * 0.9; }
+        if (expr) { // 표정: 턱을 내리고, 입꼬리를 위·옆으로, 눈썹 띠를 위로
+          y -= M.wJaw[i] * T.jaw * 0.2;
+          const c = M.wCorner[i] * T.smile; y += c * 0.08; x += M.side[i] * c * 0.05; z += c * 0.02;
+          y += M.wBrow[i] * T.brow * 0.07;
+        }
         let reveal = 1, ring = 0;
         if (rip) {
           const d = front - Math.hypot(A.p[0], A.p[1] - 0.05);
@@ -166,7 +218,8 @@ const matrixHologram = (() => {
           const s = (0.07 * ring + 0.025 * wave) * (0.4 + 0.6 * calm);
           x += A.n[0] * s; y += A.n[1] * s; z += A.n[2] * s;
         }
-        let X = x * cy + z * sy, Z = -x * sy + z * cy; const Y = y * cp - Z * sp; Z = y * sp + Z * cp;
+        let X = x * cy + z * sy, Z = -x * sy + z * cy; let Y = y * cp - Z * sp; Z = y * sp + Z * cp;
+        if (T.roll) { const X0 = X; X = X0 * cr - Y * sr; Y = X0 * sr + Y * cr; } // 고개 기울기
         const nx = A.n[0] * cy + A.n[2] * sy; let nz = -A.n[0] * sy + A.n[2] * cy; const ny = A.n[1] * cp - nz * sp; nz = A.n[1] * sp + nz * cp;
         const q = proj[i], per = F / (F - Z);
         q.x = ox + X * per * R; q.y = oy - Y * per * R; q.s = per; q.vis = wall ? nz > 0.05 : nz > -0.1 || g > 0.05;
@@ -202,10 +255,13 @@ const matrixHologram = (() => {
       ctx.globalCompositeOperation = "lighter";
       const lv = eyeLevel(now) * Math.max(0, Math.min(1, (ap - 0.6) / 0.4)), size = Math.max(0.4, Math.min(2.5, +o.eyeSize || 1)); // 눈은 얼굴이 거의 다 드러난 뒤 켜진다
       for (const e of M.eyes) {
-        const x = e[0] * (+o.eyeSpread || 1) + (S.mx - 0.5) * 0.035, y = e[1] + (+o.eyeY || 0) - (S.my - 0.5) * 0.022, z = e[2]; // 눈동자는 눈두덩 안에서만 조금 굴린다
-        let X = x * cy + z * sy, Z = -x * sy + z * cy; const Y = y * cp - Z * sp; Z = y * sp + Z * cp;
+        const x = e[0] * (+o.eyeSpread || 1) + (S.mx - 0.5) * 0.035, y = e[1] + (+o.eyeY || 0) - (S.my - 0.5) * 0.022 + T.brow * 0.012, z = e[2]; // 눈동자는 눈두덩 안에서만 조금 굴린다
+        let X = x * cy + z * sy, Z = -x * sy + z * cy; let Y = y * cp - Z * sp; Z = y * sp + Z * cp;
+        if (T.roll) { const X0 = X; X = X0 * cr - Y * sr; Y = X0 * sr + Y * cr; }
+        const shut = e[0] < 0 ? T.bl : T.br; // 화면 왼쪽 눈 = 거울 속 그 사람의 왼쪽 눈
+        if (shut > 0.85) continue;
         const front = Math.max(0, Math.min(1, ((-x * 0.9 * sy + cy) * cp + y * sp - 0.3) / 0.4));
-        const per = F / (F - Z), r = 6 * dpr * per * (1 - g) * front * size;
+        const per = F / (F - Z), r = 6 * dpr * per * (1 - g) * front * size * (1 - shut * 0.85);
         let px = ox + X * per * R, py = oy - Y * per * R;
         if (wall) { const pop = Math.max(0, Z + 0.4) * 0.05; px += (px - ox) * pop; py += (py - oy) * pop; } // 벽의 비 글자와 같은 만큼 밖으로 밀려 나온다
         if (r <= 0.5 || lv <= 0) continue;
@@ -263,7 +319,7 @@ const matrixHologram = (() => {
       else if (good > upAfter && qi > 0) { qi--; good = 0; resize(); } // 오래 여유가 있으면 한 단계씩 되돌린다
     }
     function sync() { // 켜져 있고, 보이고, 움직임 줄이기가 아닐 때만 돈다
-      if (o.enabled && !S.shown) S.appear = 0; // 꺼져 있다 켜질 때마다 다시 드러난다
+      if (o.enabled && !S.shown) S.appear = -Math.max(0, +o.appearDelay || 0) / Math.max(0.1, +o.appear || 1); // 꺼져 있다 켜질 때마다 다시 드러난다
       S.shown = o.enabled;
       canvas.style.display = o.enabled ? "" : "none";
       rain.set({ relief: o.enabled && o.view === "wall" ? relief : null });
@@ -274,6 +330,7 @@ const matrixHologram = (() => {
       if (o.enabled && reduce.matches) frame(performance.now()); // 멈춘 한 장면
     }
     const onMove = (e) => {
+      if (tracking(performance.now())) return; // 카메라로 따라 하는 동안에는 마우스를 보지 않는다
       S.mx = e.clientX / innerWidth; S.my = e.clientY / innerHeight; S.moved = performance.now();
       const [ax, ay] = anchor(); // 얼굴이 있는 자리 기준으로 커서 쪽을 본다
       S.ty = Math.max(-0.75, Math.min(0.75, (S.mx - ax) * 1.6)); S.tp = Math.max(-0.45, Math.min(0.45, (S.my - ay) * 0.9)); // 좌우 약 43°, 위아래 약 26°
@@ -291,6 +348,10 @@ const matrixHologram = (() => {
         if (o.maxDpr !== prev.maxDpr || o.size !== prev.size || String(o.anchor) !== String(prev.anchor)) resize();
         sync();
       },
+      // holoface가 읽은 얼굴 상태({ present, yaw, pitch, roll, gazeX, gazeY, blinkLeft, blinkRight, mouthOpen, smile, browRaise })를 넣는다.
+      // 1.5초 동안 새 값이 없거나 얼굴이 없으면 마우스·두리번거림으로 돌아간다
+      track(state) { if (state && typeof state === "object") { T.s = state; T.at = performance.now(); } },
+      get tracking() { return tracking(performance.now()); },
       start() { this.set({ enabled: true }); },
       stop() { this.set({ enabled: false }); },
       get options() { return { ...o }; },

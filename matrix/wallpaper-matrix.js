@@ -557,7 +557,6 @@ void main() { vec2 uv = gl_FragCoord.xy / u_size; vec3 c = texture(u_scene, uv).
       R.resize();
       for (const L of layers) R.drop(L);
       layers = (o.depth ? LAYERS : [LAYERS[1]]).map(layer);
-      firstBuild = false;
       if (!running) still();
     }
     function loop(now) {
@@ -570,7 +569,7 @@ void main() { vec2 uv = gl_FragCoord.xy / u_size; vec3 c = texture(u_scene, uv).
     }
     function run() { // 보이고, 원하고, 움직임 줄이기가 아닐 때만 예약한다
       const go = wanted && !document.hidden && !reduce.matches;
-      if (go && !running) { running = true; last = performance.now(); acc = 0; raf = requestAnimationFrame(loop); }
+      if (go && !running) { running = true; firstBuild = false; last = performance.now(); acc = 0; raf = requestAnimationFrame(loop); } // fromTop은 처음 흐르기 시작할 때까지만
       if (!go && running) { running = false; cancelAnimationFrame(raf); still(); }
       if (!go && !running && reduce.matches) still();
     }
@@ -587,7 +586,12 @@ void main() { vec2 uv = gl_FragCoord.xy / u_size; vec3 c = texture(u_scene, uv).
       const r = view.getBoundingClientRect();
       if (shocks.length < 6) shocks.push({ x: (e.clientX - r.left) * dpr, y: (e.clientY - r.top) * dpr, t: 0, r: 0 });
     };
-    const ro = new ResizeObserver(() => resize());
+    // 관찰을 시작하면 곧바로 한 번 불린다. 크기가 그대로면 다시 짓지 않는다(다시 지으면 fromTop으로 비워 둔 화면이 비로 가득 찬다)
+    const ro = new ResizeObserver(() => {
+      const r = view.getBoundingClientRect(), d = Math.min(devicePixelRatio || 1, o.maxDpr);
+      if (Math.max(1, Math.floor(r.width * d)) === W && Math.max(1, Math.floor(r.height * d)) === H && d === dpr) return;
+      resize();
+    });
     addEventListener("pointermove", onMove, { passive: true });
     addEventListener("pointerout", onOut); addEventListener("pointerdown", onDown);
     document.addEventListener("visibilitychange", run);
