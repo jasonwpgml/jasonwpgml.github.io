@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Jason 포트폴리오</title>
+<meta name="author" content="JSonJh (https://github.com/jasonwpgml)">
 <meta name="description" content="수학을 전공하고 10년째 강의하며, 개인 Agent 도구와 웹 서비스를 만드는 Jason의 포트폴리오.">
 <meta name="color-scheme" content="light dark">
 <script>
@@ -275,13 +276,20 @@ html[data-edition="agent"] .sq{border-radius:3px;box-shadow:none}
 .agent .nz.w{display:inline-block;width:1ic;text-align:center}
 .agent .gh{color:transparent;text-shadow:none}
 .rain{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
+.face{z-index:0;display:none}
+/* the rain covers the whole screen and the face sits in the middle, behind the text.
+   A light veil plus a dark halo around each glyph keeps the text readable on top of it */
+html[data-edition="agent"] .agent::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:rgb(3 10 5/.42)}
+html[data-edition="agent"] .agent pre,html[data-edition="agent"] .agent .credit{text-shadow:0 0 2px #030a05,0 0 6px #030a05,0 0 12px rgb(3 10 5/.9)}
+.agent .credit{position:relative;z-index:1;max-width:92ch;margin:32px 0 0 max(0px,(100% - var(--max)) / 2);font-size:12px;color:var(--ink-2)}
+.agent .credit a{color:inherit}
 html[data-edition="agent"] .human{display:none}
-html[data-edition="agent"] .agent,html[data-edition="agent"] .rain{display:block}
+html[data-edition="agent"] .agent,html[data-edition="agent"] .rain,html[data-edition="agent"] .face{display:block}
 html[data-edition="agent"] .head .now{visibility:hidden}
 
 @media print{
   .projects .ch{position:static;height:auto;box-shadow:none;border-radius:0}
-  .projects .ch::after,.rain,.tabs,.next,button.frame::after{display:none}
+  .projects .ch::after,.rain,.face,.tabs,.next,button.frame::after{display:none}
   .track{display:block;overflow:visible}
   .pane{display:block;overflow:visible;padding-block:12px}
 }
@@ -799,8 +807,10 @@ html[data-edition="agent"] .head .now{visibility:hidden}
 
 
 <canvas class="rain" id="rain" aria-hidden="true"></canvas>
+<canvas class="face" id="face" aria-hidden="true"></canvas>
 <section class="agent wrap" aria-label="에이전트용 판본">
-  <pre id="agent-out"></pre>
+  <pre id="agent-out" data-no-matrix></pre>
+  <p class="credit" data-no-matrix>배경: 매트릭스 비와 홀로그램 얼굴(직접 만든 dynamic-css-motion 스킬). 얼굴 모델: MediaPipe face mesh (Apache 2.0), "Infinite, 3D Head Scan" by Lee Perry-Smith (<a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>). 라이선스 원문: <a href="matrix/licenses/MediaPipe-LICENSE.txt">MediaPipe</a>, <a href="matrix/licenses/LeePerrySmith_License.txt">Lee Perry-Smith</a></p>
 </section>
 
 <script type="application/json" id="profile-data">
@@ -1222,60 +1232,32 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     decodeRaf = requestAnimationFrame(step);
   };
 
-  // Background rain: a few short streams in the margins, drawn at most 24 times a second, only while the agent edition shows.
-  const rain = document.getElementById('rain'), rc = rain.getContext('2d');
-  let drops = [], cell = 9, rainRaf, lastDraw = 0, textBox = [0, 0];
-  const sizeRain = () => {
-    const dpr = Math.min(2, devicePixelRatio || 1);
-    rain.width = innerWidth * dpr; rain.height = innerHeight * dpr;
-    rc.setTransform(dpr, 0, 0, dpr, 0, 0);
-    rc.font = '14px ' + getComputedStyle(out).fontFamily;
-    rc.textBaseline = 'top';
-    cell = rc.measureText('M').width + 2;
-    const r = out.getBoundingClientRect();
-    textBox = [r.left - 20, r.left + Math.min(r.width, out.scrollWidth) + 20];
-    drops = [];
+  // Background: the matrix wallpaper (rain + hologram face) from the dynamic-css-motion skill, loaded the first time the agent edition opens.
+  // The rain starts falling on a black screen over the whole page; 1.6 s later the face rises in the middle with a slow ripple.
+  // A light veil and glyph halos (.agent::before, text-shadow) keep the text readable. Phones get the rain only.
+  const rainCanvas = document.getElementById('rain'), faceCanvas = document.getElementById('face');
+  const PRESET = {"holo": {"enabled": true,"eyeBlink": "led","eyeColor": "#3cff95","eyeCore": "#dcfff0","eyeSize": 1,"eyeSpread": 1,"eyeY": 0.03,"look": "glyph","model": "mask","sweep": true,"view": "wall"},"options": {"bloom": 1.3,"charset": "ascii","color": "hgrad","density": 0.6,"depth": true,"intensity": 0.9,"intercept": true,"parallax": true,"scale": 0.55,"scan": true,"scatter": true,"speed": 0.9,"tail": 1.35,"vignette": true}};
+  let mx = null, loading = null, faceTimer = 0;
+  const load = () => loading ??= ['matrix/wallpaper-matrix.js', 'matrix/matrix-hologram-data.js', 'matrix/matrix-hologram.js'].reduce((p, src) =>
+    p.then(() => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.append(s); })), Promise.resolve());
+  const placeFace = () => ({ room: innerWidth >= 700, anchor: [0.5, 0.52], size: 1 }); // in the middle of the screen; phones get the rain only
+  const runRain = async on => {
+    clearTimeout(faceTimer);
+    if (!on) { if (mx) { mx.rain.stop(); mx.face.set({ enabled: false }); } return; }
+    try { await load(); } catch { return; }
+    if (!agentMode()) return;
+    const L = placeFace(), small = innerWidth < 700;
+    if (!mx) {
+      const rain = wallpaperMatrix.create(rainCanvas, { ...PRESET.options, ...(small ? { depth: false, density: 0.45 } : {}), fps: small ? 24 : 30, maxDpr: 1.5, fromTop: true });
+      const face = matrixHologram.create(faceCanvas, rain, { ...PRESET.holo, enabled: false, fps: 30, maxDpr: 1.5, anchor: L.anchor, size: L.size });
+      mx = { rain, face, first: true };
+    }
+    mx.rain.start();
+    mx.face.set({ anchor: L.anchor, size: L.size });
+    if (L.room) faceTimer = setTimeout(() => agentMode() && mx.face.set({ enabled: true }), mx.first ? 1600 : 400);
+    mx.first = false;
   };
-  const spawn = (scatter = false) => {
-    const cols = Math.floor(innerWidth / cell), margin = [];
-    for (let c = 0; c < cols; c++) { const x = c * cell; if (x < textBox[0] || x > textBox[1]) margin.push(c); }
-    const pool = margin.length >= 8 ? margin : [...Array(cols).keys()];
-    const col = pool[(Math.random() * pool.length) | 0];
-    // The first set is spread over the screen so the streams don't all start at the top together.
-    return { col, y: scatter ? Math.random() * innerHeight / 18 : -Math.random() * 20, speed: 7 + Math.random() * 9, len: 8 + ((Math.random() * 14) | 0), dim: col * cell > textBox[0] && col * cell < textBox[1] };
-  };
-  const drawRain = now => {
-    rainRaf = requestAnimationFrame(drawRain);
-    if (now - lastDraw < 41) return;
-    const dt = Math.min(.1, (now - lastDraw) / 1000);
-    lastDraw = now;
-    const want = innerWidth > 1100 ? 6 : innerWidth > 700 ? 4 : 3;
-    const first = !drops.length;
-    while (drops.length < want) drops.push(spawn(first));
-    rc.clearRect(0, 0, innerWidth, innerHeight);
-    const rowH = 18, tick = Math.floor(now / 240);
-    drops.forEach((d, n) => {
-      d.y += d.speed * dt;
-      const headRow = Math.floor(d.y), base = d.dim ? .16 : .6;
-      for (let t = 0; t < d.len; t++) {
-        const row = headRow - t;
-        if (row < 0) continue;
-        const a = base * (1 - t / d.len) ** 1.6;
-        rc.fillStyle = t === 0 ? `rgba(214,255,224,${Math.min(1, a * 1.5)})` : `rgba(63,191,102,${a})`;
-        rc.fillText(noise(d.col, row, row % 3 ? tick : 0), d.col * cell, row * rowH);
-      }
-      if ((headRow - d.len) * rowH > innerHeight) drops[n] = spawn();
-    });
-  };
-  const runRain = on => {
-    cancelAnimationFrame(rainRaf);
-    if (!on || reduce || document.hidden) { rc.clearRect(0, 0, rain.width, rain.height); return; }
-    sizeRain();
-    lastDraw = performance.now();
-    rainRaf = requestAnimationFrame(drawRain);
-  };
-  document.addEventListener('visibilitychange', () => runRain(agentMode()));
-  addEventListener('resize', () => { if (agentMode()) runRain(true); });
+  addEventListener('resize', () => { if (!agentMode() || !mx) return; const L = placeFace(); mx.face.set({ anchor: L.anchor, size: L.size, enabled: L.room }); });
 
   // Both switches open the new state as a circle growing from the button pressed.
   const reveal = (btn, update) => {
@@ -1331,5 +1313,6 @@ html[data-edition="agent"] .head .now{visibility:hidden}
 })();
 </script>
 
+<!-- build b47ea57ff031 -->
 </body>
 </html>
