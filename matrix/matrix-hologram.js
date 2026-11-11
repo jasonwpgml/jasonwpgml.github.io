@@ -52,10 +52,14 @@ const matrixHologram = (() => {
     for (let q = 0; q < queue.length; q++) for (const n of nb[queue[q]]) if (hop[n] > hop[queue[q]] + 1) { hop[n] = hop[queue[q]] + 1; queue.push(n); }
     const E = hop.map((h) => Math.min(1, (h + 0.35) / 2.2));
     const pts = [], ROWS = 66, STEP = 0.03;
+    // 삼각형마다 세로 범위를 미리 구해, 자르는 높이에 걸치지 않는 삼각형은 바로 넘긴다(66줄 × 898개를 다 계산하면 처음 만들 때 수십 ms)
+    const lo = new Float64Array(F.length), hi = new Float64Array(F.length);
+    F.forEach(([a, b, cc], i) => { lo[i] = Math.min(V[a][1], V[b][1], V[cc][1]); hi[i] = Math.max(V[a][1], V[b][1], V[cc][1]); });
     for (let r = 0; r < ROWS; r++) {
       const c = -0.995 + (r / (ROWS - 1)) * 1.99;
-      for (const [a, b, cc] of F) {
-        const ids = [a, b, cc], cut = [];
+      for (let fi = 0; fi < F.length; fi++) {
+        if (c <= lo[fi] || c >= hi[fi]) continue;
+        const ids = F[fi], cut = [];
         for (let e = 0; e < 3; e++) {
           const i0 = ids[e], i1 = ids[(e + 1) % 3], y0 = V[i0][1], y1 = V[i1][1];
           if ((y0 - c) * (y1 - c) >= 0 || y0 === y1) continue;
@@ -170,7 +174,8 @@ const matrixHologram = (() => {
       dpr = Math.min(devicePixelRatio || 1, Q[qi].dpr, o.maxDpr);
       const [ax, ay] = anchor();
       Rcss = Math.min(innerWidth, innerHeight) * 0.36 * Math.min(2, Math.max(0.3, +o.size || 1)); SZcss = Math.ceil(Rcss * 3); // 얼굴이 돌아가도 들어가는 정사각형만 그린다
-      canvas.width = canvas.height = Math.ceil(SZcss * dpr); canvas.style.width = canvas.style.height = `${SZcss}px`;
+      // 창 크기가 아직 0이면(숨긴 탭·배치 전) 1픽셀: 0크기 캔버스는 drawImage가 매 프레임 예외를 던진다
+      canvas.width = canvas.height = Math.max(1, Math.ceil(SZcss * dpr)); canvas.style.width = canvas.style.height = `${SZcss}px`;
       canvas.style.left = `${ax * 100}%`; canvas.style.top = `${ay * 100}%`;
       glow.width = glow.height = Math.max(1, canvas.width >> 2); makeAtlas();
       relief.cols = relief.rows = Math.ceil(SZcss / relief.cw); const n = relief.cols * relief.rows;

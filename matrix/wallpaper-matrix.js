@@ -30,7 +30,8 @@ const wallpaperMatrix = (() => {
     scatter: true, scatterRadius: 110,   // 커서 주변 글자가 밀려나며 흩어진다(움직일수록 세게)
     intercept: true, interceptRadius: 46, // 커서에 닿은 물줄기가 터져 끊기고, 누르면 충격파가 퍼진다
     fps: 30, maxDpr: 1.5, background: "#000",
-    fromTop: false,         // true면 처음 만들 때 화면을 비우고 비가 위에서부터 내리기 시작한다(만들 때만 읽는다)
+    fromTop: false,         // true면 처음 만들 때 화면을 비우고 비가 위에서부터 내리기 시작한다(만들 때만 읽는다. 그 뒤에는 reset(true))
+    ramp: 0,                // 위에서부터 시작할 때 물방울마다 0~ramp초 늦게 들어오게 한다. 처음엔 성기게 내리다 ramp초에 걸쳐 평소 밀도까지 찬다(그리는 글자 수도 같이 는다)
     renderer: "auto",
     band: 0,                // 0보다 크면 위쪽 그만큼(CSS px)만 새로 그리고 나머지는 마지막 장면을 둔다(바탕화면이 상단바 띠로만 보일 때)       // auto: WebGL2, 안 되면 2D · 2d: 늘 캔버스 2D (만들 때만 읽는다)
     reducedMotion: "still", // still: 멈춘 한 장면, off: 배경색만
@@ -83,10 +84,14 @@ const wallpaperMatrix = (() => {
     const R = (o.renderer !== "2d" && glRenderer()) || canvasRenderer();
 
     // 물방울: 머리 위치(칸), 속도(칸/초), 꼬리 길이(칸). 밀도가 낮을수록 다음 방울까지 오래 쉰다.
-    function spawn(L, d, first) {
+    // first: true면 화면 가득 무작위(평소 모습), "top"이면 그 평소 배치를 화면 한 장만큼 위로 올려 둔다.
+    // 그래서 비는 위에서부터 평소 간격 그대로 차 내려오고, 모든 방울이 한꺼번에 들어와 평소보다 촘촘해지는 순간이 없다
+    // (예전엔 반 화면 안에 몰아 두어 시작 5~12초에 글자가 평소의 1.6~2.2배였다). ramp초가 있으면 방울마다 0~ramp초 더 늦게 들어온다
+    function spawn(L, d, first, ramp = 0) {
       const idle = (1 - clamp(o.density, 0, 1, 0.7) * L.density) * 3 + 0.15; // 값이 범위를 벗어나도 꼬리·간격이 터무니없어지지 않게
-      d.y = first === "top" ? -rnd(0, L.rows * 0.5) : first ? rnd(-L.rows * idle, L.rows) : -rnd(1, L.rows * idle);
       d.v = rnd(10, 22) * L.speed; d.len = Math.max(4, Math.round(rnd(8, 30) * clamp(o.tail, 0.2, 3, 1))); d.last = -1; d.cut = null;
+      d.y = first === "top" ? rnd(-L.rows * idle, L.rows) - L.rows - d.v * clamp(o.speed, 0, 4, 1) * rnd(0, Math.max(0, +ramp || 0))
+        : first ? rnd(-L.rows * idle, L.rows) : -rnd(1, L.rows * idle);
       return d;
     }
     // 겹: 시차로 움직여도 가장자리가 비지 않게 화면보다 M만큼 크게 잡고, res 배율의 자기 좌표(겹 픽셀)를 쓴다.
@@ -98,7 +103,7 @@ const wallpaperMatrix = (() => {
       const L = { ...def, M, LW, LH, w, h, cell, cols, rows, n: chars.length, chars, set,
         glyphs: new Uint8Array(cols * rows).map(() => (Math.random() * chars.length) | 0), drops: [], drawn: new Uint8Array(cols * rows) };
       const first = o.fromTop && firstBuild ? "top" : true;
-      for (let x = 0; x < cols; x++) L.drops.push(spawn(L, {}, first), spawn(L, {}, first));
+      for (let x = 0; x < cols; x++) L.drops.push(spawn(L, {}, first, o.ramp), spawn(L, {}, first, o.ramp));
       R.layer(L);
       return L;
     }
@@ -611,6 +616,11 @@ void main() { vec2 uv = gl_FragCoord.xy / u_size; vec3 c = texture(u_scene, uv).
         if (!running) still();
       },
       resize,
+      reset(top = true, ramp = o.ramp) { // 비를 처음처럼 다시 시작한다: top이면 위에서부터 내리고(ramp초에 걸쳐 평소 밀도까지), 아니면 화면 가득 무작위로 놓는다. 흐르던 것은 멈추지 않는다
+        for (const L of layers) for (const d of L.drops) spawn(L, d, top ? "top" : true, ramp);
+        shocks = []; sparks = [];
+        if (!running) still();
+      },
       destroy() {
         wanted = false; run(); ro.disconnect();
         for (const L of layers) R.drop(L);

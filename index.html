@@ -258,7 +258,7 @@ time,.no{font-variant-numeric:tabular-nums}
 
 /* agent edition: the same facts as a terminal, green on black, with a slow rain in the margins */
 html[data-edition="agent"]{color-scheme:dark;--paper:#030a05;--ink:#c6f6d2;--ink-2:#5fae76;--hair:#16331f;--glass:transparent;--edge:#2f8a4a}
-html[data-edition="agent"] .head{background:rgb(3 10 5/.8)}
+html[data-edition="agent"] .head{background:rgb(3 10 5/.88);-webkit-backdrop-filter:none;backdrop-filter:none}
 html[data-edition="agent"] .sq{border-radius:3px;box-shadow:none}
 .agent{display:none;position:relative;min-height:100svh;padding-block:56px 80px;font:400 14.5px/1.75 var(--mono)}
 .agent pre{position:relative;z-index:1;margin:0 0 0 max(0px,(100% - var(--max)) / 2);white-space:pre-wrap;word-break:break-word;font:inherit;max-width:92ch;
@@ -269,7 +269,8 @@ html[data-edition="agent"] .sq{border-radius:3px;box-shadow:none}
 .agent .nz{color:#2f8a4a}
 .agent .nz.w{display:inline-block;width:1ic;text-align:center}
 .agent .gh{color:transparent;text-shadow:none}
-.rain{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:none}
+/* 100lvh: a phone's address bar folding in and out must not resize the canvas, or the rain is rebuilt from scratch */
+.rain{position:fixed;top:0;left:0;width:100%;height:100%;height:100lvh;z-index:0;pointer-events:none;display:none}
 .face{z-index:0;display:none}
 /* the rain covers the whole screen and the face sits in the middle, behind the text.
    A light veil plus a dark halo around each glyph keeps the text readable on top of it */
@@ -1317,8 +1318,9 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   const rainCanvas = document.getElementById('rain'), faceCanvas = document.getElementById('face');
   const PRESET = {"holo": {"enabled": true,"eyeBlink": "led","eyeColor": "#3cff95","eyeCore": "#dcfff0","eyeSize": 1,"eyeSpread": 1,"eyeY": 0.03,"look": "glyph","model": "mask","sweep": true,"view": "wall"},"options": {"bloom": 1.3,"charset": "ascii","color": "hgrad","density": 0.6,"depth": true,"intensity": 0.9,"intercept": true,"parallax": true,"scale": 0.55,"scan": true,"scatter": true,"speed": 0.9,"tail": 1.35,"vignette": true}};
   let mx = null, loading = null, faceTimer = 0;
-  const load = () => loading ??= ['matrix/wallpaper-matrix.js', 'matrix/matrix-hologram-data.js', 'matrix/matrix-hologram.js'].reduce((p, src) =>
-    p.then(() => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.head.append(s); })), Promise.resolve());
+  // The three files download together and run in order (async = false). The data file holds the mask only; this page never shows the full head.
+  const load = () => loading ??= Promise.all(['matrix/wallpaper-matrix.js', 'matrix/matrix-hologram-data-mask.js', 'matrix/matrix-hologram.js'].map(src =>
+    new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.async = false; s.onload = ok; s.onerror = no; document.head.append(s); })));
   const placeFace = () => ({ room: innerWidth >= 700, anchor: [0.5, 0.52], size: 1 }); // in the middle of the screen; phones get the rain only
   const runRain = async on => {
     clearTimeout(faceTimer);
@@ -1410,6 +1412,8 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   };
   bHuman.addEventListener('click', () => go('human', bHuman));
   bAgent.addEventListener('click', () => go('agent', bAgent));
+  // Fetch the rain and face scripts as soon as the pointer or focus reaches the button, so the first open does not wait on the network.
+  for (const ev of ['pointerenter', 'focus', 'touchstart']) bAgent.addEventListener(ev, () => load().catch(() => { loading = null; }), { once: true, passive: true });
   let saved = 'human';
   try { saved = localStorage.getItem('edition') || 'human'; } catch {}
   if (location.hash === '#agent') saved = 'agent';
