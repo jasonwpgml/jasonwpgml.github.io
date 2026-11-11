@@ -463,6 +463,11 @@ html[data-edition="agent"] .head .now{visibility:hidden}
         <div class="gal" style="--n:2"><figure class="shot"><span class="frame"><img src="img/lecture-datatype.webp" width="1400" height="671" alt="데이터 타입 확인 교안. 데이터에서 수치형, 문자형, 범주형, 불리언형으로 갈라지는 가로 트리와 예시 값이 있다." loading="lazy"></span><figcaption>데이터 타입 트리</figcaption></figure><figure class="shot"><span class="frame"><img src="img/lecture-scaling.webp" width="1400" height="671" alt="스케일링 교안. 변환 전 산점도와 정규화 후 산점도가 나란히 있고 같은 점 B의 좌표 변화가 표시된다." loading="lazy"></span><figcaption>스케일링 전후 비교</figcaption></figure></div><ul class="chips big"><li>AICE Basic</li><li>고등학생, 비전공자 대상</li><li>75쪽</li><li>단계별 애니메이션</li><li>HTML, CSS, JS</li><li>Apple Pencil 판서</li></ul>
       </div>
     </section>
+    <section class="pane" data-tab="직접 실행">
+      <div class="viz">
+        <div class="gal" style="--n:3"><figure class="shot"><span class="frame"><img src="img/edu-neuron.webp" width="960" height="540" alt="생물학적 신경망과 인공신경망을 같은 구도로 나란히 놓은 도식. 위에는 뉴런 하나와 노드 하나를 확대했고, 아래에는 여러 개가 연결된 모습이 있다." loading="lazy"></span><figcaption>인공신경망: 뉴런에서 노드로 <a class="run" href="edu/neuron.html">실행해 보기</a></figcaption></figure><figure class="shot"><span class="frame"><img src="img/edu-dnn.webp" width="960" height="540" alt="고양이 사진이 4×4 픽셀과 R·G·B 숫자 표로 바뀌고, 입력값 48개가 은닉층을 거쳐 개 또는 고양이로 분류되는 4단 도식." loading="lazy"></span><figcaption>심층신경망: 사진에서 분류까지 <a class="run" href="edu/dnn.html">실행해 보기</a></figcaption></figure><figure class="shot"><span class="frame"><img src="img/edu-gradient.webp" width="960" height="540" alt="MSE 손실 곡면 위에서 현재 W·b 점이 다음 점으로 내려가는 3D 그래프와, 같은 W·b로 그린 예측 직선과 b 갱신 계산." loading="lazy"></span><figcaption>경사하강법: 식과 곡면이 함께 <a class="run" href="edu/gradient.html">실행해 보기</a></figcaption></figure></div><ul class="chips big"><li>단계별 재생</li><li>실제 계산값</li><li>SVG</li><li>라이브러리 없음</li><li>라이트, 다크</li></ul>
+      </div>
+    </section>
   </div>
 </article>
 
@@ -694,6 +699,24 @@ html[data-edition="agent"] .head .now{visibility:hidden}
             "HTML",
             "CSS",
             "JS"
+          ]
+        },
+        {
+          "name": "Runnable lesson demos",
+          "topics": [
+            "artificial neural network",
+            "deep neural network on RGB input",
+            "gradient descent on W and b"
+          ],
+          "pages": [
+            "edu/neuron.html",
+            "edu/dnn.html",
+            "edu/gradient.html"
+          ],
+          "stack": [
+            "SVG",
+            "JS",
+            "no libraries"
           ]
         }
       ]

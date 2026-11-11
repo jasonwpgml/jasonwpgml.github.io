@@ -1,0 +1,83 @@
+/* 교육 자료 데모 공용 스타일 · 포트폴리오 본문과 같은 토큰 */
+@font-face{font-family:"Maru Buri";font-weight:400;font-display:swap;src:url("fonts/MaruBuri-Regular.woff2") format("woff2")}
+@font-face{font-family:"Maru Buri";font-weight:600;font-display:swap;src:url("fonts/MaruBuri-SemiBold.woff2") format("woff2")}
+@font-face{font-family:"Wanted Sans";font-weight:400;font-display:swap;src:url("fonts/WantedSans-Regular.woff2") format("woff2")}
+@font-face{font-family:"Wanted Sans";font-weight:600;font-display:swap;src:url("fonts/WantedSans-SemiBold.woff2") format("woff2")}
+
+:root{
+  color-scheme:light dark;
+  --h:270;--h2:200;
+  --serif:"Maru Buri","Noto Serif KR","Nanum Myeongjo",serif;
+  --sans:"Wanted Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --ink:light-dark(oklch(24% .035 var(--h)),oklch(97% .014 var(--h)));
+  --ink-2:light-dark(oklch(43% .05 var(--h)),oklch(81% .04 var(--h)));
+  --ink-3:light-dark(oklch(58% .04 var(--h)),oklch(68% .035 var(--h)));
+  --acc:light-dark(oklch(47% .16 var(--h)),oklch(84% .12 var(--h)));
+  --acc-2:light-dark(oklch(52% .11 var(--h2)),oklch(80% .1 var(--h2)));
+  --acc-soft:light-dark(oklch(47% .16 var(--h)/.12),oklch(84% .12 var(--h)/.16));
+  --bg:light-dark(oklch(95% .028 var(--h)),oklch(19% .045 var(--h)));
+  --hair:light-dark(oklch(30% .05 var(--h)/.14),oklch(97% .02 var(--h)/.16));
+  --glass:light-dark(rgb(255 255 255/.58),rgb(255 255 255/.07));
+  --edge:light-dark(rgb(255 255 255/.85),rgb(255 255 255/.14));
+  --shadow:light-dark(oklch(40% .09 var(--h)/.16),rgb(0 0 0/.45));
+  --orb1:light-dark(oklch(80% .13 var(--h)/.8),oklch(48% .15 var(--h)/.7));
+  --orb2:light-dark(oklch(86% .1 var(--h2)/.7),oklch(42% .13 var(--h2)/.65));
+  /* 도식 안쪽 */
+  --well:light-dark(oklch(97% .012 var(--h)/.8),oklch(26% .04 var(--h)/.7));
+  --card:light-dark(#fff,oklch(23% .035 var(--h)));
+  --wire:light-dark(oklch(75% .04 var(--h)),oklch(48% .05 var(--h)));
+  --node:light-dark(oklch(96% .02 var(--h)),oklch(30% .05 var(--h)));
+  --node-edge:light-dark(oklch(66% .07 var(--h)),oklch(60% .08 var(--h)));
+  --glow:light-dark(oklch(62% .2 var(--h)),oklch(78% .17 var(--h)));
+  --glow-soft:light-dark(oklch(80% .12 var(--h)),oklch(55% .14 var(--h)));
+}
+[data-theme="light"]{color-scheme:light}
+[data-theme="dark"]{color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100svh;background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--sans);word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;filter:blur(70px);pointer-events:none}
+body::before{width:46vw;height:46vw;left:-12vw;top:-14vw;background:var(--orb1)}
+body::after{width:40vw;height:40vw;right:-10vw;bottom:-12vw;background:var(--orb2)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+
+.glass{background:var(--glass);border:1px solid var(--edge);border-radius:22px;box-shadow:0 18px 50px -24px var(--shadow);backdrop-filter:blur(14px) saturate(160%);-webkit-backdrop-filter:blur(14px) saturate(160%)}
+
+.wrap{max-width:1240px;margin:0 auto;padding:0 clamp(16px,4.5vw,64px)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 0}
+.top a.back{white-space:nowrap;font:400 15px var(--sans);text-decoration:none;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center}
+.top a.back:hover{color:var(--ink)}
+.top nav{display:flex;gap:6px;flex-wrap:wrap}
+.top nav a,.pill{font-size:13.5px;padding:6px 12px;border-radius:99px;text-decoration:none;color:var(--ink-2);border:1px solid var(--hair);background:var(--glass)}
+.top nav a[aria-current="page"]{background:var(--ink);color:var(--bg);border-color:transparent}
+
+header.head{padding:clamp(20px,5svh,48px) 0 clamp(16px,3svh,28px)}
+.kicker{font-size:13.5px;color:var(--acc);margin:0 0 6px;letter-spacing:.02em}
+h1{font:600 clamp(28px,4.2vw,44px)/1.2 var(--serif);margin:0 0 10px;letter-spacing:-.01em}
+.lead{color:var(--ink-2);margin:0;max-width:42em}
+
+/* 무대: 고정 크기 도식을 화면 폭에 맞춰 축소 */
+.stage{padding:clamp(12px,2vw,24px)}
+.fit{position:relative;width:100%;overflow:hidden}
+.fit>.canvas{position:absolute;left:0;top:0;transform-origin:0 0;padding:3px}
+
+.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}
+.steps{display:flex;gap:4px;flex-wrap:wrap;padding:4px;border-radius:20px;border:1px solid var(--hair);background:var(--glass)}
+.steps button{border:0;background:none;padding:6px 14px;border-radius:99px;font-size:14px;color:var(--ink-2);cursor:pointer}
+.steps button[aria-current="step"]{background:var(--card);color:var(--ink);box-shadow:0 2px 8px -3px var(--shadow)}
+.steps button:focus-visible,.ctl:focus-visible,.top a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.ctl{border:1px solid var(--hair);background:var(--glass);border-radius:99px;padding:6px 14px;font-size:14px;cursor:pointer;color:var(--ink-2)}
+.ctl:hover{color:var(--ink)}
+.hint{font-size:13px;color:var(--ink-3)}
+
+section.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:clamp(20px,4svh,36px) 0}
+section.notes article{padding:18px 20px}
+section.notes h2{font:600 17px/1.4 var(--serif);margin:0 0 6px}
+section.notes p{margin:0;color:var(--ink-2);font-size:14.5px}
+
+footer.credits{font-size:12.5px;color:var(--ink-3);padding:8px 0 40px;line-height:1.7}
+footer.credits a{color:var(--ink-2)}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}

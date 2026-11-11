@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>경사하강법 · Jason</title>
+<meta name="description" content="MSE 곡면 위의 한 점과 가격 예측 식이 함께 움직이며 W와 b를 조정하는 경사하강법 동적 도식">
+<script src="demo.js"></script>
+<link rel="stylesheet" href="demo.css">
+<link rel="stylesheet" href="gradient.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html#lecture">← 포트폴리오</a>
+    <nav aria-label="교육 자료 데모">
+      <a href="neuron.html">인공신경망</a>
+      <a href="dnn.html">심층신경망</a>
+      <a href="gradient.html" aria-current="page">경사하강법</a>
+    </nav>
+  </div>
+
+  <header class="head">
+    <p class="kicker">AI 교육 자료</p>
+    <h1>경사하강법: W와 b 함께 조정하기</h1>
+    <p class="lead">휴대폰 중고 가격 세 점에 맞는 직선 Y = W × X + b를 찾습니다. 왼쪽 MSE 곡면 위의 점과 오른쪽 예측선·계산식이 같은 W·b 하나로 함께 움직입니다.</p>
+  </header>
+
+  <div class="stage glass">
+    <div class="fit" id="fit">
+      <div class="canvas">
+        <div class="gd" id="gd">
+          <section class="gd-panel gd-left" aria-labelledby="gd-h-surface">
+            <h2 id="gd-h-surface">가장 낮은 점에서 오차가 최소</h2>
+            <svg class="gd-surface" id="gd-surface" viewBox="0 0 640 430" role="img" aria-label="3차원 오차 곡면. 바닥 두 축은 W와 b, 높이는 MSE입니다. 현재 위치와 다음 W·b로 가는 화살표, 최솟값이 표시됩니다."></svg>
+            <svg class="gd-compact" id="gd-compact" viewBox="0 0 900 105" role="img" aria-label="현재 W와 b를 대입한 평균 제곱 오차 식"></svg>
+          </section>
+          <section class="gd-panel gd-right" aria-labelledby="gd-h-price">
+            <h2 id="gd-h-price">같은 W·b로 예측한 가격</h2>
+            <svg class="gd-price" id="gd-price" viewBox="0 0 580 315" role="img" aria-label="출시 후 기간에 따른 매입가. 실제 세 점과 현재 W·b로 그린 예측선"></svg>
+            <svg class="gd-flow" id="gd-flow" viewBox="0 0 700 350" role="img" aria-label="현재값, 학습률, MSE 기울기로 새 W와 b를 계산하고 적용합니다."></svg>
+          </section>
+          <div class="gd-seek">
+            <div class="gd-track">
+              <input id="gd-range" type="range" min="0" max="1" step="10" value="0" aria-label="전체 애니메이션 진행 위치">
+              <div class="gd-marks" id="gd-marks" aria-hidden="true"></div>
+            </div>
+            <span class="gd-status" id="gd-status"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="controls">
+    <div class="steps" id="steps" aria-label="설명 단계"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button type="button" class="ctl" id="play" aria-pressed="false">재생</button>
+      <span class="hint">↑↓ 키로도 넘길 수 있어요</span>
+    </div>
+  </div>
+
+  <section class="notes" aria-label="설계 메모">
+    <article class="glass"><h2>식의 숫자와 곡면 위 점이 같이 움직임</h2><p>곡면 위의 현재 점, 아래 MSE 식, 오른쪽 예측선과 Y = W × X + b 카드는 모두 같은 W·b 값 하나에서 다시 그려집니다. 식에서 W가 바뀌는 순간 점과 예측선도 함께 바뀌어, 숫자와 그림을 따로 맞춰 볼 필요가 없습니다.</p></article>
+    <article class="glass"><h2>실제 계산값 그대로</h2><p>iPhone 15 128GB의 출시 후 1·6·12개월 매입가 566·482·411달러로 MSE와 기울기를 페이지 안에서 직접 계산합니다. W 25, b 800에서 MSE는 253,608.67, W의 MSE 기울기는 7,556.67이고, 곡면의 최솟값 40.66도 같은 자료로 구한 값입니다. W의 학습률 1/288은 기간을 연 단위로 셀 때의 학습률 0.5를 월 단위로 바꾼 값입니다.</p></article>
+    <article class="glass"><h2>첫 회만 한 축씩</h2><p>첫 회는 W 계산 → W 이동 → b 계산 → b 이동으로 나눠 한 축씩 보여 줍니다. 두 기울기는 모두 갱신 전 값으로 계산합니다. 2회부터는 W와 b를 함께 갱신하고, 이후 반복은 빠르게 넘겨 최솟값 근처로 모이는 모습만 보여 줍니다.</p></article>
+  </section>
+
+  <footer class="credits">
+    가격 자료: SellCell의 iPhone 15 128GB(출시가 799달러) 개월별 감가액 공개표에서 1·6·12개월 값을 골라 매입가로 바꿔 썼습니다.
+    도식은 직접 그린 SVG입니다.
+  </footer>
+</div>
+<script src="gradient.js"></script>
+</body>
+</html>

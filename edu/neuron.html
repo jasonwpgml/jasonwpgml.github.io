@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>인공신경망 · Jason</title>
+<meta name="description" content="뉴런 하나에서 노드 하나로, 신경망에서 인공신경망으로 이어지는 강의용 동적 도식">
+<script src="demo.js"></script>
+<link rel="stylesheet" href="demo.css">
+<link rel="stylesheet" href="neural.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html#lecture">← 포트폴리오</a>
+    <nav aria-label="교육 자료 데모">
+      <a href="neuron.html" aria-current="page">인공신경망</a>
+      <a href="dnn.html">심층신경망</a>
+      <a href="gradient.html">경사하강법</a>
+    </nav>
+  </div>
+
+  <header class="head">
+    <p class="kicker">AI 교육 자료</p>
+    <h1>뉴런에서 노드로, 신경망에서 인공신경망으로</h1>
+    <p class="lead">생물학적 뉴런 하나와 인공신경망의 노드 하나를 나란히 놓고, 각각이 모여 신경망이 되는 모습을 같은 구도로 보여 줍니다.</p>
+  </header>
+
+  <div class="stage glass">
+    <div class="fit" id="fit"><div class="canvas" id="demo"></div></div>
+  </div>
+  <div class="controls">
+    <div class="steps" id="steps" aria-label="설명 단계"></div>
+    <span class="hint">↑↓ 키로도 넘길 수 있어요</span>
+  </div>
+
+  <section class="notes" aria-label="설계 메모">
+    <article class="glass"><h2>같은 구도로 맞대기</h2><p>왼쪽과 오른쪽을 같은 틀(위는 하나를 확대, 아래는 여럿의 연결)로 그려서 무엇이 무엇에 대응하는지 눈으로 바로 짝지을 수 있게 했습니다.</p></article>
+    <article class="glass"><h2>확대 표시로 연결</h2><p>아래 신경망에서 고른 하나를 점선으로 위 확대 그림과 이어, 부분과 전체를 오가며 설명할 수 있습니다.</p></article>
+    <article class="glass"><h2>빛은 신호의 흐름</h2><p>입력에서 출력 쪽으로 빛이 지나가게 해서, 정지 그림보다 "신호를 전달한다"는 말이 바로 읽히도록 했습니다.</p></article>
+  </section>
+
+  <footer class="credits">도식은 직접 그린 SVG입니다.</footer>
+</div>
+<script src="neural.js"></script>
+<script>
+  const view = Neural.mountNeuron(document.getElementById('demo'));
+  Demo.fit(document.getElementById('fit'), 1180, 616);
+  Demo.steps(document.getElementById('steps'), ['전체', '뉴런 하나 → 노드 하나', '연결된 신경망'], i => view.focus(i));
+</script>
+</body>
+</html>

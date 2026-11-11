@@ -1,0 +1,71 @@
+/* 경사하강법 데모 · 의미 색(W 빨강, b 파랑, 최솟값 초록 등)은 포트폴리오 톤에 맞춘 값 */
+:root{
+  --c-w:light-dark(oklch(54% .19 25),oklch(76% .14 22));
+  --c-b:light-dark(oklch(53% .14 235),oklch(79% .11 228));
+  --c-rate:var(--acc-2);
+  --c-g:light-dark(oklch(55% .13 62),oklch(81% .12 75));
+  --c-err:light-dark(oklch(58% .16 45),oklch(77% .13 50));
+  --c-min:light-dark(oklch(49% .11 160),oklch(81% .12 160));
+  --c-min-soft:light-dark(oklch(94% .045 160),oklch(33% .06 160));
+  --c-joint:var(--acc);
+  --surf-lo:light-dark(oklch(92% .04 var(--h)),oklch(33% .07 var(--h)));
+  --surf-hi:light-dark(oklch(50% .17 var(--h)),oklch(74% .14 var(--h)));
+  --surf-edge:light-dark(oklch(40% .1 var(--h)/.28),oklch(90% .06 var(--h)/.16));
+}
+
+.canvas{font-family:var(--sans);color:var(--ink)}
+.gd{display:grid;grid-template-columns:688px minmax(0,1fr);grid-template-rows:auto auto;gap:18px 20px;align-content:start;height:100%}
+.gd-panel{background:var(--well);border:1px solid var(--hair);border-radius:18px;padding:16px 22px 14px;min-width:0;display:flex;flex-direction:column}
+.gd-panel>h2{font:600 23px/1.3 var(--serif);margin:0 0 4px;color:var(--ink)}
+.gd svg{display:block;width:100%;height:auto;overflow:visible;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.gd-price{max-width:470px;margin:6px auto 0}
+.gd-flow{margin-top:auto}
+
+/* 세로 배치(좁은 화면) */
+.gd.tall{grid-template-columns:minmax(0,1fr)}
+.gd.tall .gd-price{max-width:560px}
+.gd.tall .gd-flow{margin-top:8px}
+.gd.tall .gd-panel>h2{font-size:26px}
+
+/* 곡면 */
+.gd-floor{fill:var(--well);stroke:var(--wire);stroke-width:1.2}
+.gd-grid{stroke:var(--wire);stroke-opacity:.6}
+.gd-face{fill:color-mix(in oklch,var(--surf-hi) calc(var(--t)*100%),var(--surf-lo));stroke:var(--surf-edge);stroke-width:.6}
+.gd-axis{stroke:var(--ink-3);stroke-width:1.3}
+.gd-axis-num{font-size:16px;fill:var(--ink-3)}
+.gd-axis-title{font-size:17px;fill:var(--ink-2)}
+.gd-min-ring{fill:var(--c-min-soft);stroke:var(--c-min);stroke-width:2.5}
+.gd-min-dot{fill:var(--c-min)}
+.gd-min-lead{fill:none;stroke:var(--c-min)}
+.gd-halo{paint-order:stroke;stroke:var(--card);stroke-width:3.5px;stroke-linejoin:round}
+.gd-min-label{font-size:17px;font-weight:600;fill:var(--c-min)}
+.gd-cur-label{font-size:16px;font-weight:600;fill:var(--c-err)}
+.gd-next-label{font-size:17px;font-weight:600;fill:var(--c-joint)}
+
+/* 가격 그래프 */
+.gd-price text{font-size:17px;fill:var(--ink-3)}
+.gd-price .gd-gridline{stroke:var(--hair)}
+.gd-price .gd-point-label{fill:var(--ink);font-weight:600}
+.gd-price .gd-legend{font-size:15px}
+
+/* 진행 막대 */
+.gd-seek{grid-column:1/-1;display:flex;align-items:center;gap:24px;padding:4px 6px 0}
+.gd-track{position:relative;flex:1;height:44px}
+.gd-track input{position:absolute;left:0;right:0;top:4px;width:100%;margin:0;height:14px;background:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+.gd-track input::-webkit-slider-runnable-track{height:2px;background:var(--wire)}
+.gd-track input::-moz-range-track{height:2px;background:var(--wire)}
+.gd-track input::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-6px;border:0;border-radius:50%;background:var(--acc)}
+.gd-track input::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:var(--acc)}
+.gd-track input:focus-visible{outline:2px solid var(--acc);outline-offset:4px;border-radius:4px}
+.gd-marks{position:absolute;inset:0 7px;pointer-events:none}
+.gd-marks i{position:absolute;top:6px;width:2px;height:10px;margin-left:-1px;background:var(--acc);opacity:.55}
+.gd-marks span{position:absolute;top:16px;left:0;transform:translateX(-50%);font-style:normal;font-size:14px;color:var(--ink-3);white-space:nowrap}
+.gd-marks i:first-child span{transform:none}
+.gd-marks i:last-child span{transform:translateX(-100%)}
+.gd-marks i.on span{color:var(--ink);font-weight:600}
+.gd-status{min-width:150px;text-align:right;font-size:16px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.gd.tall .gd-seek{gap:14px}
+.gd.tall .gd-marks span{font-size:19px}
+.gd.tall .gd-marks i:nth-child(even) span{top:40px}
+.gd.tall .gd-track{height:70px}
+.gd.tall .gd-status{font-size:19px;min-width:0}

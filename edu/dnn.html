@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>심층신경망 · Jason</title>
+<meta name="description" content="사진 한 장이 RGB 숫자 48개가 되어 심층신경망을 지나 분류되기까지를 보여 주는 강의용 동적 도식">
+<script src="demo.js"></script>
+<link rel="stylesheet" href="demo.css">
+<link rel="stylesheet" href="neural.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html#lecture">← 포트폴리오</a>
+    <nav aria-label="교육 자료 데모">
+      <a href="neuron.html">인공신경망</a>
+      <a href="dnn.html" aria-current="page">심층신경망</a>
+      <a href="gradient.html">경사하강법</a>
+    </nav>
+  </div>
+
+  <header class="head">
+    <p class="kicker">AI 교육 자료</p>
+    <h1>심층신경망: 입력층 · 은닉층 · 출력층</h1>
+    <p class="lead">사진 한 장이 숫자 48개로 바뀌어 입력층에 들어가고, 은닉층을 지나 개와 고양이 중 하나로 분류되는 과정을 사진 세 장으로 반복해 보여 줍니다. 은닉층을 누르면 블랙박스 설명이 열립니다.</p>
+  </header>
+
+  <div class="stage glass">
+    <div class="fit" id="fit"><div class="canvas" id="demo"></div></div>
+  </div>
+  <div class="controls">
+    <div class="steps" id="steps" aria-label="설명 단계"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button type="button" class="ctl" id="play">일시정지</button>
+      <button type="button" class="ctl" id="next">한 칸씩</button>
+      <span class="hint">↑↓ 키로 단계 이동</span>
+    </div>
+  </div>
+
+  <section class="notes" aria-label="설계 메모">
+    <article class="glass"><h2>실제 사진의 실제 값</h2><p>사진 가운데를 4×4로 줄인 실제 RGB 값을 그대로 씁니다. 지금 들어가는 칸이 사진, R·G·B 표, 입력 노드에서 동시에 강조됩니다.</p></article>
+    <article class="glass"><h2>숫자가 되는 순간</h2><p>값마다 "93 ÷ 255 = 0.365"처럼 0~1로 바꾸는 계산을 띄워, 사진이 왜 숫자 48개가 되는지 학생이 따라 셀 수 있게 했습니다.</p></article>
+    <article class="glass"><h2>여러 장으로 반복</h2><p>개 한 장, 고양이 두 장을 차례로 넣어 사진이 바뀌면 활성화되는 경로와 결과도 바뀌는 것을 보여 줍니다. 출력은 설명용으로 미리 정한 예시입니다.</p></article>
+  </section>
+
+  <footer class="credits">
+    사진: <a href="https://commons.wikimedia.org/wiki/File:Golden_Retriever.jpg">Golden Retriever</a> (Ribo, 퍼블릭 도메인) ·
+    <a href="https://commons.wikimedia.org/wiki/File:Bangladeshi_Cat.jpg">Bangladeshi Cat</a> (Kryesmin, CC0 1.0) ·
+    <a href="https://commons.wikimedia.org/wiki/File:Cat_August_2010-4.jpg">Cat August 2010-4</a> (Alvesgaspar, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>, 화면에서 잘라 표시).
+    도식은 직접 그린 SVG입니다.
+  </footer>
+</div>
+<script src="neural.js"></script>
+<script>
+  const view = Neural.mountDnn(document.getElementById('demo'));
+  Demo.fit(document.getElementById('fit'), 1280, 510);
+  Demo.steps(document.getElementById('steps'), ['전체', '사진 입력', '여러 층의 계산', '분류 결과'], i => view.focus(i));
+  const play = document.getElementById('play');
+  view.onPlay(on => { play.textContent = on ? '일시정지' : '재생'; });
+  play.addEventListener('click', () => view.toggle());
+  document.getElementById('next').addEventListener('click', () => view.next());
+</script>
+</body>
+</html>
