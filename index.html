@@ -185,6 +185,8 @@ time,.no{font-variant-numeric:tabular-nums}
 .gal{display:grid;grid-template-columns:repeat(var(--n,1),minmax(0,1fr));gap:clamp(10px,1.4vw,18px);width:100%;align-items:start}
 .gal:not(.one) .frame{width:100%}
 .gal .frame img{width:100%}
+.shot .run{display:inline-block;margin-left:10px;padding:3px 12px;border-radius:999px;border:1px solid var(--edge);background:var(--glass);color:var(--ink);font:600 13px/1.5 var(--sans);text-decoration:none;box-shadow:inset 0 1px 0 var(--edge)}
+.shot .run:hover{background:light-dark(rgb(255 255 255/.8),rgb(255 255 255/.14))}
 .gal.one .frame img{width:auto;max-width:100%;max-height:calc(var(--room,70svh) - 128px)}
 .gal.lead{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);max-width:calc((var(--room,70svh) - 86px) * 2.4)}
 .gal.lead .shot:first-child{grid-row:span 2}
@@ -448,7 +450,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   <div class="track">
     <section class="pane" data-tab="3D 음성 강의">
       <div class="viz">
-        <div class="gal one"><figure class="shot"><span class="frame"><img src="img/lecture-3d-gradient.webp" width="1600" height="583" alt="3D 선형회귀 강의의 경사하강법 장면. 보라색 손실 곡면 위에 현재 W와 b에서 학습률과 기울기를 곱해 빼는 갱신식이 떠 있다." loading="lazy"></span><figcaption>경사하강법: 손실 곡면 위에서 W와 b 갱신</figcaption></figure></div><ul class="chips big"><li>선형회귀</li><li>MSE</li><li>손실 곡면</li><li>경사하강법</li><li>three.js</li><li>음성 내레이션</li></ul>
+        <div class="gal one"><figure class="shot"><span class="frame"><img src="img/lecture-3d-gradient.webp" width="1600" height="583" alt="3D 선형회귀 강의의 경사하강법 장면. 보라색 손실 곡면 위에 현재 W와 b에서 학습률과 기울기를 곱해 빼는 갱신식이 떠 있다." loading="lazy"></span><figcaption>경사하강법: 손실 곡면 위에서 W와 b 갱신 <a class="run" href="lecture-3d/">실행해 보기</a></figcaption></figure></div><ul class="chips big"><li>선형회귀</li><li>MSE</li><li>손실 곡면</li><li>경사하강법</li><li>three.js</li><li>음성 내레이션</li></ul>
       </div>
     </section>
     <section class="pane" data-tab="모델 실험실">

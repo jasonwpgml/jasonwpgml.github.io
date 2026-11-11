@@ -185,6 +185,8 @@ time,.no{font-variant-numeric:tabular-nums}
 .gal{display:grid;grid-template-columns:repeat(var(--n,1),minmax(0,1fr));gap:clamp(10px,1.4vw,18px);width:100%;align-items:start}
 .gal:not(.one) .frame{width:100%}
 .gal .frame img{width:100%}
+.shot .run{display:inline-block;margin-left:10px;padding:3px 12px;border-radius:999px;border:1px solid var(--edge);background:var(--glass);color:var(--ink);font:600 13px/1.5 var(--sans);text-decoration:none;box-shadow:inset 0 1px 0 var(--edge)}
+.shot .run:hover{background:light-dark(rgb(255 255 255/.8),rgb(255 255 255/.14))}
 .gal.one .frame img{width:auto;max-width:100%;max-height:calc(var(--room,70svh) - 128px)}
 .gal.lead{grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);max-width:calc((var(--room,70svh) - 86px) * 2.4)}
 .gal.lead .shot:first-child{grid-row:span 2}
@@ -448,7 +450,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   <div class="track">
     <section class="pane" data-tab="3D voice lecture">
       <div class="viz">
-        <div class="gal one"><figure class="shot"><span class="frame"><img src="../img/lecture-3d-gradient.webp" width="1600" height="583" alt="Gradient descent scene from the 3D linear regression lecture. Over a purple loss surface, the update rule subtracts learning rate times gradient from the current W and b." loading="lazy"></span><figcaption>Gradient descent: updating W and b on the loss surface</figcaption></figure></div><ul class="chips big"><li>Linear regression</li><li>MSE</li><li>Loss surface</li><li>Gradient descent</li><li>three.js</li><li>Voice narration</li></ul>
+        <div class="gal one"><figure class="shot"><span class="frame"><img src="../img/lecture-3d-gradient.webp" width="1600" height="583" alt="Gradient descent scene from the 3D linear regression lecture. Over a purple loss surface, the update rule subtracts learning rate times gradient from the current W and b." loading="lazy"></span><figcaption>Gradient descent: updating W and b on the loss surface <a class="run" href="../lecture-3d/">Run it (Korean narration)</a></figcaption></figure></div><ul class="chips big"><li>Linear regression</li><li>MSE</li><li>Loss surface</li><li>Gradient descent</li><li>three.js</li><li>Voice narration</li></ul>
       </div>
     </section>
     <section class="pane" data-tab="Model lab">

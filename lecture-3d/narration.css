@@ -1,0 +1,11 @@
+.narration-row{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 10px;color:#9aacbf;font-size:11px}
+.narration-row label{display:flex;align-items:center;gap:7px}
+#narration-voice{color:#e2ebf8;background:#152031;border:1px solid #34445b;border-radius:5px;padding:5px 24px 5px 8px;font:inherit;min-height:30px}
+.narration-row button{color:#d6e2f3;border:1px solid #34445b;border-radius:5px;padding:5px 9px;min-height:30px;font:inherit}
+.narration-row button:hover{background:#24354c}
+.narration-row :focus-visible{outline:2px solid #75e3c7;outline-offset:3px}
+#narration-status{margin-right:auto;font-size:10px;color:#92a5bc}
+#narration-retry[hidden]{display:none}
+#narration-mute[aria-pressed=true]{color:#93a1b2}
+@media(max-width:560px){.narration-row{gap:7px;margin-bottom:9px;font-size:10px}#narration-status{font-size:9px}.narration-row button,#narration-voice{min-height:32px}#narration-status:has(+button:not([hidden])){flex-basis:100%}}
+@media(max-height:570px) and (min-width:561px){.narration-row{margin-bottom:5px;gap:8px}.narration-row button,#narration-voice{min-height:26px;padding-top:3px;padding-bottom:3px}}

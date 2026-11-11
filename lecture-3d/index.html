@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0e0c18">
+  <title>음성 강의 · 선형회귀 3D</title>
+  <meta name="author" content="Jason (https://github.com/jasonwpgml)">
+  <meta name="description" content="선형회귀의 오차, MSE, 손실 곡면, 경사하강법을 3D 장면과 음성으로 설명하는 강의.">
+  <link rel="stylesheet" href="linear-prediction-3d_v10.css">
+  <style>.identity .home{font:600 17px/1 Georgia,"Times New Roman",serif;color:#eceaf6;text-decoration:none;letter-spacing:.01em}.identity .home:hover{text-decoration:underline;text-underline-offset:.25em}
+  /* v12: 한국어 자막이 단어 중간에서 줄바꿈되지 않게 한다. */#caption{word-break:keep-all}
+  /* v13: 관리자용 카메라 시점 패널 */
+  #camera-admin{position:absolute;left:var(--edge);top:150px;z-index:6;width:300px;max-width:calc(100vw - 2*var(--edge));max-height:calc(100dvh - 320px);overflow:auto;padding:0 15px 13px;border:1px solid #2a384d;border-radius:8px;background:#16132af7;box-shadow:0 12px 36px #0003}
+  #camera-admin-close{width:23px;height:23px;padding:0;font-size:20px;line-height:1;color:#93a5be}
+  #camera-shots{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:9px}
+  #camera-shots li{padding:9px;border:1px solid #2b394f;border-radius:6px}
+  .shot-name{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:11px;color:#d9e4f2}
+  .shot-name small{font-size:10px;color:#7f93ad;white-space:nowrap}
+  .shot-actions,.admin-actions{display:flex;gap:4px}
+  .shot-actions button,.admin-actions button{flex:1;padding:6px 4px;font-size:10px;color:#9db6d3;border:1px solid #2b394f;border-radius:5px}
+  .shot-actions button[data-shot-save]{flex:1.6;color:#b9eddf;border-color:#2f5a52}
+  .shot-actions button:disabled{opacity:.4;cursor:default}
+  #camera-export-text{width:100%;margin-top:9px;font:10px/1.5 ui-monospace,Menlo,monospace;color:#cad7e8;background:#0e0c18;border:1px solid #2b394f;border-radius:5px;resize:vertical}
+  #camera-admin-open{margin-right:6px}
+  /* v19: 재생바 아래 구간 표시(작은 막대 + 이름) */
+  .timeline{position:relative}
+  #timeline-marks{position:absolute;left:0;right:0;top:calc(50% - 4px);height:22px;pointer-events:none}
+  #timeline-marks span{position:absolute;top:0;height:22px;padding:9px 4px 0 3px;box-sizing:border-box;font-size:9px;line-height:12px;color:#6c7d95;white-space:nowrap;overflow:hidden}
+  #timeline-marks span::before{content:"";position:absolute;left:0;top:0;width:1px;height:8px;background:#46566e}
+  #timeline-marks span.current{color:#b5efdf}
+  #timeline-marks span.current::before{background:#75e3c7}
+  @media(max-width:760px){#timeline-marks span{font-size:8px;padding-left:2px}}
+  @media(max-width:560px){#timeline-marks span{color:transparent}#timeline-marks span.current{color:#b5efdf;overflow:visible}}
+  /* v21: 3D 화면이 창 전체를 채우고, 위(로고·장면 제목·시점 버튼)와 아래(자막·재생바)는 그 위에 떠 있다.
+     위·아래에는 옅은 그라데이션만 깔아 글자는 읽히고 뒤의 3D는 비쳐 보이게 한다. */
+  #world{inset:0!important}
+  #world:focus-visible{outline:none}
+  body::before{content:"";position:fixed;left:0;right:0;top:0;height:150px;background:linear-gradient(180deg,#0d0b17f5 0%,#0d0b17d9 40%,#0d0b178c 70%,#0d0b1700 100%);pointer-events:none;z-index:2}
+  .lesson-player{padding-top:44px;background:linear-gradient(180deg,#0d0b1700 0%,#0d0b179e 34%,#0d0b17e0 100%)}
+  #caption{text-shadow:0 1px 2px #000d,0 0 14px #0d0b17}
+  #view-controls{background:#16132ac7;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  #layout-toggle,#model-toggle{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+  @media(max-width:900px){body::before{height:190px}}
+  @media(max-height:570px) and (min-width:561px){body::before{height:120px}.lesson-player{padding-top:28px}}
+  </style>
+  <script>
+  // v17: 3D 번들·글꼴을 받는 동안 누른 재생(▶·Space)도 기억했다가 준비되면 시작한다.
+  window.lessonEarlyPlay=false;
+  (function(){
+   function press(){if(window.lessonBundleReady)return false;window.lessonEarlyPlay=!window.lessonEarlyPlay;var b=document.getElementById('play'),m=document.getElementById('mode');if(b)b.textContent=window.lessonEarlyPlay?'Ⅱ':'▶';if(m)m.textContent=window.lessonEarlyPlay?'준비되면 재생합니다':'재생하거나 장면을 선택하세요';return true;}
+   document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#play'))press();},true);
+   document.addEventListener('keydown',function(e){if(e.code==='Space'&&!e.repeat&&!(e.target.closest&&e.target.closest('input,select,textarea,button'))&&press())e.preventDefault();},true);
+  })();
+  </script>
+  <script defer src="narration-data.js"></script>
+  <script defer src="narration.js"></script>
+  <script defer src="linear-prediction-3d_v22.bundle.js"></script>
+<link rel="stylesheet" href="narration.css">
+</head>
+<body>
+  <main id="world" tabindex="0" aria-label="선형회귀 3D 강의. WASD로 앞뒤·좌우 이동, Q와 E로 높이 이동, 더하기와 빼기로 재생 속도 조절, 숫자 1~4로 자유시점·강의 따라가기·예측 함수·손실곡면 시점을 고릅니다. 그래프와 손실 곡면의 손잡이를 끌어 모델을 바꿀 수 있습니다.">
+    <p id="loading">3D 강의 장면을 준비하고 있습니다.</p>
+  </main>
+
+  <header class="page-header">
+    <div class="identity">
+      <a class="home" href="../">Jason</a>
+      <span>선형회귀 <i>·</i> 오차에서 학습까지</span>
+    </div>
+    <nav aria-label="화면 조작">
+      <button id="camera-admin-open" type="button" hidden aria-expanded="false" aria-controls="camera-admin" title="장면별 카메라 시점 저장 (Alt+Shift+C)">카메라 관리</button>
+      <button id="help-open" class="icon-button" type="button" aria-label="조작 방법" title="조작 방법">?</button>
+      <button id="fullscreen" class="icon-button" type="button" aria-label="전체화면" title="전체화면"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3H3v4M13 3h4v4M3 13v4h4M17 13v4h-4"/></svg></button>
+    </nav>
+  </header>
+
+  <div class="scene-heading" aria-live="polite">
+    <span id="chapter-index">01 / 04</span>
+    <h1 id="chapter-title">선형회귀</h1>
+  </div>
+
+  <nav id="view-controls" aria-label="시점 선택">
+    <button type="button" data-view="free" aria-pressed="false" title="카메라를 직접 움직이고 그 자리에 둡니다 (1)">자유시점</button>
+    <button type="button" data-view="lesson" class="active" aria-pressed="true" title="강의 장면에 맞춰 카메라가 움직입니다 (2 · R)">강의 따라가기</button>
+    <button type="button" data-view="graph" aria-pressed="false" title="예측 함수 그래프만 따라 봅니다 (3)">예측 함수</button>
+    <button type="button" data-view="surface" aria-pressed="false" title="손실곡면만 따라 봅니다 (4)">손실곡면</button>
+  </nav>
+
+  <aside class="model-controls" aria-label="모델 직접 조절">
+    <div id="model-inputs" hidden>
+      <div class="parameter parameter-w">
+        <label for="w-range"><span class="parameter-symbol">W</span> 기울기</label>
+        <input id="w-number" type="number" min="-35" max="5" step="0.01" value="-15" aria-label="기울기 W 값">
+        <input id="w-range" type="range" min="-35" max="5" step="0.01" value="-15" aria-label="기울기 W 조절">
+      </div>
+      <div class="parameter parameter-b">
+        <label for="b-range"><span class="parameter-symbol">b</span> 절편</label>
+        <input id="b-number" type="number" min="450" max="650" step="0.1" value="580" aria-label="절편 b 값">
+        <input id="b-range" type="range" min="450" max="650" step="0.1" value="580" aria-label="절편 b 조절">
+      </div>
+    </div>
+    <div class="model-actions">
+      <button id="layout-toggle" type="button" aria-expanded="false" aria-controls="layout-panel"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h6v12H3zM12 4h5v12h-5z"/></svg>그래프 배치</button>
+      <button id="model-toggle" type="button" aria-expanded="false" aria-controls="model-inputs"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h14M3 14h14M7 3v6M13 11v6"/></svg>W·b 조절</button>
+    </div>
+  </aside>
+
+
+  <section id="layout-panel" hidden aria-labelledby="layout-title">
+    <div class="layout-header"><h2 id="layout-title">그래프 배치</h2><button id="layout-reset" type="button" title="선택한 그래프를 기본 배치로 되돌리기">초기화</button><button id="layout-close" type="button" aria-label="그래프 배치 닫기" title="마침 (Esc)">×</button></div>
+    <div class="layout-targets" role="group" aria-label="배치할 그래프">
+      <button type="button" data-layout-target="graph" aria-pressed="false">예측함수</button>
+      <button type="button" data-layout-target="surface" aria-pressed="true">손실 곡면</button>
+    </div>
+    <p class="layout-hint">선택한 그래프만 왼쪽 드래그로 이동, 오른쪽으로 회전합니다. <kbd>Esc</kbd>로 마침.</p>
+    <div class="layout-sliders">
+      <div class="layout-parameter"><label for="layout-yaw">가로 회전</label><output id="layout-yaw-value" for="layout-yaw">−45°</output><input id="layout-yaw" type="range" min="-90" max="90" step="1" value="-45"></div>
+      <div class="layout-parameter"><label for="layout-pitch">위아래 기울기</label><output id="layout-pitch-value" for="layout-pitch">0°</output><input id="layout-pitch" type="range" min="-30" max="30" step="1" value="0"></div>
+      <div class="layout-parameter"><label for="layout-x">좌우</label><output id="layout-x-value" for="layout-x">0.0</output><input id="layout-x" type="range" min="-3" max="3" step="0.1" value="0"></div>
+      <div class="layout-parameter"><label for="layout-y">높이</label><output id="layout-y-value" for="layout-y">0.0</output><input id="layout-y" type="range" min="-3" max="3" step="0.1" value="0"></div>
+      <div class="layout-parameter"><label for="layout-z">앞뒤</label><output id="layout-z-value" for="layout-z">0.0</output><input id="layout-z" type="range" min="-3" max="3" step="0.1" value="0"></div>
+    </div>
+  </section>
+
+  <section id="camera-admin" hidden aria-labelledby="camera-admin-title">
+    <div class="layout-header"><h2 id="camera-admin-title">카메라 시점 관리</h2><button id="camera-admin-close" type="button" aria-label="카메라 시점 관리 닫기">×</button></div>
+    <p class="layout-hint">‘이동’으로 장면을 연 뒤 드래그·트랙패드·WASD로 시점을 맞추고 ‘현재 시점 저장’을 누르세요. 저장한 시점은 이 브라우저에만 남고, 넓은 화면과 좁은 화면을 따로 보관합니다. 확정하려면 ‘값 복사’ 결과를 전달해 주세요.</p>
+    <p id="camera-layout" class="layout-hint"></p>
+    <ol id="camera-shots"></ol>
+    <div class="admin-actions"><button id="camera-export" type="button">값 복사</button><button id="camera-reset-all" type="button">모두 기본값</button></div>
+    <textarea id="camera-export-text" readonly hidden rows="5" aria-label="저장한 카메라 시점 값"></textarea>
+  </section>
+
+  <footer class="lesson-player">
+    <p id="caption">이번에는 선형 회귀를 시각화해서 알아보는 시간을 가져보도록 하겠습니다.</p>
+    <div class="chapter-row">
+      <nav id="chapters" aria-label="강의 장면">
+        <button type="button" data-chapter="0" class="active" aria-current="step"><span>01</span> 예측함수</button>
+        <button type="button" data-chapter="1"><span>02</span> 오차</button>
+        <button type="button" data-chapter="2"><span>03</span> 손실 곡면</button>
+        <button type="button" data-chapter="3"><span>04</span> 학습</button>
+      </nav>
+      <span id="mode">강의</span>
+    </div>
+    <div class="narration-row" role="group" aria-label="강의 음성">
+      <output id="narration-status" aria-live="polite">AI 내레이션</output>
+      <button type="button" id="narration-retry" hidden>다시 듣기</button>
+      <label for="narration-voice">목소리 <select id="narration-voice"><option value="male">남성</option><option value="female" selected>여성</option></select></label>
+      <button type="button" id="narration-mute" aria-pressed="false">음성 끄기</button>
+    </div>
+    <div class="transport">
+      <button id="play" type="button" aria-label="강의 재생" title="재생 · 정지 (Space)">▶</button>
+      <div class="timeline">
+        <input id="seek" type="range" min="0" max="103" step="0.01" value="0" aria-label="강의 재생 위치">
+        <div id="timeline-marks" aria-hidden="true"></div>
+      </div>
+      <div class="time-code"><output id="time">0:00</output><span>/</span><output id="duration">1:43</output></div>
+      <div class="speed-control"><button id="speed-down" type="button" aria-label="재생 속도 느리게" title="재생 속도 느리게 (−)">−</button><label><span class="sr-only">재생 속도</span><select id="speed" aria-label="재생 속도"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option></select></label><button id="speed-up" type="button" aria-label="재생 속도 빠르게" title="재생 속도 빠르게 (+)">+</button></div>
+    </div>
+    <div class="gesture-hint" aria-label="장면 조작 안내">
+      <p class="keyboard-gesture"><span class="hint-group">WASD 이동 <span>·</span> Q/E 높이</span><span class="hint-divider">·</span><span class="hint-group">+/− 재생속도 <span>·</span> 1~4 시점</span></p>
+      <p class="pointer-gesture">왼쪽 이동 <span>·</span> 오른쪽 드래그·두 손가락 회전 <span>·</span> 휠·핀치 확대</p>
+    </div>
+  </footer>
+
+  <output id="accessible-equation" class="sr-only" aria-live="off">예측값은 W 곱하기 x 더하기 b입니다.</output>
+  <output id="navigation-status" class="sr-only" aria-live="polite" aria-atomic="true"></output>
+  <div id="tip" hidden></div>
+  <dialog id="help-dialog" aria-labelledby="help-title">
+    <button id="help-close" class="icon-button" type="button" aria-label="닫기">×</button>
+    <p class="dialog-eyebrow">3D 강의 조작</p>
+    <h2 id="help-title">멈춘 뒤, 직접 움직여 보세요.</h2>
+    <dl>
+      <div><dt>마우스 / 트랙패드</dt><dd>빈 공간을 왼쪽 클릭한 채 끌면 화면이 평행하게 이동하고, 오른쪽 클릭한 채 끌거나 트랙패드에서 두 손가락으로 쓸면 회전합니다(좌우 쓸기는 좌우, 위아래 쓸기는 시선 위아래). 마우스 휠이나 두 손가락 핀치로 확대·축소합니다.</dd></div>
+      <div><dt><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> 공간 이동</dt><dd>W/S로 앞뒤, A/D로 좌우 이동합니다.</dd></div>
+      <div><dt><kbd>Q</kbd> 아래 · <kbd>E</kbd> 위</dt><dd>높이를 바꿉니다. <kbd>Shift</kbd>를 함께 누르면 더 빠르게 이동합니다.</dd></div>
+      <div><dt><kbd>+</kbd> 빠르게 · <kbd>−</kbd> 느리게 · <kbd>0</kbd> 기본 속도</dt><dd>재생 속도를 0.25배씩 바꿉니다. 0.25~2배 범위이며 0을 누르면 1배로 돌아갑니다.</dd></div>
+      <div><dt><kbd>1</kbd> 자유시점</dt><dd>카메라를 직접 움직이고, 강의가 진행돼도 그 자리에 둡니다.</dd></div>
+      <div><dt><kbd>2</kbd> 강의 따라가기 · <kbd>R</kbd></dt><dd>장면에 맞춰 카메라가 움직입니다. 직접 바꾼 W·b 수치도 현재 강의 값으로 돌아갑니다. 잠깐 직접 움직여도 다음 장면에서 강의 시점으로 돌아옵니다.</dd></div>
+      <div><dt><kbd>3</kbd> 예측 함수 · <kbd>4</kbd> 손실곡면</dt><dd>한 그래프만 정면에 두고 강의를 봅니다. 손실곡면은 세 번째 장면부터 고를 수 있습니다.</dd></div>
+      <div><dt>예측함수 끝의 <span class="w-text">W</span> 손잡이</dt><dd>기울기를 바꿉니다.</dd></div>
+      <div><dt>세로축의 <span class="b-text">b</span> 손잡이</dt><dd>절편을 바꿉니다.</dd></div>
+      <div><dt>손실 곡면 위의 점</dt><dd>W와 b를 함께 바꿉니다.</dd></div>
+      <div><dt>그래프 배치</dt><dd>예측함수와 손실 곡면의 각도·위치를 따로 바꿉니다. 패널을 연 동안 선택한 그래프를 직접 끌어 이동·회전할 수 있습니다. <kbd>Esc</kbd>로 마칩니다.</dd></div>
+      <div><dt>강의 음성</dt><dd>남성·여성 AI 내레이션 중 하나를 선택합니다. 목소리와 음성 켜기 상태는 이 브라우저에 저장됩니다. 재생·정지·속도·탐색은 음성과 3D 장면에 함께 적용됩니다.</dd></div>
+      <div><dt>재생바 / 장면 이름</dt><dd>원하는 강의 위치로 이동합니다.</dd></div>
+    </dl>
+    <p class="keyboard-hint"><kbd>Space</kbd> 재생·정지 <span><kbd>←</kbd> <kbd>→</kbd> 1초 앞뒤 이동</span></p>
+    <p class="help-note">자료: 기존 교안의 iPhone 15 128GB 관측값 3개 · <a href="https://www.sellcell.com/blog/is-the-iphone-still-king-of-value-retention/" target="_blank" rel="noopener noreferrer">SellCell 원자료</a><br>W와 b의 학습률은 기간을 12로 나눈 교안의 계산을 원단위로 환산한 값입니다.</p>
+    <p class="help-note">키보드 조작은 화면을 누르지 않아도 바로 쓸 수 있습니다. W·b 숫자 입력칸과 재생 속도 메뉴를 조작하는 동안에는 강의 단축키가 작동하지 않고, 재생바를 잡고 있을 때 <kbd>←</kbd> <kbd>→</kbd>는 재생바가 씁니다.</p>
+  </dialog>
+  <noscript>이 강의는 JavaScript와 WebGL이 필요합니다.</noscript>
+</body>
+</html>
