@@ -147,6 +147,7 @@
       <output id="narration-status" aria-live="polite">AI 내레이션</output>
       <button type="button" id="narration-retry" hidden>다시 듣기</button>
       <label for="narration-voice">목소리 <select id="narration-voice"><option value="male">남성</option><option value="female" selected>여성</option></select></label>
+      <label for="narration-volume" id="narration-volume-label">소리 <input id="narration-volume" type="range" min="0" max="100" step="1" value="100"><output id="narration-volume-value" for="narration-volume">100</output></label>
       <button type="button" id="narration-mute" aria-pressed="false">음성 끄기</button>
     </div>
     <div class="transport">
@@ -183,7 +184,7 @@
       <div><dt>세로축의 <span class="b-text">b</span> 손잡이</dt><dd>절편을 바꿉니다.</dd></div>
       <div><dt>손실 곡면 위의 점</dt><dd>W와 b를 함께 바꿉니다.</dd></div>
       <div><dt>그래프 배치</dt><dd>예측함수와 손실 곡면의 각도·위치를 따로 바꿉니다. 패널을 연 동안 선택한 그래프를 직접 끌어 이동·회전할 수 있습니다. <kbd>Esc</kbd>로 마칩니다.</dd></div>
-      <div><dt>강의 음성</dt><dd>남성·여성 AI 내레이션 중 하나를 선택합니다. 목소리와 음성 켜기 상태는 이 브라우저에 저장됩니다. 재생·정지·속도·탐색은 음성과 3D 장면에 함께 적용됩니다.</dd></div>
+      <div><dt>강의 음성</dt><dd>남성·여성 AI 내레이션 중 하나를 선택합니다. 소리 크기는 0에서 100 사이로 조절합니다. 목소리, 소리 크기, 음성 켜기 상태는 이 브라우저에 저장됩니다. 재생·정지·속도·탐색은 음성과 3D 장면에 함께 적용됩니다.</dd></div>
       <div><dt>재생바 / 장면 이름</dt><dd>원하는 강의 위치로 이동합니다.</dd></div>
     </dl>
     <p class="keyboard-hint"><kbd>Space</kbd> 재생·정지 <span><kbd>←</kbd> <kbd>→</kbd> 1초 앞뒤 이동</span></p>

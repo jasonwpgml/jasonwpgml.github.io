@@ -19,9 +19,11 @@
     return cue.audioStart + (scene - cue.start) / (cue.end - cue.start) * cue.duration;
   };
   const storedVoice = safeRead('linear3d-narration-voice');
+  const storedVolume = Number(safeRead('linear3d-narration-volume') ?? 1);
   const controller = {
     time: 0,
     voice: ['male', 'female'].includes(storedVoice) ? storedVoice : 'female',
+    volume: storedVolume >= 0 && storedVolume <= 1 ? storedVolume : 1,
     muted: safeRead('linear3d-narration-muted') === 'true',
     seeking: false,
     pending: false,
@@ -109,6 +111,10 @@
       $('time').textContent = formatTime(this.time);
       $('duration').textContent = formatTime(data.duration);
       $('narration-voice').value = this.voice;
+      const percent = Math.round(this.volume * 100);
+      $('narration-volume').value = percent;
+      $('narration-volume').style.setProperty('--volume', `${percent}%`);
+      $('narration-volume-value').textContent = percent;
       $('narration-mute').setAttribute('aria-pressed', String(this.muted));
       $('narration-mute').textContent = this.muted ? '음성 켜기' : '음성 끄기';
       const status = this.muted ? '음성 꺼짐' : this.audio.readyState < 3 ? '음성 불러오는 중…' : 'AI 내레이션';
@@ -147,6 +153,17 @@
   $('narration-mute').addEventListener('click', () => {
     controller.muted = !controller.muted;
     safeWrite('linear3d-narration-muted', String(controller.muted));
+    controller.render();
+  });
+  controller.audio.volume = controller.volume;
+  // iOS에서는 페이지가 음량을 바꿀 수 없다(기기 버튼만 가능). 그런 곳에서는 조절 막대를 숨긴다.
+  const probe = new Audio();
+  probe.volume = .5;
+  if (probe.volume !== .5) $('narration-volume-label').hidden = true;
+  $('narration-volume').addEventListener('input', event => {
+    controller.volume = Number(event.target.value) / 100;
+    controller.audio.volume = controller.volume;
+    safeWrite('linear3d-narration-volume', String(controller.volume));
     controller.render();
   });
   $('narration-retry').addEventListener('click', () => controller.loadVoice());
