@@ -532,12 +532,12 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     </section>
     <section class="pane" data-tab="동적 구조도">
       <div class="viz">
-        <figure class="live"><span class="frame"><iframe src="agenthub/flow.html" title="기기 데이터 흐름 동적 구조도 (글자 모자이크)" loading="lazy"></iframe></span><figcaption>실제로 쓰는 기기 흐름도의 공개용 사본입니다. 기기·경로·DB 이름은 모자이크했고, 선 위의 점은 데이터가 흐르는 방향입니다. 상자를 누르거나 끌어 볼 수 있습니다. <a href="agenthub/flow.html" target="_blank" rel="noopener">크게 보기</a></figcaption></figure>
+        <figure class="live"><span class="frame"><iframe data-src="agenthub/flow.html" title="기기 데이터 흐름 동적 구조도 (글자 가림)" loading="lazy"></iframe></span><figcaption>실제로 쓰는 기기 흐름도의 공개용 사본입니다. 기기·경로·DB 이름은 검은 막대로 가렸고, 선 위의 점은 데이터가 흐르는 방향입니다. 상자를 누르거나 끌어 볼 수 있습니다. <a href="agenthub/flow.html" target="_blank" rel="noopener">크게 보기</a></figcaption></figure>
       </div>
     </section>
     <section class="pane" data-tab="관리 화면">
       <div class="viz">
-        <div class="gal lead" style="max-width:calc((var(--room,70svh) - 110px) * 2.05)"><figure class="shot"><span class="frame"><img src="img/agenthub-dashboard.webp" width="1280" height="800" alt="Agent Hub 관리 화면의 대시보드. 왼쪽 메뉴에 대시보드, 도구 17, 스킬 22, 설치 항목 가져오기, MCP 서버, 에이전트 연결, 공유 메모, 호출 기록, 세션 기록, 기기가 있고, 가운데에 기기 데이터 흐름도가 있다. 본문 글자는 모자이크 처리했다." loading="lazy"></span><figcaption>대시보드 · 글자는 모자이크 처리</figcaption></figure><figure class="shot"><span class="frame"><img src="img/agenthub-skills.webp" width="1280" height="800" alt="Agent Hub 스킬 화면. 스킬 카드가 두 줄로 놓여 있고 글자는 모자이크 처리했다." loading="lazy"></span><figcaption>공유 스킬 22개</figcaption></figure><figure class="shot"><span class="frame"><img src="img/agenthub-connections.webp" width="1280" height="800" alt="Agent Hub 에이전트 연결 화면. 세 에이전트의 연결 카드와 MCP 연결 설정 내보내기 칸이 있고 글자는 모자이크 처리했다." loading="lazy"></span><figcaption>에이전트별 연결 설정</figcaption></figure></div>
+        <div class="gal lead" style="max-width:calc((var(--room,70svh) - 110px) * 2.05)"><figure class="shot"><span class="frame"><img src="img/agenthub-dashboard.webp" width="1280" height="800" alt="Agent Hub 관리 화면의 대시보드. 왼쪽 메뉴에 대시보드, 도구 17, 스킬 22, 설치 항목 가져오기, MCP 서버, 에이전트 연결, 공유 메모, 호출 기록, 세션 기록, 기기가 있고, 가운데에 기기 데이터 흐름도가 있다. 본문 글자는 흐리게 가렸다." loading="lazy"></span><figcaption>대시보드 · 글자는 흐리게 가림</figcaption></figure><figure class="shot"><span class="frame"><img src="img/agenthub-skills.webp" width="1280" height="800" alt="Agent Hub 스킬 화면. 스킬 카드가 두 줄로 놓여 있고 글자는 흐리게 가렸다." loading="lazy"></span><figcaption>공유 스킬 22개</figcaption></figure><figure class="shot"><span class="frame"><img src="img/agenthub-connections.webp" width="1280" height="800" alt="Agent Hub 에이전트 연결 화면. 세 에이전트의 연결 카드와 MCP 연결 설정 내보내기 칸이 있고 글자는 흐리게 가렸다." loading="lazy"></span><figcaption>에이전트별 연결 설정</figcaption></figure></div>
       </div>
     </section>
   </div>
@@ -622,7 +622,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
     </section>
     <section class="pane" data-tab="연결도">
       <div class="viz">
-        <figure class="live"><span class="frame"><iframe src="agenthub/flow.html?flow=grokbot" title="그록봇 연결도 동적 구조도 (글자 모자이크)" loading="lazy"></iframe></span><figcaption>그록봇이 맥, 노트북, 클라우드와 이어지는 실제 연결도의 공개용 사본입니다. 글자는 모자이크했습니다. <a href="agenthub/flow.html?flow=grokbot" target="_blank" rel="noopener">크게 보기</a></figcaption></figure>
+        <figure class="live"><span class="frame"><iframe data-src="agenthub/flow.html?flow=grokbot" title="그록봇 연결도 동적 구조도 (글자 가림)" loading="lazy"></iframe></span><figcaption>그록봇이 맥, 노트북, 클라우드와 이어지는 실제 연결도의 공개용 사본입니다. 글자는 검은 막대로 가렸습니다. <a href="agenthub/flow.html?flow=grokbot" target="_blank" rel="noopener">크게 보기</a></figcaption></figure>
       </div>
     </section>
     <section class="pane" data-tab="기기 간 위임">
@@ -1533,6 +1533,24 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   try { saved = localStorage.getItem('edition') || 'human'; } catch {}
   if (location.hash === '#agent') saved = 'agent';
   if (saved === 'agent') set('agent', false);
+})();
+
+// Live diagrams: load a frame the first time its pane shows, and pause it whenever it is off screen.
+(() => {
+  const frames = document.querySelectorAll('iframe[data-src]');
+  if (!frames.length) return;
+  const tell = (f, flow) => { try { f.contentWindow && f.contentWindow.postMessage({ flow }, location.origin); } catch {} };
+  const io = new IntersectionObserver((entries) => {
+    for (const { target: f, isIntersecting } of entries) {
+      if (isIntersecting && !f.src) f.src = f.dataset.src;
+      tell(f, isIntersecting ? 'play' : 'pause');
+    }
+  }, { threshold: 0.3 });
+  for (const f of frames) {
+    io.observe(f);
+    // A frame that finished loading while scrolled away starts paused.
+    f.addEventListener('load', () => { const r = f.getBoundingClientRect(); if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) tell(f, 'pause'); });
+  }
 })();
 </script>
 
