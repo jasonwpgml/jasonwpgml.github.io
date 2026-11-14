@@ -141,7 +141,7 @@ time,.no{font-variant-numeric:tabular-nums}
 .ch{display:grid;grid-template-rows:auto minmax(0,1fr);gap:clamp(12px,2.2svh,24px);padding-block:clamp(18px,3.4svh,40px) clamp(16px,3svh,36px)}
 .projects .ch{position:sticky;top:var(--head,56px);height:calc(100svh - var(--head,56px));border-radius:28px 28px 0 0}
 .projects .ch+.ch{box-shadow:0 -28px 56px -24px rgb(0 0 0/.4)}
-.projects .ch::after{content:"";position:absolute;inset:0;background:#000;opacity:calc(var(--cover,0) * .38);pointer-events:none}
+.projects .ch::after{content:"";position:absolute;inset:0;background:#000;opacity:calc(var(--cover,0) * .38);pointer-events:none;will-change:opacity}
 .ch-head{width:min(var(--max),calc(100% - 2 * var(--gutter)));margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 32px;align-items:end}
 .ch-head .no{font-family:var(--serif);color:var(--acc);font-size:15px;display:block;margin-bottom:2px}
 .ch-head h2{font-size:clamp(1.8rem,min(3.6vw,6svh),3.1rem);letter-spacing:-.015em}
@@ -1126,6 +1126,7 @@ html[data-edition="agent"] .head .now{visibility:hidden}
         el.style.setProperty('--cover', p.toFixed(3));
         // A scene the next one covers completely is not drawn, so its glass is not blurred underneath for nothing.
         el.style.visibility = p >= 1 && !narrow.matches ? 'hidden' : '';
+        if (el._live) el._live(p); // live diagrams in this scene stop once the next scene starts to cover it
       }
     });
     paintLabel(sections.slice(1).reduce((x, s) => x + arrive(s), 0));
@@ -1535,21 +1536,33 @@ html[data-edition="agent"] .head .now{visibility:hidden}
   if (saved === 'agent') set('agent', false);
 })();
 
-// Live diagrams: load a frame the first time its pane shows, and pause it whenever it is off screen.
+// Live diagrams: load a frame the first time its pane shows, and run it only while it is really seen:
+// its pane is in view (tabs, swipe) and the next scene has not started to slide over its own scene.
 (() => {
-  const frames = document.querySelectorAll('iframe[data-src]');
+  const frames = [...document.querySelectorAll('iframe[data-src]')];
   if (!frames.length) return;
-  const tell = (f, flow) => { try { f.contentWindow && f.contentWindow.postMessage({ flow }, location.origin); } catch {} };
+  const state = new Map(frames.map((f) => [f, { seen: false, covered: false, sent: '' }]));
+  const tell = (f) => {
+    const s = state.get(f), flow = s.seen && !s.covered ? 'play' : 'pause';
+    if (s.sent === flow) return;
+    s.sent = flow;
+    try { f.contentWindow && f.contentWindow.postMessage({ flow }, location.origin); } catch {}
+  };
   const io = new IntersectionObserver((entries) => {
     for (const { target: f, isIntersecting } of entries) {
+      state.get(f).seen = isIntersecting;
       if (isIntersecting && !f.src) f.src = f.dataset.src;
-      tell(f, isIntersecting ? 'play' : 'pause');
+      tell(f);
     }
   }, { threshold: 0.3 });
   for (const f of frames) {
     io.observe(f);
-    // A frame that finished loading while scrolled away starts paused.
-    f.addEventListener('load', () => { const r = f.getBoundingClientRect(); if (r.right < 0 || r.left > innerWidth || r.bottom < 0 || r.top > innerHeight) tell(f, 'pause'); });
+    f.addEventListener('load', () => { state.get(f).sent = ''; tell(f); });
+    const scene = f.closest('.ch');
+    if (!scene) continue;
+    const prev = scene._live;
+    scene._live = (p) => { prev && prev(p); for (const g of frames) if (g.closest('.ch') === scene) { state.get(g).covered = p > 0.12; tell(g); } };
+    if (scene._cover !== undefined) scene._live(scene._cover);
   }
 })();
 </script>
